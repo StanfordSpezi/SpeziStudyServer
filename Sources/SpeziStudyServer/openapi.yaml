@@ -1,0 +1,781 @@
+openapi: 3.0.0
+info:
+  title: Study Definition API
+  version: 1.0.0
+
+paths:
+  /studies:
+    post:
+      tags:
+        - Studies
+      summary: Create a study with metadata only
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudyRequest'
+      responses:
+        '201':
+          description: Study created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    get:
+      tags:
+        - Studies
+      summary: List all studies with metadata
+      responses:
+        '200':
+          description: List of studies with ID and metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudyResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /studies/{id}:
+    get:
+      tags:
+        - Studies
+      summary: Get a study by ID (metadata only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Study with ID and metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Studies
+      summary: Update study metadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStudyRequest'
+      responses:
+        '200':
+          description: Study updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Studies
+      summary: Delete a study definition by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Study deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /download/{id}:
+    get:
+      tags:
+        - Download
+      summary: Download the full study definition as a ZIP file
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Study definition ZIP file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: Attachment header for file download
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components:
+    get:
+      tags:
+        - Components
+      summary: List all components for a study
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of components
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudyComponent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Components
+      summary: Add a component to a study
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyComponent'
+      responses:
+        '201':
+          description: Component added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyComponent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/{componentId}:
+    get:
+      tags:
+        - Components
+      summary: Get a single component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The component
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyComponent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Components
+      summary: Replace a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyComponent'
+      responses:
+        '200':
+          description: Component replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyComponent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Components
+      summary: Remove a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Component deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/{componentId}/files:
+    get:
+      tags:
+        - Files
+      summary: List all files for a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComponentFile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Files
+      summary: Add a file to a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFileRequest'
+      responses:
+        '201':
+          description: File added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentFile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/{componentId}/files/{locale}:
+    get:
+      tags:
+        - Files
+      summary: Get a single file
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: locale
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z]{2}-[A-Z]{2}$'
+      responses:
+        '200':
+          description: The file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentFile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Files
+      summary: Replace a file
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: locale
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z]{2}-[A-Z]{2}$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFileRequest'
+      responses:
+        '200':
+          description: File replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentFile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Files
+      summary: Remove a file
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: locale
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z]{2}-[A-Z]{2}$'
+      responses:
+        '204':
+          description: File deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/{componentId}/schedules:
+    get:
+      tags:
+        - Schedules
+      summary: List all schedules for a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComponentSchedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Schedules
+      summary: Add a schedule to a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentSchedule'
+      responses:
+        '201':
+          description: Schedule added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentSchedule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/{componentId}/schedules/{scheduleId}:
+    get:
+      tags:
+        - Schedules
+      summary: Get a single schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentSchedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Schedules
+      summary: Replace a schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentSchedule'
+      responses:
+        '200':
+          description: Schedule replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentSchedule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Schedules
+      summary: Remove a schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Schedule deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  schemas:
+    ProblemDetails:
+      type: object
+      description: RFC 7807 Problem Details for HTTP APIs
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type
+        status:
+          type: integer
+          description: The HTTP status code
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence
+
+    CreateStudyRequest:
+      type: object
+      description: Request body for creating a new study (metadata only)
+      required:
+        - metadata
+      properties:
+        metadata:
+          type: object
+          additionalProperties: true
+
+    UpdateStudyRequest:
+      type: object
+      description: Request body for updating a study (metadata only)
+      required:
+        - metadata
+      properties:
+        metadata:
+          type: object
+          additionalProperties: true
+
+    StudyResponse:
+      type: object
+      description: Study response with ID and metadata (no components)
+      required:
+        - id
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+          additionalProperties: true
+
+    StudyComponent:
+      type: object
+      description: A single study component (discriminated union with nested _0 wrapper)
+      additionalProperties: true
+
+    ComponentFile:
+      type: object
+      description: A file associated with a component (identified by component_id + locale)
+      required:
+        - name
+        - locale
+        - content
+        - type
+      properties:
+        name:
+          type: string
+          description: The name of the file
+        locale:
+          type: string
+          description: The locale of the file (e.g., en-US, en-UK, de-DE)
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+        content:
+          type: string
+          description: The content of the file as a string
+        type:
+          type: string
+          enum:
+            - md
+            - json
+          description: The type of the file
+
+    CreateFileRequest:
+      type: object
+      description: Request body for creating a new file
+      required:
+        - name
+        - locale
+        - content
+        - type
+      properties:
+        name:
+          type: string
+          description: The name of the file
+        locale:
+          type: string
+          description: The locale of the file (e.g., en-US, en-UK, de-DE)
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+        content:
+          type: string
+          description: The content of the file as a string
+        type:
+          type: string
+          enum:
+            - md
+            - json
+          description: The type of the file
+
+    UpdateFileRequest:
+      type: object
+      description: Request body for updating a file
+      required:
+        - name
+        - locale
+        - content
+        - type
+      properties:
+        name:
+          type: string
+          description: The name of the file
+        locale:
+          type: string
+          description: The locale of the file (e.g., en-US, en-UK, de-DE)
+          pattern: '^[a-z]{2}-[A-Z]{2}$'
+        content:
+          type: string
+          description: The content of the file as a string
+        type:
+          type: string
+          enum:
+            - md
+            - json
+          description: The type of the file
+
+    ComponentSchedule:
+      type: object
+      description: A component schedule from SpeziStudyDefinition
+      additionalProperties: true

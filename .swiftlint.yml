@@ -115,8 +115,6 @@ only_rules:
   - force_cast
   # Force tries should be avoided.
   - force_try
-  # Force unwrapping should be avoided.
-  - force_unwrapping
   # Prefer to locate parameters with defaults toward the end of the parameter list.
   - function_default_parameter_at_end
   # Functions bodies should not span too many lines.

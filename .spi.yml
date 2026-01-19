@@ -9,6 +9,6 @@
 version: 1
 builder:
   configs:
-    - platform: ios
+    - platform: macOS
       documentation_targets:
-      - TemplatePackage
+      - SpeziStudyServer

@@ -1,7 +1,7 @@
 <!--
                   
 #
-# This source file is part of the TemplatePackage open source project
+# This source file is part of the SpeziStudyServer open source project
 #
 # SPDX-FileCopyrightText: 2022 Stanford University and the project authors (see CONTRIBUTORS.md)
 #
@@ -10,8 +10,9 @@
              
 -->
 
-TemplatePackage contributors
+SpeziStudyServer contributors
 ====================
 
+* [Philipp Nagy](https://github.com/phnagy)
+* [Lukas Kollmer](https://github.com/lukaskollmer)
 * [Paul Schmiedmayer](https://github.com/PSchmiedmayer)
-* [Vishnu Ravi](https://github.com/vishnuravi)

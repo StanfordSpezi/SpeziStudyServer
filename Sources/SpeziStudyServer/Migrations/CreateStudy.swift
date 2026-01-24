@@ -9,13 +9,13 @@ import Fluent
 
 struct CreateStudy: AsyncMigration {
     func prepare(on database: any Database) async throws {
-        try await database.schema("study_definitions")
+        try await database.schema("studies")
             .id()
             .field("metadata", .json, .required)
             .create()
     }
 
     func revert(on database: any Database) async throws {
-        try await database.schema("study_definitions").delete()
+        try await database.schema("studies").delete()
     }
 }

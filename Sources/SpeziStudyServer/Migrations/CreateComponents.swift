@@ -11,7 +11,7 @@ struct CreateComponents: AsyncMigration {
     func prepare(on database: any Database) async throws {
         try await database.schema("components")
             .id()
-            .field("study_id", .uuid, .required, .references("study_definitions", "id", onDelete: .cascade))
+            .field("study_id", .uuid, .required, .references("studies", "id", onDelete: .cascade))
             .field("component_data", .json, .required)
             .create()
     }

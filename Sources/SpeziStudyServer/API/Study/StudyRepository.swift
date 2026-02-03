@@ -9,8 +9,12 @@ import Fluent
 import Foundation
 import SpeziStudyDefinition
 
-struct DatabaseStudyRepository: StudyRepository {
+final class DatabaseStudyRepository: StudyRepository {
     let database: any Database
+    
+    init(database: any Database) {
+        self.database = database
+    }
 
     func create(_ study: Study) async throws -> Study {
         try await study.save(on: database)
@@ -18,7 +22,7 @@ struct DatabaseStudyRepository: StudyRepository {
         guard let createdStudy = try await Study.query(on: database)
             .filter(\.$id == study.id!)
             .first() else {
-            throw ServerError.defaults.failedToRetrieveCreatedObject
+            throw ServerError.Defaults.failedToRetrieveCreatedObject
         }
 
         return createdStudy
@@ -44,7 +48,7 @@ struct DatabaseStudyRepository: StudyRepository {
         }
 
         for component in study.components {
-            try await component.$componentFiles.load(on: database)
+            try await component.$files.load(on: database)
             try await component.$schedules.load(on: database)
         }
 
@@ -79,7 +83,7 @@ struct DatabaseStudyRepository: StudyRepository {
     }
 }
 
-protocol StudyRepository: Sendable {
+protocol StudyRepository: VaporModule {
     func create(_ study: Study) async throws -> Study
     func find(id: UUID) async throws -> Study?
     func findWithComponents(id: UUID) async throws -> Study?

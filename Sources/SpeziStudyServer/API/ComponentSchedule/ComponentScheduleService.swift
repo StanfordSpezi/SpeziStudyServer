@@ -8,10 +8,10 @@
 import Foundation
 import SpeziStudyDefinition
 
-struct ComponentScheduleService: Sendable {
-    let studyRepository: any StudyRepository
-    let componentRepository: any ComponentRepository
-    let scheduleRepository: any ComponentScheduleRepository
+final class ComponentScheduleService: VaporModule, @unchecked Sendable {
+    @Dependency(DatabaseStudyRepository.self) var studyRepository: DatabaseStudyRepository
+    @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
+    @Dependency(DatabaseComponentScheduleRepository.self) var scheduleRepository: DatabaseComponentScheduleRepository
 
     func listSchedules(studyId: UUID, componentId: UUID) async throws -> [Components.Schemas.ComponentSchedule] {
         if try await studyRepository.find(id: studyId) == nil {

@@ -61,16 +61,33 @@ enum TestUtilities {
         return .questionnaire(questionnaire)
     }
 
-    /// Creates a test file with given parameters
+    /// Creates a test file with a component owner
     static func createTestFile(
         componentId: UUID,
         name: String = "test-file",
         locale: String = "en-US",
         content: String = "# Test Content",
         type: String = "md"
-    ) -> ComponentFile {
-        ComponentFile(
+    ) -> StoredFile {
+        StoredFile(
             componentId: componentId,
+            name: name,
+            locale: locale,
+            content: content,
+            type: type
+        )
+    }
+
+    /// Creates a test file with a study owner
+    static func createTestStudyFile(
+        studyId: UUID,
+        name: String = "test-file",
+        locale: String = "en-US",
+        content: String = "# Test Content",
+        type: String = "md"
+    ) -> StoredFile {
+        StoredFile(
+            studyId: studyId,
             name: name,
             locale: locale,
             content: content,

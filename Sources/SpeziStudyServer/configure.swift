@@ -10,6 +10,8 @@ import FluentPostgresDriver
 import FluentSQLiteDriver
 import NIOSSL
 import Vapor
+import SpeziVapor
+import Spezi
 
 /// Configures the application services and routes.
 public func configure(_ app: Application) async throws {
@@ -35,9 +37,18 @@ public func configure(_ app: Application) async throws {
 
     app.migrations.add(CreateStudy())
     app.migrations.add(CreateComponents())
-    app.migrations.add(CreateComponentFiles())
+    app.migrations.add(CreateFiles())
     app.migrations.add(CreateComponentSchedules())
 
+    await app.spezi.configure() {
+        StudyService()
+        ComponentScheduleService()
+        DatabaseStudyRepository(database: app.db)
+        DatabaseComponentRepository(database: app.db)
+        DatabaseComponentScheduleRepository(database: app.db)
+    }
+    
     // register routes
     try routes(app)
 }
+

@@ -1,21 +1,21 @@
+////
+//// This source file is part of the SpeziStudyServer open source project
+////
+//// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+////
+//// SPDX-License-Identifier: MIT
+////
+//import Foundation
+//import SpeziStudyDefinition
 //
-// This source file is part of the SpeziStudyServer open source project
+//struct DownloadService: Sendable {
+//    let repository: any StudyRepository
 //
-// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+//    func buildZipData(for id: UUID) async throws -> Data {
+//        let study = try await repository.findWithComponentsAndFiles(id: id)
 //
-// SPDX-License-Identifier: MIT
+//        let bundleUrl = try study.createBundle()
 //
-import Foundation
-import SpeziStudyDefinition
-
-struct DownloadService: Sendable {
-    let repository: any StudyRepository
-
-    func buildZipData(for id: UUID) async throws -> Data {
-        let study = try await repository.findWithComponentsAndFiles(id: id)
-
-        let bundleUrl = try study.createBundle()
-
-        return try bundleUrl.zipped()
-    }
-}
+//        return try bundleUrl.zipped()
+//    }
+//}

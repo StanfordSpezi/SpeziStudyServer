@@ -9,7 +9,7 @@ import Foundation
 import SpeziStudyDefinition
 
 enum StudyMapper {
-    static func toModel(_ dto: Components.Schemas.CreateStudyRequest) throws -> Study {
+    static func toModel(_ dto: Components.Schemas.StudyInput) throws -> Study {
         let studyId = UUID()
         var metadataPayload = dto.metadata.additionalProperties
         metadataPayload.value["id"] = studyId.uuidString
@@ -30,7 +30,7 @@ enum StudyMapper {
         )
     }
 
-    static func toMetadata(_ dto: Components.Schemas.UpdateStudyRequest) throws -> StudyDefinition.Metadata {
+    static func toMetadata(_ dto: Components.Schemas.StudyInput) throws -> StudyDefinition.Metadata {
         let metadataPayload = dto.metadata.additionalProperties
         let metadata: StudyDefinition.Metadata = try metadataPayload.recode()
         return metadata

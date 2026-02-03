@@ -7,12 +7,14 @@
 //
 import Foundation
 import Logging
+import Spezi
 
+final class StudyService: @unchecked Sendable, Module {
+    @Dependency(DatabaseStudyRepository.self) var repository: DatabaseStudyRepository
+        
+    init() {}
 
-struct StudyService: Sendable {
-    let repository: DatabaseStudyRepository
-
-    func createStudy(_ dto: Components.Schemas.CreateStudyRequest) async throws -> Components.Schemas.StudyResponse {
+    func createStudy(_ dto: Components.Schemas.StudyInput) async throws -> Components.Schemas.StudyResponse {
         let study = try StudyMapper.toModel(dto)
         let createdStudy = try await repository.create(study)
         return try StudyMapper.toDTO(createdStudy)
@@ -31,7 +33,7 @@ struct StudyService: Sendable {
         return try StudyMapper.toDTO(study)
     }
 
-    func updateStudy(id: UUID, dto: Components.Schemas.UpdateStudyRequest) async throws -> Components.Schemas.StudyResponse {
+    func updateStudy(id: UUID, dto: Components.Schemas.StudyInput) async throws -> Components.Schemas.StudyResponse {
         let metadata = try StudyMapper.toMetadata(dto)
         guard let updatedStudy = try await repository.update(id: id, metadata: metadata) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)

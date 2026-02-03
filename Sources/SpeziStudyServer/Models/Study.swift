@@ -18,6 +18,8 @@ final class Study: Model, @unchecked Sendable {
 
     @Children(for: \.$study) var components: [Component]
 
+    @Children(for: \.$study) var files: [StoredFile]
+
     init() {}
 
     init(

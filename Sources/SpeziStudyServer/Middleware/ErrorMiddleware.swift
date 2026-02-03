@@ -39,7 +39,7 @@ struct ErrorMiddleware: ServerMiddleware {
             )
 
             
-            return ServerError.defaults.unexpectedError.httpResponse
+            return ServerError.Defaults.unexpectedError.httpResponse
         }
     }
 }

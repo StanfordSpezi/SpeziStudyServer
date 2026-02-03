@@ -18,7 +18,7 @@ extension Study {
                 continue
             }
 
-            for file in component.componentFiles {
+            for file in component.files {
                 guard let localizationKey = LocalizationKey(file.locale) else {
                     throw ServerError.validation(message: "Invalid locale format: \(file.locale)")
                 }

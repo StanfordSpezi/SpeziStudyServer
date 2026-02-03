@@ -53,7 +53,7 @@ struct ComponentFileEndpointTests {
                 req.body = .init(data: try TestUtilities.encodeRequestBody(requestBody))
             } afterResponse: { res async throws in
                 #expect(res.status == .created)
-                let file = try res.content.decode(Components.Schemas.ComponentFile.self)
+                let file = try res.content.decode(Components.Schemas.FileResource.self)
                 #expect(file.name == "consent-form")
                 #expect(file.locale == "en-US")
                 #expect(file.content == "# Consent\n\nI agree...")
@@ -88,7 +88,7 @@ struct ComponentFileEndpointTests {
                 // No body needed for GET
             } afterResponse: { res async throws in
                 #expect(res.status == .ok)
-                let files = try res.content.decode([Components.Schemas.ComponentFile].self)
+                let files = try res.content.decode([Components.Schemas.FileResource].self)
                 #expect(files.count == 2)
                 #expect(files.contains { $0.name == "file1" })
                 #expect(files.contains { $0.name == "file2" })
@@ -126,7 +126,7 @@ struct ComponentFileEndpointTests {
                 // No body needed for GET
             } afterResponse: { res async throws in
                 #expect(res.status == .ok)
-                let file = try res.content.decode(Components.Schemas.ComponentFile.self)
+                let file = try res.content.decode(Components.Schemas.FileResource.self)
                 #expect(file.name == "privacy-policy")
                 #expect(file.locale == "en-UK")
                 #expect(file.content == "Privacy information...")
@@ -173,7 +173,7 @@ struct ComponentFileEndpointTests {
                 req.body = .init(data: try TestUtilities.encodeRequestBody(requestBody))
             } afterResponse: { res async throws in
                 #expect(res.status == .ok)
-                let file = try res.content.decode(Components.Schemas.ComponentFile.self)
+                let file = try res.content.decode(Components.Schemas.FileResource.self)
                 #expect(file.name == "updated")
                 #expect(file.locale == "en-US")
                 #expect(file.content == "Updated content")
@@ -209,7 +209,7 @@ struct ComponentFileEndpointTests {
             }
 
             // Verify file is deleted
-            let files = try await ComponentFile.query(on: app.db)
+            let files = try await StoredFile.query(on: app.db)
                 .filter(\.$component.$id == component.id!)
                 .all()
             #expect(files.isEmpty)

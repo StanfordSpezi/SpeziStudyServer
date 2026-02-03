@@ -8,12 +8,14 @@
 import Fluent
 import Foundation
 
-final class ComponentFile: Model, @unchecked Sendable {
-    static let schema = "component_files"
+final class StoredFile: Model, @unchecked Sendable {
+    static let schema = "files"
 
     @ID(key: .id) var id: UUID?
 
-    @Parent(key: "component_id") var component: Component
+    @OptionalParent(key: "component_id") var component: Component?
+
+    @OptionalParent(key: "study_id") var study: Study?
 
     @Field(key: "name") var name: String
 
@@ -26,15 +28,21 @@ final class ComponentFile: Model, @unchecked Sendable {
     init() {}
 
     init(
-        componentId: UUID,
+        componentId: UUID? = nil,
+        studyId: UUID? = nil,
         name: String,
         locale: String,
         content: String,
         type: String,
         id: UUID? = nil
     ) {
+        precondition(
+            (componentId != nil) != (studyId != nil),
+            "Exactly one owner FK must be set"
+        )
         self.id = id
         self.$component.id = componentId
+        self.$study.id = studyId
         self.name = name
         self.locale = locale
         self.content = content

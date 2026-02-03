@@ -24,7 +24,7 @@ extension Controller {
         let studyId = try input.path.id.toUUID()
         let componentId = try input.path.componentId.toUUID()
         guard case .json(let scheduleDTO) = input.body else {
-            throw ServerError.defaults.jsonBodyRequired
+            throw ServerError.Defaults.jsonBodyRequired
         }
 
         let responseDTO = try await componentScheduleService.createSchedule(
@@ -58,7 +58,7 @@ extension Controller {
         let scheduleId = try input.path.scheduleId.toUUID()
 
         guard case .json(let scheduleDTO) = input.body else {
-            throw ServerError.defaults.jsonBodyRequired
+            throw ServerError.Defaults.jsonBodyRequired
         }
 
         let responseDTO = try await componentScheduleService.updateSchedule(

@@ -10,7 +10,7 @@ import Foundation
 extension Controller {
     func postStudies(_ input: Operations.PostStudies.Input) async throws -> Operations.PostStudies.Output {
         guard case .json(let studyDTO) = input.body else {
-            throw ServerError.defaults.jsonBodyRequired
+            throw ServerError.Defaults.jsonBodyRequired
         }
 
         let responseDTO = try await studyService.createStudy(studyDTO)
@@ -30,7 +30,7 @@ extension Controller {
 
     func putStudiesId(_ input: Operations.PutStudiesId.Input) async throws -> Operations.PutStudiesId.Output {
         guard case .json(let studyDTO) = input.body else {
-            throw ServerError.defaults.jsonBodyRequired
+            throw ServerError.Defaults.jsonBodyRequired
         }
 
         let uuid = try input.path.id.toUUID()

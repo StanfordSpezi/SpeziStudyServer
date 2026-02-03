@@ -8,9 +8,13 @@
 import Fluent
 import Foundation
 
-struct DatabaseComponentScheduleRepository: ComponentScheduleRepository {
+final class DatabaseComponentScheduleRepository: ComponentScheduleRepository {
     let database: any Database
-
+    
+    init(database: any Database) {
+        self.database = database
+    }
+    
     func findAll(componentId: UUID) async throws -> [ComponentSchedule] {
         try await ComponentSchedule.query(on: database)
             .filter(\.$component.$id == componentId)
@@ -34,7 +38,7 @@ struct DatabaseComponentScheduleRepository: ComponentScheduleRepository {
 
         guard let scheduleId = schedule.id,
               let createdSchedule = try await ComponentSchedule.find(scheduleId, on: database) else {
-            throw ServerError.defaults.failedToRetrieveCreatedObject
+            throw ServerError.Defaults.failedToRetrieveCreatedObject
         }
 
         return createdSchedule
@@ -58,7 +62,7 @@ struct DatabaseComponentScheduleRepository: ComponentScheduleRepository {
     }
 }
 
-protocol ComponentScheduleRepository: Sendable {
+protocol ComponentScheduleRepository: VaporModule {
     func findAll(componentId: UUID) async throws -> [ComponentSchedule]
     func find(id: UUID, componentId: UUID) async throws -> ComponentSchedule?
     func create(_ schedule: ComponentSchedule) async throws -> ComponentSchedule

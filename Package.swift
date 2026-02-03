@@ -29,8 +29,11 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-openapi-generator.git", from: "1.6.0"),
         .package(url: "https://github.com/apple/swift-openapi-runtime.git", from: "1.7.0"),
         .package(url: "https://github.com/swift-server/swift-openapi-vapor.git", from: "1.0.0"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", from: "0.1.18"),
-        .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0")
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0"),
+        .package(url: "https://github.com/StanfordSpezi/Spezi", from: "1.10.1"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziVapor", .upToNextMajor(from: "0.1.0")),
+        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation", branch: "localizations-dictionary"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", branch: "localized-metadata"),
     ] + swiftLintPackage(),
     targets: [
         .executableTarget(
@@ -45,7 +48,10 @@ let package = Package(
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
                 .product(name: "OpenAPIVapor", package: "swift-openapi-vapor"),
                 .product(name: "SpeziStudyDefinition", package: "SpeziStudy"),
-                .product(name: "ZIPFoundation", package: "ZIPFoundation")
+                .product(name: "Spezi", package: "Spezi"),
+                .product(name: "SpeziVapor", package: "SpeziVapor"),
+                .product(name: "ZIPFoundation", package: "ZIPFoundation"),
+                .product(name: "SpeziLocalization", package: "SpeziFoundation"),
             ],
             swiftSettings: swiftSettings,
             plugins: [

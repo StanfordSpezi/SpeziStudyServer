@@ -8,9 +8,9 @@
 
 import Foundation
 
-extension ComponentFile {
+extension StoredFile {
     func processedContent(component: Component) -> String {
-        guard type == "md" else {
+        guard type == "md", $component.id != nil else {
             return content
         }
 

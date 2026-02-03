@@ -7,20 +7,20 @@
 //
 import Fluent
 
-struct CreateComponentFiles: AsyncMigration {
+struct CreateFiles: AsyncMigration {
     func prepare(on database: any Database) async throws {
-        try await database.schema("component_files")
+        try await database.schema("files")
             .id()
-            .field("component_id", .uuid, .required, .references("components", "id", onDelete: .cascade))
+            .field("component_id", .uuid, .references("components", "id", onDelete: .cascade))
+            .field("study_id", .uuid, .references("studies", "id", onDelete: .cascade))
             .field("name", .string, .required)
             .field("locale", .string, .required)
             .field("content", .string, .required)
             .field("type", .string, .required)
-            .unique(on: "component_id", "locale")
             .create()
     }
 
     func revert(on database: any Database) async throws {
-        try await database.schema("component_files").delete()
+        try await database.schema("files").delete()
     }
 }

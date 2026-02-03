@@ -8,8 +8,12 @@
 import Fluent
 import Foundation
 
-struct DatabaseComponentRepository: ComponentRepository {
+final class DatabaseComponentRepository: ComponentRepository {
     let database: any Database
+    
+    init(database: any Database) {
+        self.database = database
+    }
 
     func findAll(studyId: UUID) async throws -> [Component] {
         try await Component.query(on: database)
@@ -34,7 +38,7 @@ struct DatabaseComponentRepository: ComponentRepository {
 
         guard let componentId = component.id,
               let createdComponent = try await Component.find(componentId, on: database) else {
-            throw ServerError.defaults.failedToRetrieveCreatedObject
+            throw ServerError.Defaults.failedToRetrieveCreatedObject
         }
 
         return createdComponent
@@ -58,7 +62,7 @@ struct DatabaseComponentRepository: ComponentRepository {
     }
 }
 
-protocol ComponentRepository: Sendable {
+protocol ComponentRepository: VaporModule {
     func findAll(studyId: UUID) async throws -> [Component]
     func find(id: UUID, studyId: UUID) async throws -> Component?
     func create(_ component: Component) async throws -> Component

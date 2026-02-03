@@ -7,42 +7,31 @@
 ////
 //import Foundation
 //
-//struct ComponentFileService: Sendable {
+//struct StudyFileService: Sendable {
 //    let studyRepository: any StudyRepository
-//    let componentRepository: any ComponentRepository
 //    let fileRepository: any FileRepository
 //
 //    func listFiles(
-//        studyId: UUID,
-//        componentId: UUID
+//        studyId: UUID
 //    ) async throws -> [Components.Schemas.FileResource] {
 //        if try await studyRepository.find(id: studyId) == nil {
 //            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
 //        }
 //
-//        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-//            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-//        }
-//
-//        let files = try await fileRepository.findAll(componentId: componentId)
+//        let files = try await fileRepository.findAll(studyId: studyId)
 //        return try FileMapper.toDTO(files)
 //    }
 //
 //    func getFile(
 //        studyId: UUID,
-//        componentId: UUID,
 //        locale: String
 //    ) async throws -> Components.Schemas.FileResource {
 //        if try await studyRepository.find(id: studyId) == nil {
 //            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
 //        }
 //
-//        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-//            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-//        }
-//
-//        guard let file = try await fileRepository.find(componentId: componentId, locale: locale) else {
-//            throw ServerError.notFound(resource: "File", identifier: "\(componentId)/\(locale)")
+//        guard let file = try await fileRepository.find(studyId: studyId, locale: locale) else {
+//            throw ServerError.notFound(resource: "File", identifier: "\(studyId)/\(locale)")
 //        }
 //
 //        return try FileMapper.toDTO(file)
@@ -50,18 +39,13 @@
 //
 //    func createFile(
 //        studyId: UUID,
-//        componentId: UUID,
 //        dto: Components.Schemas.CreateFileRequest
 //    ) async throws -> Components.Schemas.FileResource {
 //        if try await studyRepository.find(id: studyId) == nil {
 //            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
 //        }
 //
-//        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-//            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-//        }
-//
-//        let file = try FileMapper.toModel(dto, componentId: componentId)
+//        let file = try FileMapper.toModel(dto, studyId: studyId)
 //        let createdFile = try await fileRepository.create(file)
 //
 //        return try FileMapper.toDTO(createdFile)
@@ -69,7 +53,6 @@
 //
 //    func updateFile(
 //        studyId: UUID,
-//        componentId: UUID,
 //        locale: String,
 //        dto: Components.Schemas.UpdateFileRequest
 //    ) async throws -> Components.Schemas.FileResource {
@@ -77,15 +60,11 @@
 //            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
 //        }
 //
-//        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-//            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
+//        guard let existingFile = try await fileRepository.find(studyId: studyId, locale: locale) else {
+//            throw ServerError.notFound(resource: "File", identifier: "\(studyId)/\(locale)")
 //        }
 //
-//        guard let existingFile = try await fileRepository.find(componentId: componentId, locale: locale) else {
-//            throw ServerError.notFound(resource: "File", identifier: "\(componentId)/\(locale)")
-//        }
-//
-//        let newFile = try FileMapper.toModel(dto, locale: locale, componentId: componentId)
+//        let newFile = try FileMapper.toModel(dto, locale: locale, studyId: studyId)
 //        existingFile.name = newFile.name
 //        existingFile.content = newFile.content
 //        existingFile.type = newFile.type
@@ -97,20 +76,15 @@
 //
 //    func deleteFile(
 //        studyId: UUID,
-//        componentId: UUID,
 //        locale: String
 //    ) async throws {
 //        if try await studyRepository.find(id: studyId) == nil {
 //            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
 //        }
 //
-//        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-//            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-//        }
-//
-//        let deleted = try await fileRepository.delete(componentId: componentId, locale: locale)
+//        let deleted = try await fileRepository.delete(studyId: studyId, locale: locale)
 //        if !deleted {
-//            throw ServerError.notFound(resource: "File", identifier: "\(componentId)/\(locale)")
+//            throw ServerError.notFound(resource: "File", identifier: "\(studyId)/\(locale)")
 //        }
 //    }
 //}

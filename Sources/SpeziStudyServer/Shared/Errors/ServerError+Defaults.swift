@@ -9,13 +9,11 @@ import Foundation
 
 
 extension ServerError {
-    struct Defaults {
-        let jsonBodyRequired = ServerError.validation(message: "Request body must be JSON")
-        let failedToRetrieveCreatedObject = ServerError.internalError(message: "Failed to retrieve created object")
-        let failedToListResources = ServerError.internalError(message: "Failed to list resources")
-        let failedToConvertResponse = ServerError.internalError(message: "Failed to convert response")
-        let unexpectedError = ServerError.internalError(message: "An unexpected error occurred")
+    enum Defaults {
+        static let jsonBodyRequired = ServerError.validation(message: "Request body must be JSON")
+        static let failedToRetrieveCreatedObject = ServerError.internalError(message: "Failed to retrieve created object")
+        static let failedToListResources = ServerError.internalError(message: "Failed to list resources")
+        static let failedToConvertResponse = ServerError.internalError(message: "Failed to convert response")
+        static let unexpectedError = ServerError.internalError(message: "An unexpected error occurred")
     }
-
-    static let defaults = Defaults()
 }

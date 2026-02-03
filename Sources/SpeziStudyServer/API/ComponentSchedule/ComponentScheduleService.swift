@@ -9,18 +9,13 @@ import Foundation
 import SpeziStudyDefinition
 
 final class ComponentScheduleService: VaporModule, @unchecked Sendable {
-    @Dependency(DatabaseStudyRepository.self) var studyRepository: DatabaseStudyRepository
-    @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
+    @Dependency(StudyService.self) var studyService: StudyService
+    @Dependency(ComponentService.self) var componentService: ComponentService
     @Dependency(DatabaseComponentScheduleRepository.self) var scheduleRepository: DatabaseComponentScheduleRepository
 
     func listSchedules(studyId: UUID, componentId: UUID) async throws -> [Components.Schemas.ComponentSchedule] {
-        if try await studyRepository.find(id: studyId) == nil {
-            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
-        }
-
-        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-        }
+        try await studyService.validateExists(id: studyId)
+        try await componentService.validateExists(studyId: studyId, componentId: componentId)
 
         let schedules = try await scheduleRepository.findAll(componentId: componentId)
 
@@ -33,13 +28,8 @@ final class ComponentScheduleService: VaporModule, @unchecked Sendable {
     }
 
     func getSchedule(studyId: UUID, componentId: UUID, id: UUID) async throws -> Components.Schemas.ComponentSchedule {
-        if try await studyRepository.find(id: studyId) == nil {
-            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
-        }
-
-        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-        }
+        try await studyService.validateExists(id: studyId)
+        try await componentService.validateExists(studyId: studyId, componentId: componentId)
 
         guard let schedule = try await scheduleRepository.find(id: id, componentId: componentId) else {
             throw ServerError.notFound(resource: "ComponentSchedule", identifier: id.uuidString)
@@ -53,13 +43,8 @@ final class ComponentScheduleService: VaporModule, @unchecked Sendable {
         componentId: UUID,
         dto: Components.Schemas.ComponentSchedule
     ) async throws -> Components.Schemas.ComponentSchedule {
-        if try await studyRepository.find(id: studyId) == nil {
-            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
-        }
-
-        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-        }
+        try await studyService.validateExists(id: studyId)
+        try await componentService.validateExists(studyId: studyId, componentId: componentId)
 
         // Generate a new UUID for the schedule
         let scheduleId = UUID()
@@ -88,13 +73,8 @@ final class ComponentScheduleService: VaporModule, @unchecked Sendable {
         id: UUID,
         dto: Components.Schemas.ComponentSchedule
     ) async throws -> Components.Schemas.ComponentSchedule {
-        if try await studyRepository.find(id: studyId) == nil {
-            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
-        }
-
-        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-        }
+        try await studyService.validateExists(id: studyId)
+        try await componentService.validateExists(studyId: studyId, componentId: componentId)
 
         guard let schedule = try await scheduleRepository.find(id: id, componentId: componentId) else {
             throw ServerError.notFound(resource: "ComponentSchedule", identifier: id.uuidString)
@@ -109,13 +89,8 @@ final class ComponentScheduleService: VaporModule, @unchecked Sendable {
     }
 
     func deleteSchedule(studyId: UUID, componentId: UUID, id: UUID) async throws {
-        if try await studyRepository.find(id: studyId) == nil {
-            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
-        }
-
-        if try await componentRepository.find(id: componentId, studyId: studyId) == nil {
-            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-        }
+        try await studyService.validateExists(id: studyId)
+        try await componentService.validateExists(studyId: studyId, componentId: componentId)
 
         let deleted = try await scheduleRepository.delete(id: id, componentId: componentId)
         if !deleted {

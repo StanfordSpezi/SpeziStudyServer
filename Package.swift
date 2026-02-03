@@ -33,7 +33,7 @@ let package = Package(
         .package(url: "https://github.com/StanfordSpezi/Spezi", from: "1.10.1"),
         .package(url: "https://github.com/StanfordSpezi/SpeziVapor", .upToNextMajor(from: "0.1.0")),
         .package(url: "https://github.com/StanfordSpezi/SpeziFoundation", branch: "localizations-dictionary"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", branch: "localized-metadata"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", revision: "2e7644a06e4a5d1fc1630d76d7ba908a544efc49")
     ] + swiftLintPackage(),
     targets: [
         .executableTarget(
@@ -51,7 +51,7 @@ let package = Package(
                 .product(name: "Spezi", package: "Spezi"),
                 .product(name: "SpeziVapor", package: "SpeziVapor"),
                 .product(name: "ZIPFoundation", package: "ZIPFoundation"),
-                .product(name: "SpeziLocalization", package: "SpeziFoundation"),
+                .product(name: "SpeziLocalization", package: "SpeziFoundation")
             ],
             swiftSettings: swiftSettings,
             plugins: [

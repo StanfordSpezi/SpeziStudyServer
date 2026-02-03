@@ -9,9 +9,9 @@ import Fluent
 import FluentPostgresDriver
 import FluentSQLiteDriver
 import NIOSSL
-import Vapor
-import SpeziVapor
 import Spezi
+import SpeziVapor
+import Vapor
 
 /// Configures the application services and routes.
 public func configure(_ app: Application) async throws {
@@ -39,16 +39,24 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateComponents())
     app.migrations.add(CreateFiles())
     app.migrations.add(CreateComponentSchedules())
+    app.migrations.add(CreateInformationalComponents())
+    app.migrations.add(CreateQuestionnaireComponents())
+    app.migrations.add(CreateHealthDataComponents())
 
-    await app.spezi.configure() {
+    await app.spezi.configure {
         StudyService()
         ComponentScheduleService()
+        InformationalComponentService()
+        QuestionnaireComponentService()
+        HealthDataComponentService()
+        ComponentService()
         DatabaseStudyRepository(database: app.db)
-        DatabaseComponentRepository(database: app.db)
         DatabaseComponentScheduleRepository(database: app.db)
+        DatabaseInformationalComponentRepository(database: app.db)
+        DatabaseQuestionnaireComponentRepository(database: app.db)
+        DatabaseHealthDataComponentRepository(database: app.db)
     }
     
     // register routes
     try routes(app)
 }
-

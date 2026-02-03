@@ -292,191 +292,191 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-#  /studies/{id}/components/questionnaire:
-#    post:
-#      tags:
-#        - Questionnaire Components
-#      summary: Add a questionnaire component to a study
-#      parameters:
-#        - name: id
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/QuestionnaireComponent'
-#      responses:
-#        '201':
-#          description: Component added
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/QuestionnaireComponent'
-#        '400':
-#          $ref: '#/components/responses/BadRequest'
-#        '404':
-#          $ref: '#/components/responses/NotFound'
-#
-#  /studies/{id}/components/questionnaire/{componentId}:
-#    get:
-#      tags:
-#        - Questionnaire Components
-#      summary: Get a single questionnaire component
-#      parameters:
-#        - name: id
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#        - name: componentId
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#      responses:
-#        '200':
-#          description: The questionnaire component
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/QuestionnaireComponent'
-#        '404':
-#          $ref: '#/components/responses/NotFound'
-#
-#    put:
-#      tags:
-#        - Questionnaire Components
-#      summary: Replace a questionnaire component
-#      parameters:
-#        - name: id
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#        - name: componentId
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/QuestionnaireComponent'
-#      responses:
-#        '200':
-#          description: Component replaced
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/QuestionnaireComponent'
-#        '400':
-#          $ref: '#/components/responses/BadRequest'
-#        '404':
-#          $ref: '#/components/responses/NotFound'
-#
-#  /studies/{id}/components/health-data:
-#    post:
-#      tags:
-#        - Health Data Components
-#      summary: Add a health data component to a study
-#      parameters:
-#        - name: id
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/HealthDataComponent'
-#      responses:
-#        '201':
-#          description: Component added
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/HealthDataComponent'
-#        '400':
-#          $ref: '#/components/responses/BadRequest'
-#        '404':
-#          $ref: '#/components/responses/NotFound'
-#
-#  /studies/{id}/components/health-data/{componentId}:
-#    get:
-#      tags:
-#        - Health Data Components
-#      summary: Get a single health data component
-#      parameters:
-#        - name: id
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#        - name: componentId
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#      responses:
-#        '200':
-#          description: The health data component
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/HealthDataComponent'
-#        '404':
-#          $ref: '#/components/responses/NotFound'
-#
-#    put:
-#      tags:
-#        - Health Data Components
-#      summary: Replace a health data component
-#      parameters:
-#        - name: id
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#        - name: componentId
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#            format: uuid
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/HealthDataComponent'
-#      responses:
-#        '200':
-#          description: Component replaced
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/HealthDataComponent'
-#        '400':
-#          $ref: '#/components/responses/BadRequest'
-#        '404':
-#          $ref: '#/components/responses/NotFound'
+  /studies/{id}/components/questionnaire:
+    post:
+      tags:
+        - Questionnaire Components
+      summary: Add a questionnaire component to a study
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireComponent'
+      responses:
+        '201':
+          description: Component added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireComponent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/questionnaire/{componentId}:
+    get:
+      tags:
+        - Questionnaire Components
+      summary: Get a single questionnaire component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The questionnaire component
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireComponent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Questionnaire Components
+      summary: Replace a questionnaire component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireComponent'
+      responses:
+        '200':
+          description: Component replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireComponent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/health-data:
+    post:
+      tags:
+        - Health Data Components
+      summary: Add a health data component to a study
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthDataComponent'
+      responses:
+        '201':
+          description: Component added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDataComponent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/health-data/{componentId}:
+    get:
+      tags:
+        - Health Data Components
+      summary: Get a single health data component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The health data component
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDataComponent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Health Data Components
+      summary: Replace a health data component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthDataComponent'
+      responses:
+        '200':
+          description: Component replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDataComponent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /studies/{id}/components/{componentId}/schedules:
     get:
@@ -711,29 +711,32 @@ components:
 
     Component:
       type: object
-      description: A single component (discriminated union with nested _0 wrapper)
-      additionalProperties: true
+      description: A component summary with type and id
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          description: Component type matching StudyDefinition.Component case names
 
     InformationalComponent:
       type: object
-      description: An informational component that displays content to the user
-      required:
-        - content
-      properties:
-        content:
-          type: object
-          description: Localized content keyed by locale (e.g., "en-US", "de-DE")
-          additionalProperties:
-            $ref: '#/components/schemas/InformationalContent'
-          example:
-            en-US:
-              title: "Welcome"
-              lede: "Introduction to the study"
-              content: "Welcome to the study"
-            de-DE:
-              title: "Willkommen"
-              lede: "Einführung in die Studie"
-              content: "Willkommen zur Studie"
+      description: Localized informational content keyed by locale (e.g., "en-US", "de-DE")
+      additionalProperties:
+        $ref: '#/components/schemas/InformationalContent'
+      example:
+        en-US:
+          title: "Welcome"
+          lede: "Introduction to the study"
+          content: "Welcome to the study"
+        de-DE:
+          title: "Willkommen"
+          lede: "Einführung in die Studie"
+          content: "Willkommen zur Studie"
 
     InformationalContent:
       type: object
@@ -754,23 +757,24 @@ components:
 
     QuestionnaireComponent:
       type: object
-      description: A questionnaire component for collecting survey responses
+      description: Localized questionnaire content keyed by locale (e.g., "en-US", "de-DE")
+      additionalProperties:
+        $ref: '#/components/schemas/QuestionnaireContent'
+      example:
+        en-US:
+          questionnaire: "{\"resourceType\": \"Questionnaire\", \"title\": \"Daily Survey\"}"
+        de-DE:
+          questionnaire: "{\"resourceType\": \"Questionnaire\", \"title\": \"Tägliche Umfrage\"}"
+
+    QuestionnaireContent:
+      type: object
+      description: Content for a single locale in a questionnaire component
       required:
-        - title
-        - content
+        - questionnaire
       properties:
-        title:
+        questionnaire:
           type: string
-          description: The title of the questionnaire component
-        content:
-          type: object
-          description: Localized questionnaire content keyed by locale (e.g., "en-US", "de-DE"). Values are JSON strings.
-          additionalProperties:
-            type: string
-            description: JSON string containing the questionnaire definition
-          example:
-            en-US: "{\"title\": \"Daily Survey\", \"questions\": []}"
-            de-DE: "{\"title\": \"Tägliche Umfrage\", \"questions\": []}"
+          description: FHIR Questionnaire as JSON string
 
     HealthDataComponent:
       type: object

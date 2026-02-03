@@ -13,7 +13,7 @@ extension Study {
     func createBundle() throws -> URL {
         do {
             let bundleUrl = temporaryBundleUrl(for: self.id!)
-            let bundle = try StudyBundle.writeToDisk(at: bundleUrl, definition: definition, files: assembleFiles())
+            let bundle = try StudyBundle.writeToDisk(at: bundleUrl, definition: definition, files: [])
             return bundle.bundleUrl
         } catch {
             throw ServerError.internalError(message: "Unexpected directory in file input")

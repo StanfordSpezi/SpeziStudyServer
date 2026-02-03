@@ -48,4 +48,10 @@ final class StudyService: @unchecked Sendable, Module {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
     }
+
+    func validateExists(id: UUID) async throws {
+        if try await repository.find(id: id) == nil {
+            throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
+        }
+    }
 }

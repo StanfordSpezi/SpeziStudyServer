@@ -19,9 +19,7 @@ final class DatabaseStudyRepository: StudyRepository {
     func create(_ study: Study) async throws -> Study {
         try await study.save(on: database)
 
-        guard let createdStudy = try await Study.query(on: database)
-            .filter(\.$id == study.id!)
-            .first() else {
+        guard let createdStudy = try await Study.find(study.id!, on: database) else {
             throw ServerError.Defaults.failedToRetrieveCreatedObject
         }
 
@@ -39,7 +37,7 @@ final class DatabaseStudyRepository: StudyRepository {
             .first()
     }
 
-    func findWithComponentsAndFiles(id: UUID) async throws -> Study {
+    func findWithComponentsAndSchedules(id: UUID) async throws -> Study {
         guard let study = try await Study.query(on: database)
             .filter(\.$id == id)
             .with(\.$components)
@@ -48,7 +46,6 @@ final class DatabaseStudyRepository: StudyRepository {
         }
 
         for component in study.components {
-            try await component.$files.load(on: database)
             try await component.$schedules.load(on: database)
         }
 
@@ -87,7 +84,7 @@ protocol StudyRepository: VaporModule {
     func create(_ study: Study) async throws -> Study
     func find(id: UUID) async throws -> Study?
     func findWithComponents(id: UUID) async throws -> Study?
-    func findWithComponentsAndFiles(id: UUID) async throws -> Study
+    func findWithComponentsAndSchedules(id: UUID) async throws -> Study
     func listIds() async throws -> [UUID]
     func listAll() async throws -> [Study]
     func update(id: UUID, metadata: StudyDefinition.Metadata) async throws -> Study?

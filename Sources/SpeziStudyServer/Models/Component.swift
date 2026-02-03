@@ -16,8 +16,6 @@ final class Component: Model, @unchecked Sendable {
 
     @Parent(key: "study_id") var study: Study
 
-    @Children(for: \.$component) var files: [StoredFile]
-
     @Children(for: \.$component) var schedules: [ComponentSchedule]
 
     @Field(key: "component_data") var componentData: StudyDefinition.Component

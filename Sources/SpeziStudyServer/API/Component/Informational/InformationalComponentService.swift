@@ -43,15 +43,13 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
     ) async throws -> InformationalComponent {
         try await studyService.validateExists(id: studyId)
 
-        // Create registry entry first
         let registry = try await componentRepository.create(
             studyId: studyId,
             type: .informational,
             name: name
         )
 
-        // Create specialized component data with same ID
-        return try await repository.create(componentId: registry.id!, data: content)
+        return try await repository.create(componentId: try registry.requireID(), data: content)
     }
 
     func updateComponent(

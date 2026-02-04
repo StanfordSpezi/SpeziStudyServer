@@ -46,7 +46,7 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
             name: name
         )
 
-        return try await repository.create(componentId: component.id!, data: data)
+        return try await repository.create(componentId: try component.requireID(), data: data)
     }
 
     func updateComponent(

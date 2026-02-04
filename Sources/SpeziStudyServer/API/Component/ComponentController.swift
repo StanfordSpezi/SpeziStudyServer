@@ -11,7 +11,7 @@ extension Controller {
     func getStudiesIdComponents(
         _ input: Operations.GetStudiesIdComponents.Input
     ) async throws -> Operations.GetStudiesIdComponents.Output {
-        let studyId = try input.path.id.toUUID()
+        let studyId = try input.path.id.requireID()
         let components = try await componentService.listComponents(studyId: studyId)
         return .ok(.init(body: .json(components)))
     }
@@ -19,8 +19,8 @@ extension Controller {
     func deleteStudiesIdComponentsComponentId(
         _ input: Operations.DeleteStudiesIdComponentsComponentId.Input
     ) async throws -> Operations.DeleteStudiesIdComponentsComponentId.Output {
-        let studyId = try input.path.id.toUUID()
-        let componentId = try input.path.componentId.toUUID()
+        let studyId = try input.path.id.requireID()
+        let componentId = try input.path.componentId.requireID()
         try await componentService.deleteComponent(studyId: studyId, componentId: componentId)
         return .noContent(.init())
     }

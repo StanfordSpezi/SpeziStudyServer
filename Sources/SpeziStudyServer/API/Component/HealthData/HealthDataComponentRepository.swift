@@ -32,7 +32,7 @@ class HealthDataComponentRepository: VaporModule, @unchecked Sendable {
     }
 
     func update(_ component: HealthDataComponent) async throws {
-        component.data.id = component.id!
+        component.data.id = try component.requireID()
         try await component.update(on: database)
     }
 

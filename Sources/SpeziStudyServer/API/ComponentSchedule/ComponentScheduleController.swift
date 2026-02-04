@@ -12,76 +12,30 @@ extension Controller {
     func getStudiesIdComponentsComponentIdSchedules(
         _ input: Operations.GetStudiesIdComponentsComponentIdSchedules.Input
     ) async throws -> Operations.GetStudiesIdComponentsComponentIdSchedules.Output {
-        let studyId = try input.path.id.toUUID()
-        let componentId = try input.path.componentId.toUUID()
-        let dtos = try await componentScheduleService.listSchedules(studyId: studyId, componentId: componentId)
-        return .ok(.init(body: .json(dtos)))
+        throw ServerError.Defaults.endpointNotImplemented
     }
 
     func postStudiesIdComponentsComponentIdSchedules(
         _ input: Operations.PostStudiesIdComponentsComponentIdSchedules.Input
     ) async throws -> Operations.PostStudiesIdComponentsComponentIdSchedules.Output {
-        let studyId = try input.path.id.toUUID()
-        let componentId = try input.path.componentId.toUUID()
-        guard case .json(let scheduleDTO) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
-        }
-
-        let responseDTO = try await componentScheduleService.createSchedule(
-            studyId: studyId,
-            componentId: componentId,
-            dto: scheduleDTO
-        )
-        return .created(.init(body: .json(responseDTO)))
+        throw ServerError.Defaults.endpointNotImplemented
     }
 
     func getStudiesIdComponentsComponentIdSchedulesScheduleId(
         _ input: Operations.GetStudiesIdComponentsComponentIdSchedulesScheduleId.Input
     ) async throws -> Operations.GetStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
-        let studyId = try input.path.id.toUUID()
-        let componentId = try input.path.componentId.toUUID()
-        let scheduleId = try input.path.scheduleId.toUUID()
-
-        let dto = try await componentScheduleService.getSchedule(
-            studyId: studyId,
-            componentId: componentId,
-            id: scheduleId
-        )
-        return .ok(.init(body: .json(dto)))
+        throw ServerError.Defaults.endpointNotImplemented
     }
 
     func putStudiesIdComponentsComponentIdSchedulesScheduleId(
         _ input: Operations.PutStudiesIdComponentsComponentIdSchedulesScheduleId.Input
     ) async throws -> Operations.PutStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
-        let studyId = try input.path.id.toUUID()
-        let componentId = try input.path.componentId.toUUID()
-        let scheduleId = try input.path.scheduleId.toUUID()
-
-        guard case .json(let scheduleDTO) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
-        }
-
-        let responseDTO = try await componentScheduleService.updateSchedule(
-            studyId: studyId,
-            componentId: componentId,
-            id: scheduleId,
-            dto: scheduleDTO
-        )
-        return .ok(.init(body: .json(responseDTO)))
+        throw ServerError.Defaults.endpointNotImplemented
     }
 
     func deleteStudiesIdComponentsComponentIdSchedulesScheduleId(
         _ input: Operations.DeleteStudiesIdComponentsComponentIdSchedulesScheduleId.Input
     ) async throws -> Operations.DeleteStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
-        let studyId = try input.path.id.toUUID()
-        let componentId = try input.path.componentId.toUUID()
-        let scheduleId = try input.path.scheduleId.toUUID()
-
-        try await componentScheduleService.deleteSchedule(
-            studyId: studyId,
-            componentId: componentId,
-            id: scheduleId
-        )
-        return .noContent(.init())
+        throw ServerError.Defaults.endpointNotImplemented
     }
 }

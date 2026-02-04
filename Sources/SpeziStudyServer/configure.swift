@@ -45,14 +45,12 @@ public func configure(_ app: Application) async throws {
 
     await app.spezi.configure {
         StudyService()
-        ComponentScheduleService()
         InformationalComponentService()
         QuestionnaireComponentService()
         HealthDataComponentService()
         ComponentService()
         StudyRepository(database: app.db)
         ComponentRepository(database: app.db)
-        ComponentScheduleRepository(database: app.db)
         InformationalComponentRepository(database: app.db)
         QuestionnaireComponentRepository(database: app.db)
         HealthDataComponentRepository(database: app.db)

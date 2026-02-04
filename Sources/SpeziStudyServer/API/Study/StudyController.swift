@@ -23,7 +23,7 @@ extension Controller {
     }
 
     func getStudiesId(_ input: Operations.GetStudiesId.Input) async throws -> Operations.GetStudiesId.Output {
-        let uuid = try input.path.id.toUUID()
+        let uuid = try input.path.id.requireID()
         let dto = try await studyService.getStudy(id: uuid)
         return .ok(.init(body: .json(dto)))
     }
@@ -33,13 +33,13 @@ extension Controller {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
-        let uuid = try input.path.id.toUUID()
+        let uuid = try input.path.id.requireID()
         let responseDTO = try await studyService.updateStudy(id: uuid, dto: studyDTO)
         return .ok(.init(body: .json(responseDTO)))
     }
 
     func deleteStudiesId(_ input: Operations.DeleteStudiesId.Input) async throws -> Operations.DeleteStudiesId.Output {
-        let uuid = try input.path.id.toUUID()
+        let uuid = try input.path.id.requireID()
         try await studyService.deleteStudy(id: uuid)
         return .noContent(.init())
     }

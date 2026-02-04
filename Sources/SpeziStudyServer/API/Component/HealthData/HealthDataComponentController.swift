@@ -12,7 +12,7 @@ extension Controller {
     func postStudiesIdComponentsHealthData(
         _ input: Operations.PostStudiesIdComponentsHealthData.Input
     ) async throws -> Operations.PostStudiesIdComponentsHealthData.Output {
-        let studyId = try input.path.id.toUUID()
+        let studyId = try input.path.id.requireID()
         guard case .json(let content) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
@@ -29,7 +29,7 @@ extension Controller {
         )
 
         let response = Components.Schemas.HealthDataComponentResponse(
-            id: created.id!.uuidString,
+            id: try created.requireID().uuidString,
             name: content.name,
             data: .init(created.data)
         )
@@ -40,8 +40,8 @@ extension Controller {
     func getStudiesIdComponentsHealthDataComponentId(
         _ input: Operations.GetStudiesIdComponentsHealthDataComponentId.Input
     ) async throws -> Operations.GetStudiesIdComponentsHealthDataComponentId.Output {
-        let studyId = try input.path.id.toUUID()
-        let componentId = try input.path.componentId.toUUID()
+        let studyId = try input.path.id.requireID()
+        let componentId = try input.path.componentId.requireID()
 
         let component = try await healthDataComponentService.getComponent(
             studyId: studyId,
@@ -51,7 +51,7 @@ extension Controller {
         let name = try await healthDataComponentService.getName(studyId: studyId, id: componentId) ?? ""
 
         let response = Components.Schemas.HealthDataComponentResponse(
-            id: component.id!.uuidString,
+            id: try component.requireID().uuidString,
             name: name,
             data: .init(component.data)
         )
@@ -61,8 +61,8 @@ extension Controller {
     func putStudiesIdComponentsHealthDataComponentId(
         _ input: Operations.PutStudiesIdComponentsHealthDataComponentId.Input
     ) async throws -> Operations.PutStudiesIdComponentsHealthDataComponentId.Output {
-        let studyId = try input.path.id.toUUID()
-        let componentId = try input.path.componentId.toUUID()
+        let studyId = try input.path.id.requireID()
+        let componentId = try input.path.componentId.requireID()
 
         guard case .json(let content) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
@@ -81,7 +81,7 @@ extension Controller {
         )
 
         let response = Components.Schemas.HealthDataComponentResponse(
-            id: updated.id!.uuidString,
+            id: try updated.requireID().uuidString,
             name: content.name,
             data: .init(updated.data)
         )

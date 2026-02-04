@@ -52,7 +52,7 @@ final class QuestionnaireComponentService: VaporModule, @unchecked Sendable {
         )
 
         // Create specialized component data with same ID
-        return try await repository.create(componentId: registry.id!, data: content)
+        return try await repository.create(componentId: try registry.requireID(), data: content)
     }
 
     func updateComponent(

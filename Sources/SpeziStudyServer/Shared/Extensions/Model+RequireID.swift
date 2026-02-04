@@ -5,13 +5,14 @@
 //
 // SPDX-License-Identifier: MIT
 //
+import Fluent
 import Foundation
 
-extension String {
-    func toUUID() throws -> UUID {
-        guard let uuid = Foundation.UUID(uuidString: self) else {
-            throw ServerError.invalidUUID(self)
+extension Model where IDValue == UUID {
+    func requireID() throws -> UUID {
+        guard let id = self.id else {
+            throw ServerError.internalError(message: "\(Self.self) missing ID")
         }
-        return uuid
+        return id
     }
 }

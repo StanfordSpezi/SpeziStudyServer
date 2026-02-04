@@ -29,10 +29,6 @@ extension Controller {
         spezi[StudyService.self]
     }
 
-    var componentScheduleService: ComponentScheduleService {
-        spezi[ComponentScheduleService.self]
-    }
-
     var informationalComponentService: InformationalComponentService {
         spezi[InformationalComponentService.self]
     }

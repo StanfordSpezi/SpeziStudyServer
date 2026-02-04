@@ -12,7 +12,7 @@ import SpeziStudyDefinition
 extension Study {
     func createBundle() throws -> URL {
         do {
-            let bundleUrl = temporaryBundleUrl(for: self.id!)
+            let bundleUrl = temporaryBundleUrl(for: try self.requireID())
             let bundle = try StudyBundle.writeToDisk(at: bundleUrl, definition: definition, files: [])
             return bundle.bundleUrl
         } catch {

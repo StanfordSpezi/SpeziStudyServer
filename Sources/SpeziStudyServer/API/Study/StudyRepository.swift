@@ -19,7 +19,7 @@ class StudyRepository: VaporModule, @unchecked Sendable {
     func create(_ study: Study) async throws -> Study {
         try await study.save(on: database)
 
-        guard let createdStudy = try await Study.find(study.id!, on: database) else {
+        guard let createdStudy = try await Study.find(try study.requireID(), on: database) else {
             throw ServerError.Defaults.failedToRetrieveCreatedObject
         }
 

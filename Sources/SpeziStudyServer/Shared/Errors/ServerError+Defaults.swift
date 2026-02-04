@@ -16,5 +16,6 @@ extension ServerError {
         static let failedToConvertResponse = ServerError.internalError(message: "Failed to convert response")
         static let unexpectedError = ServerError.internalError(message: "An unexpected error occurred")
         static let invalidRequestBody = ServerError.validation(message: "Invalid request body format")
+        static let endpointNotImplemented = ServerError.internalError(message: "Endpoint not implemented.")
     }
 }

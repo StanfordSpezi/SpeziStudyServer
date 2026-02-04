@@ -19,7 +19,7 @@ struct Controller: APIProtocol {
     }
 
     func getStudiesIdBundle(_ input: Operations.GetStudiesIdBundle.Input) async throws -> Operations.GetStudiesIdBundle.Output {
-        throw ServerError.Defaults.failedToConvertResponse
+        throw ServerError.Defaults.endpointNotImplemented
     }
 }
 

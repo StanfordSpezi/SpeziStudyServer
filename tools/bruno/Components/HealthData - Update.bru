@@ -18,13 +18,18 @@ body:json {
   {
     "name": "Health Data Collection Updated",
     "data": {
-      "sampleTypes": ["HKQuantityTypeIdentifierHeartRate", "HKQuantityTypeIdentifierStepCount", "HKQuantityTypeIdentifierActiveEnergyBurned"],
+      "sampleTypes": [
+        "HKQuantityType;HKQuantityTypeIdentifierDietaryCholesterol",
+              "HKWorkoutType;HKWorkoutTypeIdentifier"
+      ],
       "historicalDataCollection": {
         "enabled": true,
         "startDate": {
           "type": "last",
           "components": {
-            "day": 60
+            "day": 60,
+            "month": 2,
+            "year": 1
           }
         }
       }

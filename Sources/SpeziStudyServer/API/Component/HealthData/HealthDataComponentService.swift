@@ -14,7 +14,8 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
     @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> HealthDataComponent {
-        guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
+        // check if correct study id
+        guard let _ = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
         }
 

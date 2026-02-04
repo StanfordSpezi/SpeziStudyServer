@@ -12,9 +12,12 @@ generate:
 namingStrategy: idiomatic
 additionalImports:
   - SpeziLocalization
+  - SpeziHealthKit
 typeOverrides:
   schemas:
     InformationalContent: SpeziStudyServer.InformationalContent
     InformationalComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.InformationalContent>
     QuestionnaireContent: SpeziStudyServer.QuestionnaireContent
     QuestionnaireComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.QuestionnaireContent>
+    DateComponents: Foundation.DateComponents
+    SampleTypesCollection: "[SpeziHealthKit.SampleTypeProxy]"

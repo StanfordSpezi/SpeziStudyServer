@@ -16,12 +16,12 @@ extension Controller {
         guard case .json(let content) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
-
+        
         let data = StudyDefinition.HealthDataCollectionComponent(
             id: UUID(),
-            from: content.data
+            content.data
         )
-
+        
         let created = try await healthDataComponentService.createComponent(
             studyId: studyId,
             name: content.name,
@@ -31,7 +31,7 @@ extension Controller {
         let response = Components.Schemas.HealthDataComponentResponse(
             id: created.id!.uuidString,
             name: content.name,
-            data: .init(from: created.data)
+            data: .init(created.data)
         )
         
         return .created(.init(body: .json(response)))
@@ -53,7 +53,7 @@ extension Controller {
         let response = Components.Schemas.HealthDataComponentResponse(
             id: component.id!.uuidString,
             name: name,
-            data: .init(from: component.data)
+            data: .init(component.data)
         )
         return .ok(.init(body: .json(response)))
     }
@@ -70,7 +70,7 @@ extension Controller {
 
         let data = StudyDefinition.HealthDataCollectionComponent(
             id: componentId,
-            from: content.data
+            content.data
         )
 
         let updated = try await healthDataComponentService.updateComponent(
@@ -83,7 +83,7 @@ extension Controller {
         let response = Components.Schemas.HealthDataComponentResponse(
             id: updated.id!.uuidString,
             name: content.name,
-            data: .init(from: updated.data)
+            data: .init(updated.data)
         )
         
         return .ok(.init(body: .json(response)))

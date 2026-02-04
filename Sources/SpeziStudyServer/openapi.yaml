@@ -826,14 +826,7 @@ components:
         - sampleTypes
       properties:
         sampleTypes:
-          type: array
-          description: HealthKit sample type identifiers to collect
-          items:
-            type: string
-          example:
-            - "HKQuantityTypeIdentifierHeartRate"
-            - "HKQuantityTypeIdentifierStepCount"
-            - "HKCategoryTypeIdentifierSleepAnalysis"
+          $ref: '#/components/schemas/SampleTypesCollection'
         historicalDataCollection:
           type: object
           description: Configuration for collecting historical health data
@@ -974,3 +967,13 @@ components:
           type: integer
           minimum: 0
       additionalProperties: false
+
+    SampleTypesCollection:
+      type: array
+      description: HealthKit sample types in SpeziHealthKit format (ClassName;Identifier)
+      items:
+        type: string
+      example:
+        - "HKQuantityType;HKQuantityTypeIdentifierHeartRate"
+        - "HKQuantityType;HKQuantityTypeIdentifierStepCount"
+        - "HKCategoryType;HKCategoryTypeIdentifierSleepAnalysis"

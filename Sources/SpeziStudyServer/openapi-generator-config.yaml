@@ -18,4 +18,3 @@ typeOverrides:
     InformationalComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.InformationalContent>
     QuestionnaireContent: SpeziStudyServer.QuestionnaireContent
     QuestionnaireComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.QuestionnaireContent>
-    HealthDataComponentData: SpeziStudyServer.HealthDataContent

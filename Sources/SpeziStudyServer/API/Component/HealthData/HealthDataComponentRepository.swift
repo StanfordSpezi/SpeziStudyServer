@@ -7,6 +7,7 @@
 //
 import Fluent
 import Foundation
+import SpeziStudyDefinition
 
 final class DatabaseHealthDataComponentRepository: HealthDataComponentRepository {
     let database: any Database
@@ -21,14 +22,17 @@ final class DatabaseHealthDataComponentRepository: HealthDataComponentRepository
 
     func create(
         componentId: UUID,
-        data: HealthDataContent
+        data: StudyDefinition.HealthDataCollectionComponent
     ) async throws -> HealthDataComponent {
+        var data = data
+        data.id = componentId
         let component = HealthDataComponent(componentId: componentId, data: data)
         try await component.save(on: database)
         return component
     }
 
     func update(_ component: HealthDataComponent) async throws {
+        component.data.id = component.id!
         try await component.update(on: database)
     }
 
@@ -43,7 +47,7 @@ final class DatabaseHealthDataComponentRepository: HealthDataComponentRepository
 
 protocol HealthDataComponentRepository: VaporModule {
     func find(id: UUID) async throws -> HealthDataComponent?
-    func create(componentId: UUID, data: HealthDataContent) async throws -> HealthDataComponent
+    func create(componentId: UUID, data: StudyDefinition.HealthDataCollectionComponent) async throws -> HealthDataComponent
     func update(_ component: HealthDataComponent) async throws
     func delete(id: UUID) async throws -> Bool
 }

@@ -31,7 +31,7 @@ final class DatabaseComponentRepository: ComponentRepository {
 
     func create(
         studyId: UUID,
-        type: String,
+        type: ComponentType,
         name: String,
         id: UUID? = nil
     ) async throws -> Component {
@@ -56,7 +56,7 @@ final class DatabaseComponentRepository: ComponentRepository {
 protocol ComponentRepository: VaporModule {
     func findAll(studyId: UUID) async throws -> [Component]
     func find(id: UUID, studyId: UUID) async throws -> Component?
-    func create(studyId: UUID, type: String, name: String, id: UUID?) async throws -> Component
+    func create(studyId: UUID, type: ComponentType, name: String, id: UUID?) async throws -> Component
     func update(_ component: Component) async throws
     func delete(id: UUID, studyId: UUID) async throws -> Bool
 }

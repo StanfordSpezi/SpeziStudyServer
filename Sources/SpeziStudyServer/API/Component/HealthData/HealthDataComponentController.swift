@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 import Foundation
+import SpeziStudyDefinition
 
 extension Controller {
     func postStudiesIdComponentsHealthData(
@@ -16,17 +17,23 @@ extension Controller {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
+        let data = StudyDefinition.HealthDataCollectionComponent(
+            id: UUID(),
+            from: content.data
+        )
+
         let created = try await healthDataComponentService.createComponent(
             studyId: studyId,
             name: content.name,
-            content: content.data
+            data: data
         )
 
         let response = Components.Schemas.HealthDataComponentResponse(
             id: created.id!.uuidString,
             name: content.name,
-            data: created.data
+            data: .init(from: created.data)
         )
+        
         return .created(.init(body: .json(response)))
     }
 
@@ -46,7 +53,7 @@ extension Controller {
         let response = Components.Schemas.HealthDataComponentResponse(
             id: component.id!.uuidString,
             name: name,
-            data: component.data
+            data: .init(from: component.data)
         )
         return .ok(.init(body: .json(response)))
     }
@@ -61,18 +68,24 @@ extension Controller {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
+        let data = StudyDefinition.HealthDataCollectionComponent(
+            id: componentId,
+            from: content.data
+        )
+
         let updated = try await healthDataComponentService.updateComponent(
             studyId: studyId,
             id: componentId,
             name: content.name,
-            content: content.data
+            data: data
         )
 
         let response = Components.Schemas.HealthDataComponentResponse(
             id: updated.id!.uuidString,
             name: content.name,
-            data: updated.data
+            data: .init(from: updated.data)
         )
+        
         return .ok(.init(body: .json(response)))
     }
 }

@@ -19,7 +19,7 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }
 
-        guard registry.type == "informational" else {
+        guard registry.type == .informational else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }
 
@@ -47,7 +47,7 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
         // Create registry entry first
         let registry = try await componentRepository.create(
             studyId: studyId,
-            type: "informational",
+            type: .informational,
             name: name
         )
 
@@ -66,7 +66,7 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }
 
-        guard registry.type == "informational" else {
+        guard registry.type == .informational else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }
 

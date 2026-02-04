@@ -19,7 +19,7 @@ final class ComponentService: VaporModule, @unchecked Sendable {
             guard let id = component.id else { return nil }
             return Components.Schemas.Component(
                 id: id.uuidString,
-                _type: component.type,
+                _type: component.type.rawValue,
                 name: component.name
             )
         }

@@ -15,7 +15,7 @@ final class Component: Model, @unchecked Sendable {
 
     @Parent(key: "study_id") var study: Study
 
-    @Field(key: "type") var type: String
+    @Field(key: "type") var type: ComponentType
 
     @Field(key: "name") var name: String
 
@@ -25,7 +25,7 @@ final class Component: Model, @unchecked Sendable {
 
     init(
         studyId: UUID,
-        type: String,
+        type: ComponentType,
         name: String,
         id: UUID? = nil
     ) {

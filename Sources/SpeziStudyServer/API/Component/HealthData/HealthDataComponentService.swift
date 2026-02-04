@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 import Foundation
+import SpeziStudyDefinition
 
 final class HealthDataComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
@@ -13,12 +14,7 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
     @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> HealthDataComponent {
-        // Validate component belongs to study
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
-            throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
-        }
-
-        guard registry.type == "healthDataCollection" else {
             throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
         }
 
@@ -31,7 +27,7 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
 
     func getName(studyId: UUID, id: UUID) async throws -> String? {
         guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
-            return nil
+            throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
         }
         return component.name
     }
@@ -39,48 +35,39 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
     func createComponent(
         studyId: UUID,
         name: String,
-        content: HealthDataContent
+        data: StudyDefinition.HealthDataCollectionComponent
     ) async throws -> HealthDataComponent {
         try await studyService.validateExists(id: studyId)
 
-        // Create registry entry first
-        let registry = try await componentRepository.create(
+        let component = try await componentRepository.create(
             studyId: studyId,
-            type: "healthDataCollection",
+            type: .healthDataCollection,
             name: name
         )
 
-        // Create specialized component data with same ID
-        return try await repository.create(componentId: registry.id!, data: content)
+        return try await repository.create(componentId: component.id!, data: data)
     }
 
     func updateComponent(
         studyId: UUID,
         id: UUID,
         name: String,
-        content: HealthDataContent
+        data: StudyDefinition.HealthDataCollectionComponent
     ) async throws -> HealthDataComponent {
-        // Validate component belongs to study
-        guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
+        guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
         }
 
-        guard registry.type == "healthDataCollection" else {
+        guard let healthDataComponent = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
         }
 
-        guard let component = try await repository.find(id: id) else {
-            throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
-        }
+        component.name = name
+        try await componentRepository.update(component)
 
-        // Update registry entry name
-        registry.name = name
-        try await componentRepository.update(registry)
+        healthDataComponent.data = data
+        try await repository.update(healthDataComponent)
 
-        // Update component data
-        component.data = content
-        try await repository.update(component)
-
-        return component
+        return healthDataComponent
     }
 }

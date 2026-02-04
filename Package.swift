@@ -33,7 +33,8 @@ let package = Package(
         .package(url: "https://github.com/StanfordSpezi/Spezi", from: "1.10.1"),
         .package(url: "https://github.com/StanfordSpezi/SpeziVapor", .upToNextMajor(from: "0.1.0")),
         .package(url: "https://github.com/StanfordSpezi/SpeziFoundation", branch: "localizations-dictionary"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", revision: "2e7644a06e4a5d1fc1630d76d7ba908a544efc49")
+        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", revision: "2e7644a06e4a5d1fc1630d76d7ba908a544efc49"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziHealthKit", from: "1.3.2")
     ] + swiftLintPackage(),
     targets: [
         .executableTarget(
@@ -48,6 +49,8 @@ let package = Package(
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
                 .product(name: "OpenAPIVapor", package: "swift-openapi-vapor"),
                 .product(name: "SpeziStudyDefinition", package: "SpeziStudy"),
+                .product(name: "SpeziHealthKit", package: "SpeziHealthKit"),
+                .product(name: "SpeziHealthKitBulkExport", package: "SpeziHealthKit"),
                 .product(name: "Spezi", package: "Spezi"),
                 .product(name: "SpeziVapor", package: "SpeziVapor"),
                 .product(name: "ZIPFoundation", package: "ZIPFoundation"),

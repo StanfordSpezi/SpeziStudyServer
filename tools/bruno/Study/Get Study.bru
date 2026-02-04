@@ -1,0 +1,11 @@
+meta {
+  name: Get Study
+  type: http
+  seq: 11
+}
+
+get {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/
+  body: none
+  auth: inherit
+}

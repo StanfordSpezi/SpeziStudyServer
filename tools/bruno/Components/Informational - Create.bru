@@ -1,0 +1,34 @@
+meta {
+  name: Informational - Create
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/informational
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Welcome Information",
+    "data": {
+      "en-US": {
+        "title": "Welcome",
+        "lede": "Introduction to the study",
+        "content": "Welcome to the study"
+      }
+    }
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("componentId", body.id);
+  console.log("Component created with id: " + body.id);
+}

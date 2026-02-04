@@ -10,8 +10,7 @@ import Fluent
 struct CreateQuestionnaireComponents: AsyncMigration {
     func prepare(on database: any Database) async throws {
         try await database.schema("questionnaire_components")
-            .id()
-            .field("study_id", .uuid, .required, .references("studies", "id", onDelete: .cascade))
+            .field("component_id", .uuid, .identifier(auto: false), .references("components", "id", onDelete: .cascade))
             .field("data", .json, .required)
             .create()
     }

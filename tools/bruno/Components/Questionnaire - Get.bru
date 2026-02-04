@@ -1,0 +1,11 @@
+meta {
+  name: Questionnaire - Get
+  type: http
+  seq: 7
+}
+
+get {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/questionnaire/{{componentId}}
+  body: none
+  auth: inherit
+}

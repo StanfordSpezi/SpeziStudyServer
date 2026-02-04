@@ -1,0 +1,48 @@
+meta {
+  name: Put Study
+  type: http
+  seq: 10
+}
+
+put {
+  url: http://127.0.0.1:8080/studies/{{studyId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "metadata": {
+      "id": "{{studyId}}",
+      "title": {
+        "en-US": "Updated Study Title"
+      },
+      "shortTitle": {
+        "en-US": "UST"
+      },
+      "icon": {
+        "systemSymbol": {
+          "_0": "heart.fill"
+        }
+      },
+      "explanationText": {
+        "en-US": "Updated explanation text for the study"
+      },
+      "shortExplanationText": {
+        "en-US": "Updated short explanation"
+      },
+      "participationCriterion": {
+        "ageAtLeast": {
+          "_0": 18
+        }
+      },
+      "enrollmentConditions": {
+        "none": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Questionnaire - Update
+  type: http
+  seq: 8
+}
+
+put {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/questionnaire/{{componentId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Daily Survey Updated",
+    "data": {
+      "en-US": {
+        "questionnaire": "{\"resourceType\": \"Questionnaire\", \"title\": \"Daily Survey Updated\"}"
+      }
+    }
+  }
+}

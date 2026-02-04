@@ -34,11 +34,11 @@ enum TestUtilities {
     static func createTestMetadata(title: String, id: UUID) -> StudyDefinition.Metadata {
         StudyDefinition.Metadata(
             id: id,
-            title: title,
-            shortTitle: String(title.prefix(3)),
+            title: ["en": title],
+            shortTitle: ["en": String(title.prefix(3))],
             icon: nil,
-            explanationText: "Test explanation",
-            shortExplanationText: "Test",
+            explanationText: ["en": "Test explanation"],
+            shortExplanationText: ["en": "Test"],
             participationCriterion: true,
             enrollmentConditions: .none
         )
@@ -59,40 +59,6 @@ enum TestUtilities {
             fileRef: fileRef
         )
         return .questionnaire(questionnaire)
-    }
-
-    /// Creates a test file with a component owner
-    static func createTestFile(
-        componentId: UUID,
-        name: String = "test-file",
-        locale: String = "en-US",
-        content: String = "# Test Content",
-        type: String = "md"
-    ) -> StoredFile {
-        StoredFile(
-            componentId: componentId,
-            name: name,
-            locale: locale,
-            content: content,
-            type: type
-        )
-    }
-
-    /// Creates a test file with a study owner
-    static func createTestStudyFile(
-        studyId: UUID,
-        name: String = "test-file",
-        locale: String = "en-US",
-        content: String = "# Test Content",
-        type: String = "md"
-    ) -> StoredFile {
-        StoredFile(
-            studyId: studyId,
-            name: name,
-            locale: locale,
-            content: content,
-            type: type
-        )
     }
 
     /// Helper to encode request body from Swift type

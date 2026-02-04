@@ -1,0 +1,43 @@
+meta {
+  name: Post Schedule Daily
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/{{componentId}}/schedules
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "scheduleDefinition": {
+      "repeated": {
+        "_0": {
+          "daily": {
+            "hour": 9,
+            "minute": 0,
+            "second": 0
+          }
+        },
+        "_1": {}
+      }
+    },
+    "completionPolicy": {
+      "anytime": {}
+    },
+    "notifications": {
+      "disabled": {}
+    }
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("scheduleId", body.id);
+}

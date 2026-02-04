@@ -18,10 +18,16 @@ extension Controller {
 
         let created = try await healthDataComponentService.createComponent(
             studyId: studyId,
-            content: content
+            name: content.name,
+            content: content.data
         )
 
-        return .created(.init(body: .json(created.data)))
+        let response = Components.Schemas.HealthDataComponentResponse(
+            id: created.id!.uuidString,
+            name: content.name,
+            data: created.data
+        )
+        return .created(.init(body: .json(response)))
     }
 
     func getStudiesIdComponentsHealthDataComponentId(
@@ -35,7 +41,14 @@ extension Controller {
             id: componentId
         )
 
-        return .ok(.init(body: .json(component.data)))
+        let name = try await healthDataComponentService.getName(studyId: studyId, id: componentId) ?? ""
+
+        let response = Components.Schemas.HealthDataComponentResponse(
+            id: component.id!.uuidString,
+            name: name,
+            data: component.data
+        )
+        return .ok(.init(body: .json(response)))
     }
 
     func putStudiesIdComponentsHealthDataComponentId(
@@ -51,9 +64,15 @@ extension Controller {
         let updated = try await healthDataComponentService.updateComponent(
             studyId: studyId,
             id: componentId,
-            content: content
+            name: content.name,
+            content: content.data
         )
 
-        return .ok(.init(body: .json(updated.data)))
+        let response = Components.Schemas.HealthDataComponentResponse(
+            id: updated.id!.uuidString,
+            name: content.name,
+            data: updated.data
+        )
+        return .ok(.init(body: .json(response)))
     }
 }

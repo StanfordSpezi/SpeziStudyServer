@@ -9,67 +9,35 @@ import Foundation
 
 final class ComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
-    @Dependency(DatabaseInformationalComponentRepository.self) var informationalRepository: DatabaseInformationalComponentRepository
-    @Dependency(DatabaseQuestionnaireComponentRepository.self) var questionnaireRepository: DatabaseQuestionnaireComponentRepository
-    @Dependency(DatabaseHealthDataComponentRepository.self) var healthDataRepository: DatabaseHealthDataComponentRepository
+    @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
 
     func listComponents(studyId: UUID) async throws -> [Components.Schemas.Component] {
         try await studyService.validateExists(id: studyId)
 
-        var components: [Components.Schemas.Component] = []
-
-        for component in try await informationalRepository.findAll(studyId: studyId) {
-            if let id = component.id {
-                components.append(Components.Schemas.Component(id: id.uuidString, _type: "informational"))
-            }
+        let components = try await componentRepository.findAll(studyId: studyId)
+        return components.compactMap { component in
+            guard let id = component.id else { return nil }
+            return Components.Schemas.Component(
+                id: id.uuidString,
+                _type: component.type,
+                name: component.name
+            )
         }
-
-        for component in try await questionnaireRepository.findAll(studyId: studyId) {
-            if let id = component.id {
-                components.append(Components.Schemas.Component(id: id.uuidString, _type: "questionnaire"))
-            }
-        }
-
-        for component in try await healthDataRepository.findAll(studyId: studyId) {
-            if let id = component.id {
-                components.append(Components.Schemas.Component(id: id.uuidString, _type: "healthDataCollection"))
-            }
-        }
-
-        return components
     }
 
     func validateExists(studyId: UUID, componentId: UUID) async throws {
-        if try await informationalRepository.find(id: componentId, studyId: studyId) != nil {
-            return
+        guard try await componentRepository.find(id: componentId, studyId: studyId) != nil else {
+            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
         }
-
-        if try await questionnaireRepository.find(id: componentId, studyId: studyId) != nil {
-            return
-        }
-
-        if try await healthDataRepository.find(id: componentId, studyId: studyId) != nil {
-            return
-        }
-
-        throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
     }
 
     func deleteComponent(studyId: UUID, componentId: UUID) async throws {
         try await studyService.validateExists(id: studyId)
 
-        if try await informationalRepository.delete(id: componentId, studyId: studyId) {
-            return
+        // Cascade delete will handle specialized table cleanup
+        let deleted = try await componentRepository.delete(id: componentId, studyId: studyId)
+        if !deleted {
+            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
         }
-
-        if try await questionnaireRepository.delete(id: componentId, studyId: studyId) {
-            return
-        }
-
-        if try await healthDataRepository.delete(id: componentId, studyId: studyId) {
-            return
-        }
-
-        throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
     }
 }

@@ -16,25 +16,15 @@ final class DatabaseInformationalComponentRepository: InformationalComponentRepo
         self.database = database
     }
 
-    func findAll(studyId: UUID) async throws -> [InformationalComponent] {
-        try await InformationalComponent.query(on: database)
-            .filter(\.$study.$id == studyId)
-            .all()
-    }
-
-    func find(id: UUID, studyId: UUID) async throws -> InformationalComponent? {
-        // swiftlint:disable:next first_where
-        try await InformationalComponent.query(on: database)
-            .filter(\.$id == id)
-            .filter(\.$study.$id == studyId)
-            .first()
+    func find(id: UUID) async throws -> InformationalComponent? {
+        try await InformationalComponent.find(id, on: database)
     }
 
     func create(
-        studyId: UUID,
+        componentId: UUID,
         data: LocalizedDictionary<InformationalContent>
     ) async throws -> InformationalComponent {
-        let component = InformationalComponent(studyId: studyId, data: data)
+        let component = InformationalComponent(componentId: componentId, data: data)
         try await component.save(on: database)
         return component
     }
@@ -43,8 +33,8 @@ final class DatabaseInformationalComponentRepository: InformationalComponentRepo
         try await component.update(on: database)
     }
 
-    func delete(id: UUID, studyId: UUID) async throws -> Bool {
-        guard let component = try await find(id: id, studyId: studyId) else {
+    func delete(id: UUID) async throws -> Bool {
+        guard let component = try await find(id: id) else {
             return false
         }
         try await component.delete(on: database)
@@ -53,9 +43,8 @@ final class DatabaseInformationalComponentRepository: InformationalComponentRepo
 }
 
 protocol InformationalComponentRepository: VaporModule {
-    func findAll(studyId: UUID) async throws -> [InformationalComponent]
-    func find(id: UUID, studyId: UUID) async throws -> InformationalComponent?
-    func create(studyId: UUID, data: LocalizedDictionary<InformationalContent>) async throws -> InformationalComponent
+    func find(id: UUID) async throws -> InformationalComponent?
+    func create(componentId: UUID, data: LocalizedDictionary<InformationalContent>) async throws -> InformationalComponent
     func update(_ component: InformationalComponent) async throws
-    func delete(id: UUID, studyId: UUID) async throws -> Bool
+    func delete(id: UUID) async throws -> Bool
 }

@@ -16,25 +16,15 @@ final class DatabaseQuestionnaireComponentRepository: QuestionnaireComponentRepo
         self.database = database
     }
 
-    func findAll(studyId: UUID) async throws -> [QuestionnaireComponent] {
-        try await QuestionnaireComponent.query(on: database)
-            .filter(\.$study.$id == studyId)
-            .all()
-    }
-
-    func find(id: UUID, studyId: UUID) async throws -> QuestionnaireComponent? {
-        // swiftlint:disable:next first_where
-        try await QuestionnaireComponent.query(on: database)
-            .filter(\.$id == id)
-            .filter(\.$study.$id == studyId)
-            .first()
+    func find(id: UUID) async throws -> QuestionnaireComponent? {
+        try await QuestionnaireComponent.find(id, on: database)
     }
 
     func create(
-        studyId: UUID,
+        componentId: UUID,
         data: LocalizedDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
-        let component = QuestionnaireComponent(studyId: studyId, data: data)
+        let component = QuestionnaireComponent(componentId: componentId, data: data)
         try await component.save(on: database)
         return component
     }
@@ -43,8 +33,8 @@ final class DatabaseQuestionnaireComponentRepository: QuestionnaireComponentRepo
         try await component.update(on: database)
     }
 
-    func delete(id: UUID, studyId: UUID) async throws -> Bool {
-        guard let component = try await find(id: id, studyId: studyId) else {
+    func delete(id: UUID) async throws -> Bool {
+        guard let component = try await find(id: id) else {
             return false
         }
         try await component.delete(on: database)
@@ -53,9 +43,8 @@ final class DatabaseQuestionnaireComponentRepository: QuestionnaireComponentRepo
 }
 
 protocol QuestionnaireComponentRepository: VaporModule {
-    func findAll(studyId: UUID) async throws -> [QuestionnaireComponent]
-    func find(id: UUID, studyId: UUID) async throws -> QuestionnaireComponent?
-    func create(studyId: UUID, data: LocalizedDictionary<QuestionnaireContent>) async throws -> QuestionnaireComponent
+    func find(id: UUID) async throws -> QuestionnaireComponent?
+    func create(componentId: UUID, data: LocalizedDictionary<QuestionnaireContent>) async throws -> QuestionnaireComponent
     func update(_ component: QuestionnaireComponent) async throws
-    func delete(id: UUID, studyId: UUID) async throws -> Bool
+    func delete(id: UUID) async throws -> Bool
 }

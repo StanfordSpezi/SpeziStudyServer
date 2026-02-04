@@ -15,25 +15,15 @@ final class DatabaseHealthDataComponentRepository: HealthDataComponentRepository
         self.database = database
     }
 
-    func findAll(studyId: UUID) async throws -> [HealthDataComponent] {
-        try await HealthDataComponent.query(on: database)
-            .filter(\.$study.$id == studyId)
-            .all()
-    }
-
-    func find(id: UUID, studyId: UUID) async throws -> HealthDataComponent? {
-        // swiftlint:disable:next first_where
-        try await HealthDataComponent.query(on: database)
-            .filter(\.$id == id)
-            .filter(\.$study.$id == studyId)
-            .first()
+    func find(id: UUID) async throws -> HealthDataComponent? {
+        try await HealthDataComponent.find(id, on: database)
     }
 
     func create(
-        studyId: UUID,
+        componentId: UUID,
         data: HealthDataContent
     ) async throws -> HealthDataComponent {
-        let component = HealthDataComponent(studyId: studyId, data: data)
+        let component = HealthDataComponent(componentId: componentId, data: data)
         try await component.save(on: database)
         return component
     }
@@ -42,8 +32,8 @@ final class DatabaseHealthDataComponentRepository: HealthDataComponentRepository
         try await component.update(on: database)
     }
 
-    func delete(id: UUID, studyId: UUID) async throws -> Bool {
-        guard let component = try await find(id: id, studyId: studyId) else {
+    func delete(id: UUID) async throws -> Bool {
+        guard let component = try await find(id: id) else {
             return false
         }
         try await component.delete(on: database)
@@ -52,9 +42,8 @@ final class DatabaseHealthDataComponentRepository: HealthDataComponentRepository
 }
 
 protocol HealthDataComponentRepository: VaporModule {
-    func findAll(studyId: UUID) async throws -> [HealthDataComponent]
-    func find(id: UUID, studyId: UUID) async throws -> HealthDataComponent?
-    func create(studyId: UUID, data: HealthDataContent) async throws -> HealthDataComponent
+    func find(id: UUID) async throws -> HealthDataComponent?
+    func create(componentId: UUID, data: HealthDataContent) async throws -> HealthDataComponent
     func update(_ component: HealthDataComponent) async throws
-    func delete(id: UUID, studyId: UUID) async throws -> Bool
+    func delete(id: UUID) async throws -> Bool
 }

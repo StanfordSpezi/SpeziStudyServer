@@ -12,7 +12,8 @@ struct CreateComponents: AsyncMigration {
         try await database.schema("components")
             .id()
             .field("study_id", .uuid, .required, .references("studies", "id", onDelete: .cascade))
-            .field("component_data", .json, .required)
+            .field("type", .string, .required)
+            .field("name", .string, .required)
             .create()
     }
 

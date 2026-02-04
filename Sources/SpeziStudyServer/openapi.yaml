@@ -216,14 +216,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InformationalComponent'
+              $ref: '#/components/schemas/InformationalComponentInput'
       responses:
         '201':
           description: Component added
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InformationalComponent'
+                $ref: '#/components/schemas/InformationalComponentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -253,7 +253,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InformationalComponent'
+                $ref: '#/components/schemas/InformationalComponentResponse'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -279,14 +279,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/InformationalComponent'
+              $ref: '#/components/schemas/InformationalComponentInput'
       responses:
         '200':
           description: Component replaced
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InformationalComponent'
+                $ref: '#/components/schemas/InformationalComponentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -309,14 +309,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QuestionnaireComponent'
+              $ref: '#/components/schemas/QuestionnaireComponentInput'
       responses:
         '201':
           description: Component added
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionnaireComponent'
+                $ref: '#/components/schemas/QuestionnaireComponentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -346,7 +346,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionnaireComponent'
+                $ref: '#/components/schemas/QuestionnaireComponentResponse'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -372,14 +372,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QuestionnaireComponent'
+              $ref: '#/components/schemas/QuestionnaireComponentInput'
       responses:
         '200':
           description: Component replaced
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuestionnaireComponent'
+                $ref: '#/components/schemas/QuestionnaireComponentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -402,14 +402,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/HealthDataComponent'
+              $ref: '#/components/schemas/HealthDataComponentInput'
       responses:
         '201':
           description: Component added
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthDataComponent'
+                $ref: '#/components/schemas/HealthDataComponentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -439,7 +439,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthDataComponent'
+                $ref: '#/components/schemas/HealthDataComponentResponse'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -465,14 +465,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/HealthDataComponent'
+              $ref: '#/components/schemas/HealthDataComponentInput'
       responses:
         '200':
           description: Component replaced
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthDataComponent'
+                $ref: '#/components/schemas/HealthDataComponentResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -711,10 +711,11 @@ components:
 
     Component:
       type: object
-      description: A component summary with type and id
+      description: A component summary with type, id, and name
       required:
         - id
         - type
+        - name
       properties:
         id:
           type: string
@@ -722,8 +723,24 @@ components:
         type:
           type: string
           description: Component type matching StudyDefinition.Component case names
+        name:
+          type: string
+          description: Display name for the component
 
-    InformationalComponent:
+    InformationalComponentInput:
+      type: object
+      description: Request body for creating or updating an informational component
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/InformationalComponentData'
+
+    InformationalComponentData:
       type: object
       description: Localized informational content keyed by locale (e.g., "en-US", "de-DE")
       additionalProperties:
@@ -755,7 +772,20 @@ components:
           type: string
           description: The main content text
 
-    QuestionnaireComponent:
+    QuestionnaireComponentInput:
+      type: object
+      description: Request body for creating or updating a questionnaire component
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/QuestionnaireComponentData'
+
+    QuestionnaireComponentData:
       type: object
       description: Localized questionnaire content keyed by locale (e.g., "en-US", "de-DE")
       additionalProperties:
@@ -776,7 +806,20 @@ components:
           type: string
           description: FHIR Questionnaire as JSON string
 
-    HealthDataComponent:
+    HealthDataComponentInput:
+      type: object
+      description: Request body for creating or updating a health data component
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/HealthDataComponentData'
+
+    HealthDataComponentData:
       type: object
       description: A health data component for collecting health metrics
       required:
@@ -800,6 +843,57 @@ components:
               default: false
             startDate:
               $ref: '#/components/schemas/ExportSessionStartDate'
+
+    InformationalComponentResponse:
+      type: object
+      description: Response containing informational component with ID and name
+      required:
+        - id
+        - name
+        - data
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/InformationalComponentData'
+
+    QuestionnaireComponentResponse:
+      type: object
+      description: Response containing questionnaire component with ID and name
+      required:
+        - id
+        - name
+        - data
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/QuestionnaireComponentData'
+
+    HealthDataComponentResponse:
+      type: object
+      description: Response containing health data component with ID and name
+      required:
+        - id
+        - name
+        - data
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/HealthDataComponentData'
 
     ComponentSchedule:
       type: object
@@ -868,15 +962,15 @@ components:
       type: object
       description: >
         Calendar-relative offset applied from the session creation time.
-        At least one component must be provided.
+        At least one component must be provided. Uses Swift DateComponents naming (singular).
       properties:
-        years:
+        year:
           type: integer
           minimum: 0
-        months:
+        month:
           type: integer
           minimum: 0
-        days:
+        day:
           type: integer
           minimum: 0
       additionalProperties: false

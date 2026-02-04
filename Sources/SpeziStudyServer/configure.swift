@@ -51,6 +51,7 @@ public func configure(_ app: Application) async throws {
         HealthDataComponentService()
         ComponentService()
         DatabaseStudyRepository(database: app.db)
+        DatabaseComponentRepository(database: app.db)
         DatabaseComponentScheduleRepository(database: app.db)
         DatabaseInformationalComponentRepository(database: app.db)
         DatabaseQuestionnaireComponentRepository(database: app.db)

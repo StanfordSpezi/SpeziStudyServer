@@ -15,7 +15,7 @@ additionalImports:
 typeOverrides:
   schemas:
     InformationalContent: SpeziStudyServer.InformationalContent
-    InformationalComponent: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.InformationalContent>
+    InformationalComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.InformationalContent>
     QuestionnaireContent: SpeziStudyServer.QuestionnaireContent
-    QuestionnaireComponent: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.QuestionnaireContent>
-    HealthDataComponent: SpeziStudyServer.HealthDataContent
+    QuestionnaireComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.QuestionnaireContent>
+    HealthDataComponentData: SpeziStudyServer.HealthDataContent

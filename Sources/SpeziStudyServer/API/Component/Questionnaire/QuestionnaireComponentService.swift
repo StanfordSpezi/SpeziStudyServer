@@ -11,48 +11,77 @@ import SpeziLocalization
 final class QuestionnaireComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
     @Dependency(DatabaseQuestionnaireComponentRepository.self) var repository: DatabaseQuestionnaireComponentRepository
+    @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> QuestionnaireComponent {
-        try await studyService.validateExists(id: studyId)
+        // Validate component belongs to study
+        guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
+            throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
+        }
 
-        guard let component = try await repository.find(id: id, studyId: studyId) else {
+        guard registry.type == "questionnaire" else {
+            throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
+        }
+
+        guard let component = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
         }
 
         return component
     }
 
+    func getName(studyId: UUID, id: UUID) async throws -> String? {
+        guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
+            return nil
+        }
+        return component.name
+    }
+
     func createComponent(
         studyId: UUID,
+        name: String,
         content: LocalizedDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
         try await studyService.validateExists(id: studyId)
-        return try await repository.create(studyId: studyId, data: content)
+
+        // Create registry entry first
+        let registry = try await componentRepository.create(
+            studyId: studyId,
+            type: "questionnaire",
+            name: name
+        )
+
+        // Create specialized component data with same ID
+        return try await repository.create(componentId: registry.id!, data: content)
     }
 
     func updateComponent(
         studyId: UUID,
         id: UUID,
+        name: String,
         content: LocalizedDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
-        try await studyService.validateExists(id: studyId)
-
-        guard let component = try await repository.find(id: id, studyId: studyId) else {
+        // Validate component belongs to study
+        guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
         }
 
+        guard registry.type == "questionnaire" else {
+            throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
+        }
+
+        guard let component = try await repository.find(id: id) else {
+            throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
+        }
+
+        // Update registry entry name
+        registry.name = name
+        try await componentRepository.update(registry)
+
+        // Update component data
         component.data = content
         try await repository.update(component)
 
         return component
-    }
-
-    func deleteComponent(studyId: UUID, id: UUID) async throws {
-        try await studyService.validateExists(id: studyId)
-
-        let deleted = try await repository.delete(id: id, studyId: studyId)
-        if !deleted {
-            throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
-        }
     }
 }

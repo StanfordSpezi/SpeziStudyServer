@@ -117,7 +117,7 @@ struct StudiesEndpointTests {
 
             // Verify the update persisted
             let updatedStudyFromDB = try await Study.find(study.id!, on: app.db)
-            #expect(updatedStudyFromDB?.metadata.title == "Updated Title")
+            #expect(updatedStudyFromDB?.metadata.title["en"] == "Updated Title")
         }
     }
 
@@ -192,8 +192,7 @@ struct StudiesEndpointTests {
             let study = Study(metadata: metadata, id: nil)
             try await study.save(on: app.db)
 
-            let componentData = TestUtilities.createTestQuestionnaireComponent(filename: "test", id: UUID())
-            let component = Component(studyId: study.id!, componentData: componentData)
+            let component = Component(studyId: study.id!, type: "questionnaire", name: "Test Component")
             try await component.save(on: app.db)
 
             // Make request to delete study

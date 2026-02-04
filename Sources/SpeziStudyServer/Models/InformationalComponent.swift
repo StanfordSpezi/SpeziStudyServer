@@ -21,21 +21,14 @@ struct InformationalContent: Hashable, Codable, Sendable {
 final class InformationalComponent: Model, @unchecked Sendable {
     static let schema = "informational_components"
 
-    @ID(key: .id) var id: UUID?
-
-    @Parent(key: "study_id") var study: Study
+    @ID(custom: "component_id") var id: UUID?
 
     @Field(key: "data") var data: LocalizedDictionary<InformationalContent>
 
     init() {}
 
-    init(
-        studyId: UUID,
-        data: LocalizedDictionary<InformationalContent>,
-        id: UUID? = nil
-    ) {
-        self.id = id
-        self.$study.id = studyId
+    init(componentId: UUID, data: LocalizedDictionary<InformationalContent>) {
+        self.id = componentId
         self.data = data
     }
 }

@@ -1,0 +1,50 @@
+meta {
+  name: Post Schedule Weekly
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/{{componentId}}/schedules
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "scheduleDefinition": {
+      "repeated": {
+        "_0": {
+          "weekly": {
+            "weekday": {
+              "monday": {}
+            },
+            "hour": 10,
+            "minute": 30,
+            "second": 0
+          }
+        },
+        "_1": {}
+      }
+    },
+    "completionPolicy": {
+      "anytime": {}
+    },
+    "notifications": {
+      "enabled": {
+        "_0": {
+          "study": {}
+        }
+      }
+    }
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("scheduleId", body.id);
+}

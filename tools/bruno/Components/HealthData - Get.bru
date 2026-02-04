@@ -1,0 +1,11 @@
+meta {
+  name: HealthData - Get
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/health-data/{{componentId}}
+  body: none
+  auth: inherit
+}

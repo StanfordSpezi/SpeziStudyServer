@@ -1,0 +1,28 @@
+meta {
+  name: Informational - Update
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/informational/{{componentId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Welcome Information Updated",
+    "data": {
+      "en-US": {
+        "title": "Welcome Updated",
+        "lede": "Updated introduction to the study",
+        "content": "Welcome to the study - updated content"
+      }
+    }
+  }
+}

@@ -10,10 +10,14 @@ import SpeziStudyDefinition
 
 extension Study {
     var definition: StudyDefinition {
+        // TODO: Convert specialized component data to StudyDefinition.Component
+        // This requires creating file references for informational and questionnaire components
+        // and properly mapping health data components.
+        // For now, components are not included in the bundle export.
         StudyDefinition(
             studyRevision: 1,
             metadata: metadata,
-            components: components.map { $0.componentData },
+            components: [],
             componentSchedules: components.flatMap { component in
                 component.schedules.map { $0.scheduleData }
             }

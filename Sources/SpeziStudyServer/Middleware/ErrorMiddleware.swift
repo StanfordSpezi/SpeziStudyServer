@@ -28,6 +28,10 @@ struct ErrorMiddleware: ServerMiddleware {
             if let serverError = underlying as? ServerError {
                 return serverError.httpResponse
             }
+            
+            if let _ = underlying as? DecodingError {
+                return ServerError.Defaults.invalidRequestBody.httpResponse
+            }
 
             logger.critical(
                 "Unexpected error",

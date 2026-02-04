@@ -1,0 +1,33 @@
+meta {
+  name: HealthData - Update
+  type: http
+  seq: 11
+}
+
+put {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/health-data/{{componentId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Health Data Collection Updated",
+    "data": {
+      "sampleTypes": ["HKQuantityTypeIdentifierHeartRate", "HKQuantityTypeIdentifierStepCount", "HKQuantityTypeIdentifierActiveEnergyBurned"],
+      "historicalDataCollection": {
+        "enabled": true,
+        "startDate": {
+          "type": "last",
+          "components": {
+            "day": 60
+          }
+        }
+      }
+    }
+  }
+}

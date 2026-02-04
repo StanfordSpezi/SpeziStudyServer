@@ -91,21 +91,14 @@ enum ExportSessionStartDate: Hashable, Codable, Sendable {
 final class HealthDataComponent: Model, @unchecked Sendable {
     static let schema = "health_data_components"
 
-    @ID(key: .id) var id: UUID?
-
-    @Parent(key: "study_id") var study: Study
+    @ID(custom: "component_id") var id: UUID?
 
     @Field(key: "data") var data: HealthDataContent
 
     init() {}
 
-    init(
-        studyId: UUID,
-        data: HealthDataContent,
-        id: UUID? = nil
-    ) {
-        self.id = id
-        self.$study.id = studyId
+    init(componentId: UUID, data: HealthDataContent) {
+        self.id = componentId
         self.data = data
     }
 }

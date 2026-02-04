@@ -1,0 +1,23 @@
+meta {
+  name: Hello
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:8080/
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  await bru.runRequest("Study/Post Study")
+  await bru.runRequest("Components/Questionnaire - Create")
+  await bru.runRequest("Components/Informational - Create")
+  await bru.runRequest("Components/HealthData - Create")
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

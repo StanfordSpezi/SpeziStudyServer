@@ -1,0 +1,38 @@
+meta {
+  name: Put Schedule
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://127.0.0.1:8080/studies/{{studyId}}/components/{{componentId}}/schedules/{{scheduleId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "scheduleDefinition": {
+      "repeated": {
+        "_0": {
+          "daily": {
+            "hour": 14,
+            "minute": 0,
+            "second": 0
+          }
+        },
+        "_1": {}
+      }
+    },
+    "completionPolicy": {
+      "anytime": {}
+    },
+    "notifications": {
+      "disabled": {}
+    }
+  }
+}

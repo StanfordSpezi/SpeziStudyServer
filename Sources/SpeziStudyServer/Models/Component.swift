@@ -7,7 +7,6 @@
 //
 import Fluent
 import Foundation
-import SpeziStudyDefinition
 
 final class Component: Model, @unchecked Sendable {
     static let schema = "components"
@@ -16,19 +15,23 @@ final class Component: Model, @unchecked Sendable {
 
     @Parent(key: "study_id") var study: Study
 
-    @Children(for: \.$component) var schedules: [ComponentSchedule]
+    @Field(key: "type") var type: String
 
-    @Field(key: "component_data") var componentData: StudyDefinition.Component
+    @Field(key: "name") var name: String
+
+    @Children(for: \.$component) var schedules: [ComponentSchedule]
 
     init() {}
 
     init(
         studyId: UUID,
-        componentData: StudyDefinition.Component,
+        type: String,
+        name: String,
         id: UUID? = nil
     ) {
         self.id = id
         self.$study.id = studyId
-        self.componentData = componentData
+        self.type = type
+        self.name = name
     }
 }

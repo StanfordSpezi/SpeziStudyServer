@@ -15,5 +15,6 @@ extension ServerError {
         static let failedToListResources = ServerError.internalError(message: "Failed to list resources")
         static let failedToConvertResponse = ServerError.internalError(message: "Failed to convert response")
         static let unexpectedError = ServerError.internalError(message: "An unexpected error occurred")
+        static let invalidRequestBody = ServerError.validation(message: "Invalid request body format")
     }
 }

@@ -9,7 +9,7 @@ import Fluent
 import Foundation
 import SpeziLocalization
 
-final class DatabaseQuestionnaireComponentRepository: QuestionnaireComponentRepository {
+class QuestionnaireComponentRepository: VaporModule, @unchecked Sendable {
     let database: any Database
 
     init(database: any Database) {
@@ -40,11 +40,4 @@ final class DatabaseQuestionnaireComponentRepository: QuestionnaireComponentRepo
         try await component.delete(on: database)
         return true
     }
-}
-
-protocol QuestionnaireComponentRepository: VaporModule {
-    func find(id: UUID) async throws -> QuestionnaireComponent?
-    func create(componentId: UUID, data: LocalizedDictionary<QuestionnaireContent>) async throws -> QuestionnaireComponent
-    func update(_ component: QuestionnaireComponent) async throws
-    func delete(id: UUID) async throws -> Bool
 }

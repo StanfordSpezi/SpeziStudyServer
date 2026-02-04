@@ -8,13 +8,13 @@
 import Fluent
 import Foundation
 
-final class DatabaseComponentScheduleRepository: ComponentScheduleRepository {
+class ComponentScheduleRepository: VaporModule, @unchecked Sendable {
     let database: any Database
-    
+
     init(database: any Database) {
         self.database = database
     }
-    
+
     func findAll(componentId: UUID) async throws -> [ComponentSchedule] {
         try await ComponentSchedule.query(on: database)
             .filter(\.$component.$id == componentId)
@@ -60,12 +60,4 @@ final class DatabaseComponentScheduleRepository: ComponentScheduleRepository {
         try await schedule.delete(on: database)
         return true
     }
-}
-
-protocol ComponentScheduleRepository: VaporModule {
-    func findAll(componentId: UUID) async throws -> [ComponentSchedule]
-    func find(id: UUID, componentId: UUID) async throws -> ComponentSchedule?
-    func create(_ schedule: ComponentSchedule) async throws -> ComponentSchedule
-    func update(_ schedule: ComponentSchedule) async throws
-    func delete(id: UUID, componentId: UUID) async throws -> Bool
 }

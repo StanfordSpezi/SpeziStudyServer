@@ -9,7 +9,7 @@ import Foundation
 
 final class ComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
-    @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
+    @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func listComponents(studyId: UUID) async throws -> [Components.Schemas.Component] {
         try await studyService.validateExists(id: studyId)

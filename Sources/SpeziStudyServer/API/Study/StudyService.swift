@@ -10,7 +10,7 @@ import Logging
 import Spezi
 
 final class StudyService: @unchecked Sendable, Module {
-    @Dependency(DatabaseStudyRepository.self) var repository: DatabaseStudyRepository
+    @Dependency(StudyRepository.self) var repository: StudyRepository
         
     init() {}
 

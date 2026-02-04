@@ -50,12 +50,12 @@ public func configure(_ app: Application) async throws {
         QuestionnaireComponentService()
         HealthDataComponentService()
         ComponentService()
-        DatabaseStudyRepository(database: app.db)
-        DatabaseComponentRepository(database: app.db)
-        DatabaseComponentScheduleRepository(database: app.db)
-        DatabaseInformationalComponentRepository(database: app.db)
-        DatabaseQuestionnaireComponentRepository(database: app.db)
-        DatabaseHealthDataComponentRepository(database: app.db)
+        StudyRepository(database: app.db)
+        ComponentRepository(database: app.db)
+        ComponentScheduleRepository(database: app.db)
+        InformationalComponentRepository(database: app.db)
+        QuestionnaireComponentRepository(database: app.db)
+        HealthDataComponentRepository(database: app.db)
     }
     
     // register routes

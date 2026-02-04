@@ -8,7 +8,7 @@
 import Fluent
 import Foundation
 
-final class DatabaseComponentRepository: ComponentRepository {
+class ComponentRepository: VaporModule, @unchecked Sendable {
     let database: any Database
 
     init(database: any Database) {
@@ -51,12 +51,4 @@ final class DatabaseComponentRepository: ComponentRepository {
         try await component.delete(on: database)
         return true
     }
-}
-
-protocol ComponentRepository: VaporModule {
-    func findAll(studyId: UUID) async throws -> [Component]
-    func find(id: UUID, studyId: UUID) async throws -> Component?
-    func create(studyId: UUID, type: ComponentType, name: String, id: UUID?) async throws -> Component
-    func update(_ component: Component) async throws
-    func delete(id: UUID, studyId: UUID) async throws -> Bool
 }

@@ -9,9 +9,9 @@ import Fluent
 import Foundation
 import SpeziStudyDefinition
 
-final class DatabaseStudyRepository: StudyRepository {
+class StudyRepository: VaporModule, @unchecked Sendable {
     let database: any Database
-    
+
     init(database: any Database) {
         self.database = database
     }
@@ -78,15 +78,4 @@ final class DatabaseStudyRepository: StudyRepository {
         try await study.delete(on: database)
         return true
     }
-}
-
-protocol StudyRepository: VaporModule {
-    func create(_ study: Study) async throws -> Study
-    func find(id: UUID) async throws -> Study?
-    func findWithComponents(id: UUID) async throws -> Study?
-    func findWithComponentsAndSchedules(id: UUID) async throws -> Study
-    func listIds() async throws -> [UUID]
-    func listAll() async throws -> [Study]
-    func update(id: UUID, metadata: StudyDefinition.Metadata) async throws -> Study?
-    func delete(id: UUID) async throws -> Bool
 }

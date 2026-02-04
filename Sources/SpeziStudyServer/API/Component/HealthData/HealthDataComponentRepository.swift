@@ -9,7 +9,7 @@ import Fluent
 import Foundation
 import SpeziStudyDefinition
 
-final class DatabaseHealthDataComponentRepository: HealthDataComponentRepository {
+class HealthDataComponentRepository: VaporModule, @unchecked Sendable {
     let database: any Database
 
     init(database: any Database) {
@@ -43,11 +43,4 @@ final class DatabaseHealthDataComponentRepository: HealthDataComponentRepository
         try await component.delete(on: database)
         return true
     }
-}
-
-protocol HealthDataComponentRepository: VaporModule {
-    func find(id: UUID) async throws -> HealthDataComponent?
-    func create(componentId: UUID, data: StudyDefinition.HealthDataCollectionComponent) async throws -> HealthDataComponent
-    func update(_ component: HealthDataComponent) async throws
-    func delete(id: UUID) async throws -> Bool
 }

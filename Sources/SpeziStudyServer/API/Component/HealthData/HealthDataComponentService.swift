@@ -10,8 +10,8 @@ import SpeziStudyDefinition
 
 final class HealthDataComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
-    @Dependency(DatabaseHealthDataComponentRepository.self) var repository: DatabaseHealthDataComponentRepository
-    @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
+    @Dependency(HealthDataComponentRepository.self) var repository: HealthDataComponentRepository
+    @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> HealthDataComponent {
         // check if correct study id

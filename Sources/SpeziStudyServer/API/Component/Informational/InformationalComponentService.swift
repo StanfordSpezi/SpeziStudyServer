@@ -10,11 +10,10 @@ import SpeziLocalization
 
 final class InformationalComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
-    @Dependency(DatabaseInformationalComponentRepository.self) var repository: DatabaseInformationalComponentRepository
-    @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
+    @Dependency(InformationalComponentRepository.self) var repository: InformationalComponentRepository
+    @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> InformationalComponent {
-        // Validate component belongs to study
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }

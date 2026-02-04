@@ -10,8 +10,8 @@ import SpeziLocalization
 
 final class QuestionnaireComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
-    @Dependency(DatabaseQuestionnaireComponentRepository.self) var repository: DatabaseQuestionnaireComponentRepository
-    @Dependency(DatabaseComponentRepository.self) var componentRepository: DatabaseComponentRepository
+    @Dependency(QuestionnaireComponentRepository.self) var repository: QuestionnaireComponentRepository
+    @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> QuestionnaireComponent {
         // Validate component belongs to study

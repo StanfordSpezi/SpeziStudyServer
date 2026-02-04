@@ -11,7 +11,7 @@ import SpeziStudyDefinition
 final class ComponentScheduleService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
     @Dependency(ComponentService.self) var componentService: ComponentService
-    @Dependency(DatabaseComponentScheduleRepository.self) var scheduleRepository: DatabaseComponentScheduleRepository
+    @Dependency(ComponentScheduleRepository.self) var scheduleRepository: ComponentScheduleRepository
 
     func listSchedules(studyId: UUID, componentId: UUID) async throws -> [Components.Schemas.ComponentSchedule] {
         try await studyService.validateExists(id: studyId)

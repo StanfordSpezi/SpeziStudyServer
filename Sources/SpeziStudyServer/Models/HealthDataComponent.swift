@@ -7,7 +7,6 @@
 //
 import Fluent
 import Foundation
-//import SpeziHealthKitBulkExport
 import SpeziStudyDefinition
 
 /// Database model for health data component.

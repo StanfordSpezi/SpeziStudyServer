@@ -29,7 +29,7 @@ struct ErrorMiddleware: ServerMiddleware {
                 return serverError.httpResponse
             }
             
-            if let _ = underlying as? DecodingError {
+            if underlying is DecodingError {
                 logger.info("\(String(reflecting: underlying))")
                 return ServerError.Defaults.invalidRequestBody.httpResponse
             }

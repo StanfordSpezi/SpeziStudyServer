@@ -16,7 +16,9 @@ final class ComponentService: VaporModule, @unchecked Sendable {
 
         let components = try await componentRepository.findAll(studyId: studyId)
         return components.compactMap { component in
-            guard let id = component.id else { return nil }
+            guard let id = component.id else {
+                return nil
+            }
             return Components.Schemas.Component(
                 id: id.uuidString,
                 _type: component.type.rawValue,

@@ -1,3 +1,13 @@
+<!--
+
+This source file is part of the SpeziStudyServer open source project
+
+SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+SPDX-License-Identifier: MIT
+
+-->
+
 # SpeziStudyServer
 
 A Vapor-based server for managing clinical research studies, built as part of the Spezi ecosystem.
@@ -14,20 +24,26 @@ Sources/SpeziStudyServer/
 │   └── routes.swift              # Route registration
 │
 ├── Modules/                      # Feature modules
+│   ├── Controller.swift          # Base controller protocol
 │   ├── Study/                    # Study management
 │   │   ├── StudyController.swift
 │   │   ├── StudyService.swift
 │   │   ├── StudyRepository.swift
 │   │   └── StudyMapper.swift
-│   ├── Component/                # Base component operations
-│   ├── Informational/            # Informational component type
-│   ├── Questionnaire/            # Questionnaire component type
-│   └── HealthData/               # Health data collection component type
+│   ├── Component/                # Component operations
+│   │   ├── ComponentController.swift
+│   │   ├── ComponentService.swift
+│   │   ├── ComponentRepository.swift
+│   │   ├── HealthData/           # Health data collection
+│   │   ├── Informational/        # Informational content
+│   │   └── Questionnaire/        # Questionnaires
+│   └── ComponentSchedule/        # Schedule management
 │
 ├── Models/                       # Fluent database models
 │   ├── Study.swift
 │   ├── Component.swift
 │   ├── ComponentType.swift
+│   ├── ComponentSchedule.swift
 │   ├── InformationalComponent.swift
 │   ├── QuestionnaireComponent.swift
 │   └── HealthDataComponent.swift
@@ -35,15 +51,18 @@ Sources/SpeziStudyServer/
 ├── Migrations/                   # Fluent database migrations
 │
 └── Core/                         # Shared infrastructure
+    ├── DatabaseConfiguration.swift  # Injectable DB config
+    ├── VaporModule.swift
     ├── Errors/
     │   ├── ServerError.swift
-    │   └── ServerError+Defaults.swift
+    │   ├── ServerError+Defaults.swift
+    │   └── ProblemDetails+ServerError.swift
     ├── Extensions/
+    │   ├── Encodable+Recode.swift
     │   ├── Model+RequireID.swift
     │   └── String+RequireID.swift
-    ├── Middleware/
-    │   └── ErrorMiddleware.swift
-    └── VaporModule.swift
+    └── Middleware/
+        └── ErrorMiddleware.swift
 ```
 
 ## Architecture
@@ -80,6 +99,18 @@ await app.spezi.configure {
 }
 ```
 
+### Database Configuration
+
+Database configuration is injectable via `DatabaseConfiguration`:
+
+```swift
+// Production (PostgreSQL from environment)
+try await configure(app, database: .production)
+
+// Testing (in-memory SQLite)
+try await configure(app, database: .testing)
+```
+
 ### Component Types
 
 Studies contain multiple component types, each with their own table:
@@ -96,6 +127,71 @@ API types are generated from `Sources/SpeziStudyServer/openapi.yaml` using swift
 - Config: `openapi-generator-config.yaml` at target root
 - Generated types: `Components.Schemas.*`, `Operations.*`
 - Regenerate after schema changes: `swift build`
+
+## StudyDefinition JSON Format
+
+The server uses SpeziStudyDefinition types which encode with specific JSON patterns:
+
+### Localized Strings
+
+`LocalizedDictionary` encodes as locale-keyed objects:
+
+```json
+{
+  "title": { "en-US": "My Study Title" },
+  "explanationText": { "en-US": "Study description here" }
+}
+```
+
+### Swift Enums with Associated Values
+
+Enums use `_0` keys for associated values:
+
+```json
+{
+  "participationCriterion": {
+    "all": {
+      "_0": [
+        { "ageAtLeast": { "_0": 18 } },
+        { "isFromRegion": { "_0": "US" } }
+      ]
+    }
+  },
+  "enrollmentConditions": { "none": {} }
+}
+```
+
+### Health Data Sample Types
+
+Sample types encode as `Type;Identifier` strings:
+
+```json
+{
+  "sampleTypes": [
+    "HKQuantityType;HKQuantityTypeIdentifierHeartRate",
+    "HKQuantityType;HKQuantityTypeIdentifierStepCount",
+    "HKCategoryType;HKCategoryTypeIdentifierSleepAnalysis"
+  ]
+}
+```
+
+### Schedule Definitions
+
+```json
+{
+  "scheduleDefinition": {
+    "once": {
+      "_0": {
+        "event": {
+          "_0": { "activation": {} },
+          "offsetInDays": 1,
+          "time": { "hour": 9, "minute": 0, "second": 0 }
+        }
+      }
+    }
+  }
+}
+```
 
 ## Conventions
 

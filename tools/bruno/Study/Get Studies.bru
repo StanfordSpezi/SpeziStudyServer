@@ -1,3 +1,11 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
 meta {
   name: Get Studies
   type: http
@@ -5,7 +13,7 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:8080/studies
+  url: {{baseUrl}}/studies
   body: none
   auth: inherit
 }

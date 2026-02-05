@@ -6,34 +6,16 @@
 // SPDX-License-Identifier: MIT
 //
 import Fluent
-import FluentPostgresDriver
-import FluentSQLiteDriver
-import NIOSSL
 import Spezi
 import SpeziVapor
 import Vapor
 
 /// Configures the application services and routes.
-public func configure(_ app: Application) async throws {
+public func configure(_ app: Application, database: DatabaseConfiguration = .production) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
-    if app.environment == .testing {
-        app.databases.use(.sqlite(.memory), as: .psql)
-    } else {
-        let postgresConfiguration = SQLPostgresConfiguration(
-            hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-            port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? SQLPostgresConfiguration.ianaPortNumber,
-            username: Environment.get("DATABASE_USERNAME") ?? "vapor_username",
-            password: Environment.get("DATABASE_PASSWORD") ?? "vapor_password",
-            database: Environment.get("DATABASE_NAME") ?? "vapor_database",
-            tls: .prefer(try .init(configuration: .clientDefault))
-        )
-        app.databases.use(
-            DatabaseConfigurationFactory.postgres(configuration: postgresConfiguration),
-            as: .psql
-        )
-    }
+    try database.configure(for: app)
 
     app.migrations.add(CreateStudy())
     app.migrations.add(CreateComponents())

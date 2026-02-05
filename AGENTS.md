@@ -6,6 +6,8 @@ A Vapor-based server for managing clinical research studies, built as part of th
 
 ```
 Sources/SpeziStudyServer/
+├── openapi.yaml                  # API specification
+├── openapi-generator-config.yaml # Generator config
 ├── App/                          # Application bootstrap
 │   ├── entrypoint.swift          # @main entry point
 │   ├── configure.swift           # App configuration and DI registration
@@ -88,10 +90,11 @@ Studies contain multiple component types, each with their own table:
 
 ### OpenAPI Code Generation
 
-API types are generated from `openapi.yaml` using swift-openapi-generator.
+API types are generated from `Sources/SpeziStudyServer/openapi.yaml` using swift-openapi-generator.
 
+- Spec: `openapi.yaml` at target root
+- Config: `openapi-generator-config.yaml` at target root
 - Generated types: `Components.Schemas.*`, `Operations.*`
-- Configuration: `openapi-generator-config.yaml`
 - Regenerate after schema changes: `swift build`
 
 ## Conventions
@@ -165,6 +168,40 @@ swift test
 
 # Lint
 swiftlint
+```
+
+## Testing
+
+### Test Structure
+
+```
+Tests/SpeziStudyServerTests/
+├── Integration/                    # HTTP endpoint tests
+│   ├── StudyIntegrationTests.swift
+│   ├── ComponentIntegrationTests.swift
+│   ├── HealthDataComponentIntegrationTests.swift
+│   ├── QuestionnaireComponentIntegrationTests.swift
+│   └── InformationalComponentIntegrationTests.swift
+└── Support/
+    ├── TestApp.swift               # App lifecycle management
+    ├── Request+JSON.swift          # JSON encoding helper
+    └── Fixtures/
+        ├── StudyFixtures.swift     # Test data factories
+        └── ComponentFixtures.swift
+```
+
+### Test Patterns
+
+- Uses Swift Testing framework (`@Suite`, `@Test`, `#expect`)
+- In-memory SQLite database (configured via `DatabaseConfiguration.testing`)
+- Fixtures create data directly via Fluent models (fast, focused tests)
+- `TestApp.withApp()` manages app lifecycle and cleanup
+
+### Running Tests
+
+```bash
+swift test                    # Run all tests
+swift test --filter "Study"   # Run tests matching "Study"
 ```
 
 ## API Testing with Bruno

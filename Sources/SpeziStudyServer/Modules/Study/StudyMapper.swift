@@ -20,7 +20,7 @@ enum StudyMapper {
 
     static func toDTO(_ model: Study) throws -> Components.Schemas.StudyResponse {
         guard let id = model.id else {
-            fatalError("Study must have an ID")
+            throw ServerError.Defaults.unexpectedError
         }
 
         let metadata: Components.Schemas.StudyResponse.MetadataPayload = try model.metadata.recode()

@@ -17,8 +17,8 @@ struct ComponentIntegrationTests {
     @Test
     func listComponentsEmpty() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
             try await app.test(.GET, "studies/\(studyId)/components") { response in
@@ -33,8 +33,8 @@ struct ComponentIntegrationTests {
     @Test
     func listComponentsWithData() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
             try await ComponentFixtures.createHealthDataComponent(on: app.db, studyId: studyId)
@@ -64,8 +64,8 @@ struct ComponentIntegrationTests {
     @Test
     func deleteComponent() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
             let (component, _) = try await ComponentFixtures.createHealthDataComponent(
@@ -88,8 +88,8 @@ struct ComponentIntegrationTests {
     @Test
     func deleteComponentNotFound() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
             let nonExistentId = UUID()
 
@@ -102,8 +102,8 @@ struct ComponentIntegrationTests {
     @Test
     func deleteStudyCascadesComponents() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
             try await ComponentFixtures.createHealthDataComponent(on: app.db, studyId: studyId)

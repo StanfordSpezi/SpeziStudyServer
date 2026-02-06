@@ -5,7 +5,9 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
+
 
 extension Encodable {
     /// Converts this value to another Codable type by encoding to JSON and decoding back.

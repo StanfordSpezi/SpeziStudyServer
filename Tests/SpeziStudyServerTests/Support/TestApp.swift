@@ -30,6 +30,6 @@ enum TestApp {
     }
 
     private static func cleanup(on database: any Database) async throws {
-        try await ResearchGroup.query(on: database).delete()
+        try await Group.query(on: database).delete()
     }
 }

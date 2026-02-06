@@ -11,15 +11,15 @@ import Foundation
 @testable import SpeziStudyServer
 
 
-enum ResearchGroupFixtures {
+enum GroupFixtures {
     @discardableResult
-    static func createResearchGroup(
+    static func createGroup(
         on database: any Database,
         id: UUID = UUID(),
-        name: String = "Test Research Group",
+        name: String = "Test Group",
         icon: String = "heart.fill"
-    ) async throws -> ResearchGroup {
-        let group = ResearchGroup(name: name, icon: icon, id: id)
+    ) async throws -> Group {
+        let group = Group(name: name, icon: icon, id: id)
         try await group.save(on: database)
         return group
     }

@@ -5,7 +5,9 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
+
 
 final class ComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService

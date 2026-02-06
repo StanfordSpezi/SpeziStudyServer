@@ -5,9 +5,11 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziStudyDefinition
+
 
 class StudyRepository: VaporModule, @unchecked Sendable {
     let database: any Database
@@ -19,7 +21,7 @@ class StudyRepository: VaporModule, @unchecked Sendable {
     func create(_ study: Study) async throws -> Study {
         try await study.save(on: database)
 
-        guard let createdStudy = try await Study.find(try study.requireID(), on: database) else {
+        guard let createdStudy = try await Study.find(try study.requireId(), on: database) else {
             throw ServerError.Defaults.failedToRetrieveCreatedObject
         }
 
@@ -56,8 +58,10 @@ class StudyRepository: VaporModule, @unchecked Sendable {
         try await Study.query(on: database).all(\.$id)
     }
 
-    func listAll() async throws -> [Study] {
-        try await Study.query(on: database).all()
+    func listAll(groupId: UUID) async throws -> [Study] {
+        try await Study.query(on: database)
+            .filter(\.$group.$id == groupId)
+            .all()
     }
 
     func update(id: UUID, metadata: StudyDefinition.Metadata) async throws -> Study? {

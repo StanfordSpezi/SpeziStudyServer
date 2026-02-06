@@ -7,13 +7,13 @@ docs {
 }
 
 meta {
-  name: Get Research Groups
+  name: Get Groups
   type: http
   seq: 1
 }
 
 get {
-  url: {{baseUrl}}/research-groups
+  url: {{baseUrl}}/groups
   body: none
   auth: inherit
 }
@@ -21,6 +21,6 @@ get {
 script:post-response {
   const body = res.getBody();
   if (body && body.length > 0) {
-    bru.setVar("researchGroupId", body[0].id);
+    bru.setVar("groupId", body[0].id);
   }
 }

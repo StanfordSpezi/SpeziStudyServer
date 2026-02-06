@@ -12,11 +12,49 @@ info:
   version: 1.0.0
 
 paths:
-  /studies:
+  /groups:
+    get:
+      tags:
+        - Groups
+      summary: List all groups (synced from Keycloak)
+      responses:
+        '200':
+          description: List of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /groups/{groupId}:
+    get:
+      tags:
+        - Groups
+      summary: Get a group by ID
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      responses:
+        '200':
+          description: The group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /groups/{groupId}/studies:
     get:
       tags:
         - Studies
-      summary: List all studies with metadata
+      summary: List all studies in a group
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
       responses:
         '200':
           description: List of studies with ID and metadata
@@ -26,13 +64,15 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StudyResponse'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-          
+        '404':
+          $ref: '#/components/responses/NotFound'
+
     post:
       tags:
         - Studies
-      summary: Create a study with metadata
+      summary: Create a study in a group
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
       requestBody:
         required: true
         content:
@@ -48,14 +88,16 @@ paths:
                 $ref: '#/components/schemas/StudyResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
-  /studies/{id}:
+  /studies/{studyId}:
     get:
       tags:
         - Studies
       summary: Get a study by ID (metadata only)
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -78,7 +120,7 @@ paths:
         - Studies
       summary: Update study metadata
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -107,7 +149,7 @@ paths:
         - Studies
       summary: Delete a study definition by ID
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -121,13 +163,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/bundle:
+  /studies/{studyId}/bundle:
     get:
       tags:
         - Download
       summary: Download the full study bundle as a ZIP file
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -151,13 +193,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components:
+  /studies/{studyId}/components:
     get:
       tags:
         - Components
       summary: List all components for a study
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -175,13 +217,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/{componentId}:
+  /studies/{studyId}/components/{componentId}:
     delete:
       tags:
         - Components
       summary: Remove a component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -199,13 +241,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/informational:
+  /studies/{studyId}/components/informational:
     post:
       tags:
         - Informational Components
       summary: Add an informational component to a study
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -229,13 +271,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/informational/{componentId}:
+  /studies/{studyId}/components/informational/{componentId}:
     get:
       tags:
         - Informational Components
       summary: Get a single informational component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -262,7 +304,7 @@ paths:
         - Informational Components
       summary: Replace an informational component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -292,13 +334,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/questionnaire:
+  /studies/{studyId}/components/questionnaire:
     post:
       tags:
         - Questionnaire Components
       summary: Add a questionnaire component to a study
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -322,13 +364,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/questionnaire/{componentId}:
+  /studies/{studyId}/components/questionnaire/{componentId}:
     get:
       tags:
         - Questionnaire Components
       summary: Get a single questionnaire component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -355,7 +397,7 @@ paths:
         - Questionnaire Components
       summary: Replace a questionnaire component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -385,13 +427,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/health-data:
+  /studies/{studyId}/components/health-data:
     post:
       tags:
         - Health Data Components
       summary: Add a health data component to a study
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -415,13 +457,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/health-data/{componentId}:
+  /studies/{studyId}/components/health-data/{componentId}:
     get:
       tags:
         - Health Data Components
       summary: Get a single health data component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -448,7 +490,7 @@ paths:
         - Health Data Components
       summary: Replace a health data component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -478,13 +520,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/{componentId}/schedules:
+  /studies/{studyId}/components/{componentId}/schedules:
     get:
       tags:
         - Schedules
       summary: List all schedules for a component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -513,7 +555,7 @@ paths:
         - Schedules
       summary: Add a schedule to a component
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -543,13 +585,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /studies/{id}/components/{componentId}/schedules/{scheduleId}:
+  /studies/{studyId}/components/{componentId}/schedules/{scheduleId}:
     get:
       tags:
         - Schedules
       summary: Get a single schedule
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -582,7 +624,7 @@ paths:
         - Schedules
       summary: Replace a schedule
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -623,7 +665,7 @@ paths:
         - Schedules
       summary: Remove a schedule
       parameters:
-        - name: id
+        - name: studyId
           in: path
           required: true
           schema:
@@ -648,6 +690,15 @@ paths:
           $ref: '#/components/responses/NotFound'
 
 components:
+  parameters:
+    GroupId:
+      name: groupId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
   responses:
     BadRequest:
       description: Bad request
@@ -684,6 +735,25 @@ components:
         detail:
           type: string
           description: A human-readable explanation specific to this occurrence
+
+    GroupResponse:
+      type: object
+      description: Group synced from Keycloak. Name is unique.
+      required:
+        - id
+        - name
+        - icon
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Keycloak group ID
+        name:
+          type: string
+          description: Unique group name (matches Keycloak group name)
+        icon:
+          type: string
+          description: Icon identifier (e.g. SF Symbol name, stored as Keycloak group attribute)
 
     StudyInput:
       type: object

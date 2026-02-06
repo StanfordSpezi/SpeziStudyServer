@@ -7,6 +7,13 @@ docs {
 }
 
 meta {
-  name: ResearchGroup
-  seq: 4
+  name: Get Group
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/groups/{{groupId}}
+  body: none
+  auth: inherit
 }

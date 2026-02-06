@@ -5,9 +5,11 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import HTTPTypes
 import OpenAPIRuntime
+
 
 enum ServerError: Error, Sendable {
     case invalidUUID(String)

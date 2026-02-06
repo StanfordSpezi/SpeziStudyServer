@@ -6,8 +6,10 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import class Foundation.ProcessInfo
 import PackageDescription
+
 
 let package = Package(
     name: "SpeziStudyServer",

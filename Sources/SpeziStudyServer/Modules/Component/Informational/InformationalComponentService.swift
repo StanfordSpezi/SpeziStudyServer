@@ -5,8 +5,10 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import SpeziLocalization
+
 
 final class InformationalComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
@@ -49,7 +51,7 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
             name: name
         )
 
-        return try await repository.create(componentId: try registry.requireID(), data: content)
+        return try await repository.create(componentId: try registry.requireId(), data: content)
     }
 
     func updateComponent(

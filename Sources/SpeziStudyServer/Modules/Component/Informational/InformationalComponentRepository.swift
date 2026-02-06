@@ -5,9 +5,11 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziLocalization
+
 
 class InformationalComponentRepository: VaporModule, @unchecked Sendable {
     let database: any Database

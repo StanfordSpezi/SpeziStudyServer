@@ -5,8 +5,10 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import SpeziStudyDefinition
+
 
 final class HealthDataComponentService: VaporModule, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
@@ -46,7 +48,7 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
             name: name
         )
 
-        return try await repository.create(componentId: try component.requireID(), data: data)
+        return try await repository.create(componentId: try component.requireId(), data: data)
     }
 
     func updateComponent(

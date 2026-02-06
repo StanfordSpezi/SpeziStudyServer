@@ -5,11 +5,12 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziLocalization
 
-/// Domain model for informational article content.
+
 /// Note: This type is mapped from Components.Schemas.InformationalContent via typeOverrides in openapi-generator-config.yaml
 struct InformationalContent: Hashable, Codable, Sendable {
     let title: String
@@ -17,7 +18,6 @@ struct InformationalContent: Hashable, Codable, Sendable {
     let content: String
 }
 
-/// Database model for informational component
 final class InformationalComponent: Model, @unchecked Sendable {
     static let schema = "informational_components"
 

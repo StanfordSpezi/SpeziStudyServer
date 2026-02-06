@@ -17,8 +17,8 @@ struct QuestionnaireComponentIntegrationTests {
     @Test
     func createQuestionnaireComponent() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
             try await app.test(
@@ -42,8 +42,8 @@ struct QuestionnaireComponentIntegrationTests {
     @Test
     func getQuestionnaireComponent() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
             let (component, _) = try await ComponentFixtures.createQuestionnaireComponent(
@@ -71,8 +71,8 @@ struct QuestionnaireComponentIntegrationTests {
     @Test
     func getQuestionnaireComponentNotFound() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
             let nonExistentId = UUID()
 
@@ -88,8 +88,8 @@ struct QuestionnaireComponentIntegrationTests {
     @Test
     func updateQuestionnaireComponent() async throws {
         try await TestApp.withApp { app in
-            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
-            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
             let (component, _) = try await ComponentFixtures.createQuestionnaireComponent(

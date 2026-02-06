@@ -19,7 +19,7 @@ get {
 }
 
 script:post-response {
-  await bru.runRequest("ResearchGroup/Get Research Groups")
+  await bru.runRequest("Group/Get Groups")
   await bru.runRequest("Study/Post Study")
   await bru.runRequest("Components/Questionnaire - Create")
   await bru.runRequest("Components/Informational - Create")

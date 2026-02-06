@@ -5,9 +5,11 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziStudyDefinition
+
 
 class HealthDataComponentRepository: VaporModule, @unchecked Sendable {
     let database: any Database
@@ -32,7 +34,7 @@ class HealthDataComponentRepository: VaporModule, @unchecked Sendable {
     }
 
     func update(_ component: HealthDataComponent) async throws {
-        component.data.id = try component.requireID()
+        component.data.id = try component.requireId()
         try await component.update(on: database)
     }
 

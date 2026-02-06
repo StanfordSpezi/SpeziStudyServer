@@ -8,34 +8,35 @@
 
 import Foundation
 
+
 extension Controller {
-    func getStudiesIdComponentsComponentIdSchedules(
-        _ input: Operations.GetStudiesIdComponentsComponentIdSchedules.Input
-    ) async throws -> Operations.GetStudiesIdComponentsComponentIdSchedules.Output {
+    func getStudiesStudyIdComponentsComponentIdSchedules(
+        _ input: Operations.GetStudiesStudyIdComponentsComponentIdSchedules.Input
+    ) async throws -> Operations.GetStudiesStudyIdComponentsComponentIdSchedules.Output {
         throw ServerError.Defaults.endpointNotImplemented
     }
 
-    func postStudiesIdComponentsComponentIdSchedules(
-        _ input: Operations.PostStudiesIdComponentsComponentIdSchedules.Input
-    ) async throws -> Operations.PostStudiesIdComponentsComponentIdSchedules.Output {
+    func postStudiesStudyIdComponentsComponentIdSchedules(
+        _ input: Operations.PostStudiesStudyIdComponentsComponentIdSchedules.Input
+    ) async throws -> Operations.PostStudiesStudyIdComponentsComponentIdSchedules.Output {
         throw ServerError.Defaults.endpointNotImplemented
     }
 
-    func getStudiesIdComponentsComponentIdSchedulesScheduleId(
-        _ input: Operations.GetStudiesIdComponentsComponentIdSchedulesScheduleId.Input
-    ) async throws -> Operations.GetStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
+    func getStudiesStudyIdComponentsComponentIdSchedulesScheduleId(
+        _ input: Operations.GetStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Input
+    ) async throws -> Operations.GetStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Output {
         throw ServerError.Defaults.endpointNotImplemented
     }
 
-    func putStudiesIdComponentsComponentIdSchedulesScheduleId(
-        _ input: Operations.PutStudiesIdComponentsComponentIdSchedulesScheduleId.Input
-    ) async throws -> Operations.PutStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
+    func putStudiesStudyIdComponentsComponentIdSchedulesScheduleId(
+        _ input: Operations.PutStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Input
+    ) async throws -> Operations.PutStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Output {
         throw ServerError.Defaults.endpointNotImplemented
     }
 
-    func deleteStudiesIdComponentsComponentIdSchedulesScheduleId(
-        _ input: Operations.DeleteStudiesIdComponentsComponentIdSchedulesScheduleId.Input
-    ) async throws -> Operations.DeleteStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
+    func deleteStudiesStudyIdComponentsComponentIdSchedulesScheduleId(
+        _ input: Operations.DeleteStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Input
+    ) async throws -> Operations.DeleteStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Output {
         throw ServerError.Defaults.endpointNotImplemented
     }
 }

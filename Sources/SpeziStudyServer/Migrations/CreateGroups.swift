@@ -9,15 +9,17 @@
 import Fluent
 
 
-struct CreateInformationalComponents: AsyncMigration {
+struct CreateGroups: AsyncMigration {
     func prepare(on database: any Database) async throws {
-        try await database.schema("informational_components")
-            .field("component_id", .uuid, .identifier(auto: false), .references("components", "id", onDelete: .cascade))
-            .field("data", .json, .required)
+        try await database.schema("groups")
+            .id()
+            .field("name", .string, .required)
+            .field("icon", .string, .required)
+            .unique(on: "name")
             .create()
     }
 
     func revert(on database: any Database) async throws {
-        try await database.schema("informational_components").delete()
+        try await database.schema("groups").delete()
     }
 }

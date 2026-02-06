@@ -5,23 +5,31 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import Logging
 import Spezi
 
+
 final class StudyService: @unchecked Sendable, Module {
     @Dependency(StudyRepository.self) var repository: StudyRepository
-        
+    @Dependency(GroupService.self) var groupService: GroupService
+
     init() {}
 
-    func createStudy(_ dto: Components.Schemas.StudyInput) async throws -> Components.Schemas.StudyResponse {
-        let study = try StudyMapper.toModel(dto)
+    func createStudy(
+        groupId: UUID,
+        _ dto: Components.Schemas.StudyInput
+    ) async throws -> Components.Schemas.StudyResponse {
+        try await groupService.validateExists(id: groupId)
+        let study = try StudyMapper.toModel(dto, groupId: groupId)
         let createdStudy = try await repository.create(study)
         return try StudyMapper.toDTO(createdStudy)
     }
 
-    func listStudies() async throws -> [Components.Schemas.StudyResponse] {
-        let studies = try await repository.listAll()
+    func listStudies(groupId: UUID) async throws -> [Components.Schemas.StudyResponse] {
+        try await groupService.validateExists(id: groupId)
+        let studies = try await repository.listAll(groupId: groupId)
         return try studies.map { try StudyMapper.toDTO($0) }
     }
 

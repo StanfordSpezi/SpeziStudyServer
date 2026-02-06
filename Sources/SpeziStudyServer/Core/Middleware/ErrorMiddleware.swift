@@ -5,10 +5,12 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import HTTPTypes
 import Logging
 import OpenAPIRuntime
+
 
 struct ErrorMiddleware: ServerMiddleware {
     let logger: Logger

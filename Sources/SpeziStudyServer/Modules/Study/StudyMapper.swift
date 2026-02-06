@@ -5,17 +5,19 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import SpeziStudyDefinition
 
+
 enum StudyMapper {
-    static func toModel(_ dto: Components.Schemas.StudyInput) throws -> Study {
+    static func toModel(_ dto: Components.Schemas.StudyInput, groupId: UUID) throws -> Study {
         let studyId = UUID()
         var metadataPayload = dto.metadata.additionalProperties
         metadataPayload.value["id"] = studyId.uuidString
         var metadata: StudyDefinition.Metadata = try metadataPayload.recode()
         metadata.id = studyId
-        return Study(metadata: metadata, id: studyId)
+        return Study(groupId: groupId, metadata: metadata, id: studyId)
     }
 
     static func toDTO(_ model: Study) throws -> Components.Schemas.StudyResponse {

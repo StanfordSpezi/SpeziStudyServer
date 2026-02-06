@@ -5,7 +5,9 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import OpenAPIVapor
 import SpeziVapor
+
 
 protocol VaporModule: Module, Sendable {}

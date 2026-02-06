@@ -5,23 +5,25 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import SpeziStudyDefinition
 
+
 extension Controller {
-    func postStudiesIdComponentsHealthData(
-        _ input: Operations.PostStudiesIdComponentsHealthData.Input
-    ) async throws -> Operations.PostStudiesIdComponentsHealthData.Output {
-        let studyId = try input.path.id.requireID()
+    func postStudiesStudyIdComponentsHealthData(
+        _ input: Operations.PostStudiesStudyIdComponentsHealthData.Input
+    ) async throws -> Operations.PostStudiesStudyIdComponentsHealthData.Output {
+        let studyId = try input.path.studyId.requireId()
         guard case .json(let content) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
-        
+
         let data = StudyDefinition.HealthDataCollectionComponent(
             id: UUID(),
             content.data
         )
-        
+
         let created = try await healthDataComponentService.createComponent(
             studyId: studyId,
             name: content.name,
@@ -29,19 +31,19 @@ extension Controller {
         )
 
         let response = Components.Schemas.HealthDataComponentResponse(
-            id: try created.requireID().uuidString,
+            id: try created.requireId().uuidString,
             name: content.name,
             data: .init(created.data)
         )
-        
+
         return .created(.init(body: .json(response)))
     }
 
-    func getStudiesIdComponentsHealthDataComponentId(
-        _ input: Operations.GetStudiesIdComponentsHealthDataComponentId.Input
-    ) async throws -> Operations.GetStudiesIdComponentsHealthDataComponentId.Output {
-        let studyId = try input.path.id.requireID()
-        let componentId = try input.path.componentId.requireID()
+    func getStudiesStudyIdComponentsHealthDataComponentId(
+        _ input: Operations.GetStudiesStudyIdComponentsHealthDataComponentId.Input
+    ) async throws -> Operations.GetStudiesStudyIdComponentsHealthDataComponentId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
 
         let component = try await healthDataComponentService.getComponent(
             studyId: studyId,
@@ -51,18 +53,18 @@ extension Controller {
         let name = try await healthDataComponentService.getName(studyId: studyId, id: componentId) ?? ""
 
         let response = Components.Schemas.HealthDataComponentResponse(
-            id: try component.requireID().uuidString,
+            id: try component.requireId().uuidString,
             name: name,
             data: .init(component.data)
         )
         return .ok(.init(body: .json(response)))
     }
 
-    func putStudiesIdComponentsHealthDataComponentId(
-        _ input: Operations.PutStudiesIdComponentsHealthDataComponentId.Input
-    ) async throws -> Operations.PutStudiesIdComponentsHealthDataComponentId.Output {
-        let studyId = try input.path.id.requireID()
-        let componentId = try input.path.componentId.requireID()
+    func putStudiesStudyIdComponentsHealthDataComponentId(
+        _ input: Operations.PutStudiesStudyIdComponentsHealthDataComponentId.Input
+    ) async throws -> Operations.PutStudiesStudyIdComponentsHealthDataComponentId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
 
         guard case .json(let content) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
@@ -81,11 +83,11 @@ extension Controller {
         )
 
         let response = Components.Schemas.HealthDataComponentResponse(
-            id: try updated.requireID().uuidString,
+            id: try updated.requireId().uuidString,
             name: content.name,
             data: .init(updated.data)
         )
-        
+
         return .ok(.init(body: .json(response)))
     }
 }

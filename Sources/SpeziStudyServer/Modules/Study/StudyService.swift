@@ -9,6 +9,7 @@
 import Foundation
 import Logging
 import Spezi
+import SpeziStudyDefinition
 
 
 final class StudyService: @unchecked Sendable, Module {
@@ -19,18 +20,18 @@ final class StudyService: @unchecked Sendable, Module {
 
     func createStudy(
         groupId: UUID,
-        _ dto: Components.Schemas.StudyInput
+        _ schema: Components.Schemas.StudyInput
     ) async throws -> Components.Schemas.StudyResponse {
         try await groupService.validateExists(id: groupId)
-        let study = try StudyMapper.toModel(dto, groupId: groupId)
+        let study = try Study(schema, groupId: groupId)
         let createdStudy = try await repository.create(study)
-        return try StudyMapper.toDTO(createdStudy)
+        return try .init(createdStudy)
     }
 
     func listStudies(groupId: UUID) async throws -> [Components.Schemas.StudyResponse] {
         try await groupService.validateExists(id: groupId)
         let studies = try await repository.listAll(groupId: groupId)
-        return try studies.map { try StudyMapper.toDTO($0) }
+        return try studies.map { try .init($0) }
     }
 
     func getStudy(id: UUID) async throws -> Components.Schemas.StudyResponse {
@@ -38,16 +39,16 @@ final class StudyService: @unchecked Sendable, Module {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        return try StudyMapper.toDTO(study)
+        return try .init(study)
     }
 
-    func updateStudy(id: UUID, dto: Components.Schemas.StudyInput) async throws -> Components.Schemas.StudyResponse {
-        let metadata = try StudyMapper.toMetadata(dto)
+    func updateStudy(id: UUID, schema: Components.Schemas.StudyInput) async throws -> Components.Schemas.StudyResponse {
+        let metadata = try StudyDefinition.Metadata(schema)
         guard let updatedStudy = try await repository.update(id: id, metadata: metadata) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        return try StudyMapper.toDTO(updatedStudy)
+        return try .init(updatedStudy)
     }
 
     func deleteStudy(id: UUID) async throws {

@@ -9,13 +9,13 @@
 import Foundation
 
 
-enum GroupMapper {
-    static func toDTO(_ model: Group) throws -> Components.Schemas.GroupResponse {
+extension Components.Schemas.GroupResponse {
+    init(_ model: Group) throws {
         guard let id = model.id else {
             throw ServerError.Defaults.unexpectedError
         }
 
-        return Components.Schemas.GroupResponse(
+        self.init(
             id: id.uuidString,
             name: model.name,
             icon: model.icon

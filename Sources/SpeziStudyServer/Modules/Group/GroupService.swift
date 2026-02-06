@@ -17,7 +17,7 @@ final class GroupService: @unchecked Sendable, Module {
 
     func listGroups() async throws -> [Components.Schemas.GroupResponse] {
         let groups = try await repository.listAll()
-        return try groups.map { try GroupMapper.toDTO($0) }
+        return try groups.map { try .init($0) }
     }
 
     func getGroup(id: UUID) async throws -> Components.Schemas.GroupResponse {
@@ -25,7 +25,7 @@ final class GroupService: @unchecked Sendable, Module {
             throw ServerError.notFound(resource: "Group", identifier: id.uuidString)
         }
 
-        return try GroupMapper.toDTO(group)
+        return try .init(group)
     }
 
     func validateExists(id: UUID) async throws {

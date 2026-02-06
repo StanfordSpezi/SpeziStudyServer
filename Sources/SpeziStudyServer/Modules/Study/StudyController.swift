@@ -13,13 +13,13 @@ extension Controller {
     func postGroupsGroupIdStudies(
         _ input: Operations.PostGroupsGroupIdStudies.Input
     ) async throws -> Operations.PostGroupsGroupIdStudies.Output {
-        guard case .json(let studyDTO) = input.body else {
+        guard case .json(let studySchema) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
         let groupId = try input.path.groupId.requireId()
-        let responseDTO = try await studyService.createStudy(groupId: groupId, studyDTO)
-        return .created(.init(body: .json(responseDTO)))
+        let response = try await studyService.createStudy(groupId: groupId, studySchema)
+        return .created(.init(body: .json(response)))
     }
 
     func getGroupsGroupIdStudies(
@@ -32,18 +32,18 @@ extension Controller {
 
     func getStudiesStudyId(_ input: Operations.GetStudiesStudyId.Input) async throws -> Operations.GetStudiesStudyId.Output {
         let studyId = try input.path.studyId.requireId()
-        let dto = try await studyService.getStudy(id: studyId)
-        return .ok(.init(body: .json(dto)))
+        let study = try await studyService.getStudy(id: studyId)
+        return .ok(.init(body: .json(study)))
     }
 
     func putStudiesStudyId(_ input: Operations.PutStudiesStudyId.Input) async throws -> Operations.PutStudiesStudyId.Output {
-        guard case .json(let studyDTO) = input.body else {
+        guard case .json(let studySchema) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
         let studyId = try input.path.studyId.requireId()
-        let responseDTO = try await studyService.updateStudy(id: studyId, dto: studyDTO)
-        return .ok(.init(body: .json(responseDTO)))
+        let response = try await studyService.updateStudy(id: studyId, schema: studySchema)
+        return .ok(.init(body: .json(response)))
     }
 
     func deleteStudiesStudyId(_ input: Operations.DeleteStudiesStudyId.Input) async throws -> Operations.DeleteStudiesStudyId.Output {

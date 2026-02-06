@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziHealthKit
@@ -12,9 +13,8 @@ import SpeziLocalization
 import SpeziStudyDefinition
 @testable import SpeziStudyServer
 
-/// Test fixtures for Component entities.
+
 enum ComponentFixtures {
-    /// Creates and persists a health data component.
     @discardableResult
     static func createHealthDataComponent(
         on database: any Database,
@@ -28,7 +28,7 @@ enum ComponentFixtures {
         )
         try await component.save(on: database)
 
-        let componentId = try component.requireID()
+        let componentId = try component.requireId()
         let healthData = HealthDataComponent(
             componentId: componentId,
             data: .init(
@@ -46,7 +46,6 @@ enum ComponentFixtures {
         return (component, healthData)
     }
 
-    /// Creates and persists a questionnaire component.
     @discardableResult
     static func createQuestionnaireComponent(
         on database: any Database,
@@ -60,7 +59,7 @@ enum ComponentFixtures {
         )
         try await component.save(on: database)
 
-        let componentId = try component.requireID()
+        let componentId = try component.requireId()
         let questionnaire = QuestionnaireComponent(
             componentId: componentId,
             data: LocalizedDictionary([.enUS: QuestionnaireContent(questionnaire: "{}")])
@@ -70,7 +69,6 @@ enum ComponentFixtures {
         return (component, questionnaire)
     }
 
-    /// Creates and persists an informational component.
     @discardableResult
     static func createInformationalComponent(
         on database: any Database,
@@ -84,7 +82,7 @@ enum ComponentFixtures {
         )
         try await component.save(on: database)
 
-        let componentId = try component.requireID()
+        let componentId = try component.requireId()
         let informational = InformationalComponent(
             componentId: componentId,
             data: LocalizedDictionary([.enUS: InformationalContent(title: "Test", lede: nil, content: "Content")])

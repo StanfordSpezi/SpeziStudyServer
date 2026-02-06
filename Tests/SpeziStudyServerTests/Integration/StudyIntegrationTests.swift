@@ -5,10 +5,12 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 @testable import SpeziStudyServer
 import Testing
 import VaporTesting
+
 
 @Suite(.serialized)
 struct StudyIntegrationTests {
@@ -27,7 +29,10 @@ struct StudyIntegrationTests {
     @Test
     func createStudy() async throws {
         try await TestApp.withApp { app in
-            try await app.test(.POST, "studies", beforeRequest: { req in
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let groupId = try group.requireId()
+
+            try await app.test(.POST, "research-groups/\(groupId)/studies", beforeRequest: { req in
                 try req.encodeJSONBody(createStudyRequestBody(title: "New Study"))
             }) { response in
                 #expect(response.status == .created)
@@ -39,10 +44,25 @@ struct StudyIntegrationTests {
     }
 
     @Test
+    func createStudyResearchGroupNotFound() async throws {
+        try await TestApp.withApp { app in
+            let nonExistentId = UUID()
+
+            try await app.test(.POST, "research-groups/\(nonExistentId)/studies", beforeRequest: { req in
+                try req.encodeJSONBody(createStudyRequestBody(title: "New Study"))
+            }) { response in
+                #expect(response.status == .notFound)
+            }
+        }
+    }
+
+    @Test
     func getStudy() async throws {
         try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db, title: "Test Study")
-            let studyId = try study.requireID()
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: groupId, title: "Test Study")
+            let studyId = try study.requireId()
 
             try await app.test(.GET, "studies/\(studyId)") { response in
                 #expect(response.status == .ok)
@@ -67,8 +87,10 @@ struct StudyIntegrationTests {
     @Test
     func updateStudy() async throws {
         try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db, title: "Original Title")
-            let studyId = try study.requireID()
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: groupId, title: "Original Title")
+            let studyId = try study.requireId()
 
             try await app.test(.PUT, "studies/\(studyId)", beforeRequest: { req in
                 try req.encodeJSONBody(createStudyRequestBody(title: "Updated Title", id: studyId))
@@ -81,14 +103,15 @@ struct StudyIntegrationTests {
     @Test
     func deleteStudy() async throws {
         try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: groupId)
+            let studyId = try study.requireId()
 
             try await app.test(.DELETE, "studies/\(studyId)") { response in
                 #expect(response.status == .noContent)
             }
 
-            // Verify deletion
             try await app.test(.GET, "studies/\(studyId)") { response in
                 #expect(response.status == .notFound)
             }
@@ -109,8 +132,10 @@ struct StudyIntegrationTests {
     @Test
     func listStudiesWithData() async throws {
         try await TestApp.withApp { app in
-            try await StudyFixtures.createStudy(on: app.db, title: "Study 1")
-            try await StudyFixtures.createStudy(on: app.db, title: "Study 2")
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let groupId = try group.requireId()
+            try await StudyFixtures.createStudy(on: app.db, researchGroupId: groupId, title: "Study 1")
+            try await StudyFixtures.createStudy(on: app.db, researchGroupId: groupId, title: "Study 2")
 
             try await app.test(.GET, "studies") { response in
                 #expect(response.status == .ok)
@@ -121,7 +146,33 @@ struct StudyIntegrationTests {
         }
     }
 
-    // MARK: - Helpers
+    @Test
+    func listStudiesInResearchGroup() async throws {
+        try await TestApp.withApp { app in
+            let group1 = try await ResearchGroupFixtures.createResearchGroup(on: app.db, name: "Group 1")
+            let group1Id = try group1.requireId()
+            let group2 = try await ResearchGroupFixtures.createResearchGroup(on: app.db, name: "Group 2")
+            let group2Id = try group2.requireId()
+
+            try await StudyFixtures.createStudy(on: app.db, researchGroupId: group1Id, title: "Study A")
+            try await StudyFixtures.createStudy(on: app.db, researchGroupId: group1Id, title: "Study B")
+            try await StudyFixtures.createStudy(on: app.db, researchGroupId: group2Id, title: "Study C")
+
+            try await app.test(.GET, "research-groups/\(group1Id)/studies") { response in
+                #expect(response.status == .ok)
+
+                let studies = try response.content.decode([Components.Schemas.StudyResponse].self)
+                #expect(studies.count == 2)
+            }
+
+            try await app.test(.GET, "research-groups/\(group2Id)/studies") { response in
+                #expect(response.status == .ok)
+
+                let studies = try response.content.decode([Components.Schemas.StudyResponse].self)
+                #expect(studies.count == 1)
+            }
+        }
+    }
 
     private func createStudyRequestBody(title: String, id: UUID? = nil) -> [String: Any] {
         var metadata: [String: Any] = [

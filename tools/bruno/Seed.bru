@@ -1,0 +1,27 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
+meta {
+  name: Seed
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/health
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  await bru.runRequest("ResearchGroup/Get Research Groups")
+  await bru.runRequest("Study/Post Study")
+  await bru.runRequest("Components/Questionnaire - Create")
+  await bru.runRequest("Components/Informational - Create")
+  await bru.runRequest("Components/HealthData - Create")
+}

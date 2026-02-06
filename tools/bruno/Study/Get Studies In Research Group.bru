@@ -7,13 +7,13 @@ docs {
 }
 
 meta {
-  name: Get Studies
+  name: Get Studies In Research Group
   type: http
   seq: 3
 }
 
 get {
-  url: {{baseUrl}}/studies
+  url: {{baseUrl}}/research-groups/{{researchGroupId}}/studies
   body: none
   auth: inherit
 }

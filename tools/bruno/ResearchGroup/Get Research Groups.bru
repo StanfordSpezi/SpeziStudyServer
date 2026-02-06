@@ -1,0 +1,26 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
+meta {
+  name: Get Research Groups
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/research-groups
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.length > 0) {
+    bru.setVar("researchGroupId", body[0].id);
+  }
+}

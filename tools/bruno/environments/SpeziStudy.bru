@@ -1,12 +1,4 @@
-auth {
-  mode: bearer
-}
-
-auth:bearer {
-  token: {{accessToken}}
-}
-
-vars:pre-request {
+vars {
   baseUrl: http://localhost:8080
   keycloakUrl: http://localhost:8180
   keycloakRealm: spezi-study
@@ -15,3 +7,7 @@ vars:pre-request {
   keycloakUsername: leland
   keycloakPassword: password123
 }
+vars:secret [
+  accessToken,
+  refreshToken
+]

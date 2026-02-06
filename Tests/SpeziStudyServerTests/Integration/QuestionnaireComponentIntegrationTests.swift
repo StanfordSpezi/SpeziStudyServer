@@ -5,18 +5,21 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 @testable import SpeziStudyServer
 import Testing
 import VaporTesting
+
 
 @Suite(.serialized)
 struct QuestionnaireComponentIntegrationTests {
     @Test
     func createQuestionnaireComponent() async throws {
         try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let studyId = try study.requireId()
 
             try await app.test(
                 .POST,
@@ -39,15 +42,16 @@ struct QuestionnaireComponentIntegrationTests {
     @Test
     func getQuestionnaireComponent() async throws {
         try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let studyId = try study.requireId()
 
             let (component, _) = try await ComponentFixtures.createQuestionnaireComponent(
                 on: app.db,
                 studyId: studyId,
                 name: "Test Questionnaire"
             )
-            let componentId = try component.requireID()
+            let componentId = try component.requireId()
 
             try await app.test(
                 .GET,
@@ -67,8 +71,9 @@ struct QuestionnaireComponentIntegrationTests {
     @Test
     func getQuestionnaireComponentNotFound() async throws {
         try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let studyId = try study.requireId()
             let nonExistentId = UUID()
 
             try await app.test(
@@ -83,15 +88,16 @@ struct QuestionnaireComponentIntegrationTests {
     @Test
     func updateQuestionnaireComponent() async throws {
         try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+            let group = try await ResearchGroupFixtures.createResearchGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, researchGroupId: try group.requireId())
+            let studyId = try study.requireId()
 
             let (component, _) = try await ComponentFixtures.createQuestionnaireComponent(
                 on: app.db,
                 studyId: studyId,
                 name: "Original Name"
             )
-            let componentId = try component.requireID()
+            let componentId = try component.requireId()
 
             try await app.test(
                 .PUT,
@@ -109,8 +115,6 @@ struct QuestionnaireComponentIntegrationTests {
             }
         }
     }
-
-    // MARK: - Helpers
 
     private func createRequestBody(name: String) -> [String: Any] {
         [

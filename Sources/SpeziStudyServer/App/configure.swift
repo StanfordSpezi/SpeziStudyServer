@@ -29,6 +29,7 @@ public func configure(
     app.migrations.add(CreateInformationalComponents())
     app.migrations.add(CreateQuestionnaireComponents())
     app.migrations.add(CreateHealthDataComponents())
+    try await app.autoMigrate()
 
     await app.spezi.configure {
         KeycloakService()

@@ -16,6 +16,16 @@ enum ServerError: Error, Sendable {
     case validation(message: String)
     case notFound(resource: String, identifier: String)
     case internalError(message: String)
+
+    enum Defaults {
+        static let jsonBodyRequired = ServerError.validation(message: "Request body must be JSON")
+        static let failedToRetrieveCreatedObject = ServerError.internalError(message: "Failed to retrieve created object")
+        static let failedToListResources = ServerError.internalError(message: "Failed to list resources")
+        static let failedToConvertResponse = ServerError.internalError(message: "Failed to convert response")
+        static let unexpectedError = ServerError.internalError(message: "An unexpected error occurred")
+        static let invalidRequestBody = ServerError.validation(message: "Invalid request body format")
+        static let endpointNotImplemented = ServerError.internalError(message: "Endpoint not implemented.")
+    }
 }
 
 extension ServerError {
@@ -57,7 +67,7 @@ extension ServerError {
     }
     
     var httpResponse: (HTTPResponse, HTTPBody?) {
-        let problemDetails = Components.Schemas.ProblemDetails(self)
+        let problemDetails = Components.Schemas.ProblemDetails(title: title, status: status.code, detail: detail)
         
         var headerFields = HTTPFields()
         headerFields[.contentType] = "application/problem+json; charset=utf-8"

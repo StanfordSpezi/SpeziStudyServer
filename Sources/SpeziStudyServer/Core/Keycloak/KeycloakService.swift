@@ -37,7 +37,7 @@ final class KeycloakService: VaporModule, @unchecked Sendable {
 
     init() {}
 
-    func fetchGroups(config: KeycloakConfiguration.Config) async throws -> [KeycloakGroup] {
+    func fetchGroups(config: KeycloakConfiguration) async throws -> [KeycloakGroup] {
         let token = try await fetchAccessToken(config: config)
 
         var request = URLRequest(url: URL(string: "\(config.url)/admin/realms/\(config.realm)/groups")!)
@@ -54,7 +54,7 @@ final class KeycloakService: VaporModule, @unchecked Sendable {
         return try JSONDecoder().decode([KeycloakGroup].self, from: data)
     }
 
-    private func fetchAccessToken(config: KeycloakConfiguration.Config) async throws -> String {
+    private func fetchAccessToken(config: KeycloakConfiguration) async throws -> String {
         let tokenURL = URL(string: "\(config.url)/realms/\(config.realm)/protocol/openid-connect/token")!
 
         var request = URLRequest(url: tokenURL)

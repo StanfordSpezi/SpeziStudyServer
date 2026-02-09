@@ -15,6 +15,8 @@ enum ServerError: Error, Sendable {
     case invalidUUID(String)
     case validation(message: String)
     case notFound(resource: String, identifier: String)
+    case unauthorized(message: String)
+    case forbidden(message: String)
     case internalError(message: String)
 
     enum Defaults {
@@ -24,6 +26,9 @@ enum ServerError: Error, Sendable {
         static let failedToConvertResponse = ServerError.internalError(message: "Failed to convert response")
         static let unexpectedError = ServerError.internalError(message: "An unexpected error occurred")
         static let invalidRequestBody = ServerError.validation(message: "Invalid request body format")
+        static let missingToken = ServerError.unauthorized(message: "Missing Authorization header")
+        static let invalidToken = ServerError.unauthorized(message: "Invalid or expired token")
+        static let forbidden = ServerError.forbidden(message: "Insufficient permissions")
         static let endpointNotImplemented = ServerError.internalError(message: "Endpoint not implemented.")
     }
 }
@@ -37,6 +42,10 @@ extension ServerError {
             return "Validation Error"
         case .notFound:
             return "Not Found"
+        case .unauthorized:
+            return "Unauthorized"
+        case .forbidden:
+            return "Forbidden"
         case .internalError:
             return "Internal Server Error"
         }
@@ -48,6 +57,10 @@ extension ServerError {
             return 400
         case .notFound:
             return 404
+        case .unauthorized:
+            return 401
+        case .forbidden:
+            return 403
         case .internalError:
             return 500
         }
@@ -61,6 +74,10 @@ extension ServerError {
             return message
         case let .notFound(resource, identifier):
             return "\(resource) with identifier '\(identifier)' was not found"
+        case let .unauthorized(message):
+            return message
+        case let .forbidden(message):
+            return message
         case let .internalError(message):
             return message
         }

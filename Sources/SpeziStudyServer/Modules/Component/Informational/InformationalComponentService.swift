@@ -16,6 +16,8 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> InformationalComponent {
+        try await studyService.requireStudyAccess(id: studyId)
+
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }
@@ -32,6 +34,8 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
     }
 
     func getName(studyId: UUID, id: UUID) async throws -> String? {
+        try await studyService.requireStudyAccess(id: studyId)
+
         guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
             return nil
         }
@@ -43,7 +47,7 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
         name: String,
         content: LocalizedDictionary<InformationalContent>
     ) async throws -> InformationalComponent {
-        try await studyService.validateExists(id: studyId)
+        try await studyService.requireStudyAccess(id: studyId)
 
         let registry = try await componentRepository.create(
             studyId: studyId,
@@ -60,7 +64,8 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
         name: String,
         content: LocalizedDictionary<InformationalContent>
     ) async throws -> InformationalComponent {
-        // Validate component belongs to study
+        try await studyService.requireStudyAccess(id: studyId)
+
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }

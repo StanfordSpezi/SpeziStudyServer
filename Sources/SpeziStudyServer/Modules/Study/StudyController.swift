@@ -10,6 +10,12 @@ import Foundation
 
 
 extension Controller {
+    func getStudiesStudyId(_ input: Operations.GetStudiesStudyId.Input) async throws -> Operations.GetStudiesStudyId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let response = try await studyService.getStudy(id: studyId)
+        return .ok(.init(body: .json(response)))
+    }
+
     func postGroupsGroupIdStudies(
         _ input: Operations.PostGroupsGroupIdStudies.Input
     ) async throws -> Operations.PostGroupsGroupIdStudies.Output {
@@ -28,12 +34,6 @@ extension Controller {
         let groupId = try input.path.groupId.requireId()
         let studies = try await studyService.listStudies(groupId: groupId)
         return .ok(.init(body: .json(studies)))
-    }
-
-    func getStudiesStudyId(_ input: Operations.GetStudiesStudyId.Input) async throws -> Operations.GetStudiesStudyId.Output {
-        let studyId = try input.path.studyId.requireId()
-        let study = try await studyService.getStudy(id: studyId)
-        return .ok(.init(body: .json(study)))
     }
 
     func putStudiesStudyId(_ input: Operations.PutStudiesStudyId.Input) async throws -> Operations.PutStudiesStudyId.Output {

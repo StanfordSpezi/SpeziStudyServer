@@ -16,7 +16,7 @@ import VaporTesting
 struct HealthDataComponentIntegrationTests {
     @Test
     func createHealthDataComponent() async throws {
-        try await TestApp.withApp { app in
+        try await TestApp.withApp { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
@@ -25,6 +25,7 @@ struct HealthDataComponentIntegrationTests {
                 .POST,
                 "studies/\(studyId)/components/health-data",
                 beforeRequest: { req in
+                    req.bearerAuth(token)
                     try req.encodeJSONBody(createRequestBody(name: "Heart Rate Collection"))
                 }
             ) { response in
@@ -41,7 +42,7 @@ struct HealthDataComponentIntegrationTests {
 
     @Test
     func getHealthDataComponent() async throws {
-        try await TestApp.withApp { app in
+        try await TestApp.withApp { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
@@ -55,7 +56,10 @@ struct HealthDataComponentIntegrationTests {
 
             try await app.test(
                 .GET,
-                "studies/\(studyId)/components/health-data/\(componentId)"
+                "studies/\(studyId)/components/health-data/\(componentId)",
+                beforeRequest: { req in
+                    req.bearerAuth(token)
+                }
             ) { response in
                 #expect(response.status == .ok)
 
@@ -70,7 +74,7 @@ struct HealthDataComponentIntegrationTests {
 
     @Test
     func getHealthDataComponentNotFound() async throws {
-        try await TestApp.withApp { app in
+        try await TestApp.withApp { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
@@ -78,7 +82,10 @@ struct HealthDataComponentIntegrationTests {
 
             try await app.test(
                 .GET,
-                "studies/\(studyId)/components/health-data/\(nonExistentId)"
+                "studies/\(studyId)/components/health-data/\(nonExistentId)",
+                beforeRequest: { req in
+                    req.bearerAuth(token)
+                }
             ) { response in
                 #expect(response.status == .notFound)
             }
@@ -87,7 +94,7 @@ struct HealthDataComponentIntegrationTests {
 
     @Test
     func updateHealthDataComponent() async throws {
-        try await TestApp.withApp { app in
+        try await TestApp.withApp { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
@@ -103,6 +110,7 @@ struct HealthDataComponentIntegrationTests {
                 .PUT,
                 "studies/\(studyId)/components/health-data/\(componentId)",
                 beforeRequest: { req in
+                    req.bearerAuth(token)
                     try req.encodeJSONBody(createRequestBody(name: "Updated Name"))
                 }
             ) { response in

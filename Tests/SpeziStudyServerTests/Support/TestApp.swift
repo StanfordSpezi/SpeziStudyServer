@@ -7,19 +7,31 @@
 //
 
 import Fluent
+import JWTKit
+import OpenAPIRuntime
 @testable import SpeziStudyServer
 import Vapor
 import VaporTesting
 
 
 enum TestApp {
-    static func withApp(_ test: @escaping @Sendable (Application) async throws -> Void) async throws {
+    private static let testSecret = "test-hmac-secret-for-jwt-signing"
+    private static let requiredRole = "spezistudyplatform-authorized-users"
+
+    static func withApp(
+        groups: [String]? = ["/Test Group/admin"],
+        _ test: @escaping @Sendable (Application, String?) async throws -> Void
+    ) async throws {
         let app = try await Application.make(.testing)
 
         do {
-            try await configure(app, database: .testing, keycloak: .disabled)
-            try await app.autoMigrate()
-            try await test(app)
+            let keys = try await configureTesting(app)
+            let token: String? = if let groups {
+                try await signToken(keys: keys, roles: [requiredRole], groups: groups)
+            } else {
+                nil
+            }
+            try await test(app, token)
             try await cleanup(on: app.db)
             try await app.asyncShutdown()
         } catch {
@@ -27,6 +39,37 @@ enum TestApp {
             try? await app.asyncShutdown()
             throw error
         }
+    }
+
+    private static func configureTesting(_ app: Application) async throws -> JWTKeyCollection {
+        try DatabaseConfiguration.inMemory.configure(for: app)
+        try await configureMigrations(for: app)
+        await configureServices(for: app)
+
+        let keys = JWTKeyCollection()
+        await keys.add(hmac: HMACKey(from: testSecret), digestAlgorithm: .sha256)
+
+        let middlewares: [any ServerMiddleware] = [
+            ErrorMiddleware(logger: app.logger),
+            AuthMiddleware(keyCollection: keys, requiredRole: requiredRole, logger: app.logger)
+        ]
+
+        try configureRoutes(for: app, middlewares: middlewares)
+
+        return keys
+    }
+
+    static func signToken(
+        keys: JWTKeyCollection,
+        roles: [String],
+        groups: [String]
+    ) async throws -> String {
+        let payload = KeycloakJWTPayload(
+            exp: .init(value: Date().addingTimeInterval(3600)),
+            roles: roles,
+            groups: groups
+        )
+        return try await keys.sign(payload)
     }
 
     private static func cleanup(on database: any Database) async throws {

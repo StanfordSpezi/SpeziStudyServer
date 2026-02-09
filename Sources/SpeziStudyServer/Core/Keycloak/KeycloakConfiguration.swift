@@ -9,28 +9,16 @@
 import Vapor
 
 
-public enum KeycloakConfiguration: Sendable {
-    case enabled(Config)
-    case disabled
+public struct KeycloakConfiguration: Sendable {
+    public static let `default` = KeycloakConfiguration()
 
-    public struct Config: Sendable {
-        public static let `default` = Config()
+    public var url: String = Environment.get("KEYCLOAK_URL") ?? "http://localhost:8180"
+    public var realm: String = Environment.get("KEYCLOAK_REALM") ?? "spezi-study"
+    public var clientId: String = Environment.get("KEYCLOAK_CLIENT_ID") ?? "spezi-study-server"
+    public var clientSecret: String = Environment.get("KEYCLOAK_CLIENT_SECRET") ?? "change-me-in-production"
+    public var requiredRole: String = Environment.get("KEYCLOAK_REQUIRED_ROLE") ?? "spezistudyplatform-authorized-users"
 
-        public var url: String = Environment.get("KEYCLOAK_URL") ?? "http://localhost:8180"
-        public var realm: String = Environment.get("KEYCLOAK_REALM") ?? "spezi-study"
-        public var clientId: String = Environment.get("KEYCLOAK_CLIENT_ID") ?? "spezi-study-server"
-        public var clientSecret: String = Environment.get("KEYCLOAK_CLIENT_SECRET") ?? "change-me-in-production"
-    }
-
-    public static let production = KeycloakConfiguration.enabled(.default)
-    public static let testing = KeycloakConfiguration.disabled
-
-    public var jwksURL: String? {
-        switch self {
-        case .enabled(let config):
-            return "\(config.url)/realms/\(config.realm)/protocol/openid-connect/certs"
-        case .disabled:
-            return nil
-        }
+    public var jwksURL: String {
+        "\(url)/realms/\(realm)/protocol/openid-connect/certs"
     }
 }

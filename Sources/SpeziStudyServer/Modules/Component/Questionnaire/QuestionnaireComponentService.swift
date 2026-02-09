@@ -16,7 +16,8 @@ final class QuestionnaireComponentService: VaporModule, @unchecked Sendable {
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> QuestionnaireComponent {
-        // Validate component belongs to study
+        try await studyService.requireStudyAccess(id: studyId)
+
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
         }
@@ -33,6 +34,8 @@ final class QuestionnaireComponentService: VaporModule, @unchecked Sendable {
     }
 
     func getName(studyId: UUID, id: UUID) async throws -> String? {
+        try await studyService.requireStudyAccess(id: studyId)
+
         guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
             return nil
         }
@@ -44,7 +47,7 @@ final class QuestionnaireComponentService: VaporModule, @unchecked Sendable {
         name: String,
         content: LocalizedDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
-        try await studyService.validateExists(id: studyId)
+        try await studyService.requireStudyAccess(id: studyId)
 
         // Create registry entry first
         let registry = try await componentRepository.create(
@@ -63,7 +66,8 @@ final class QuestionnaireComponentService: VaporModule, @unchecked Sendable {
         name: String,
         content: LocalizedDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
-        // Validate component belongs to study
+        try await studyService.requireStudyAccess(id: studyId)
+
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
         }

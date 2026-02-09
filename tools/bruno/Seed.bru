@@ -1,11 +1,3 @@
-docs {
-  This source file is part of the SpeziStudyServer open source project
-
-  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
-
-  SPDX-License-Identifier: MIT
-}
-
 meta {
   name: Seed
   type: http
@@ -19,9 +11,18 @@ get {
 }
 
 script:post-response {
+  await bru.runRequest("Auth/Login")
   await bru.runRequest("Group/Get Groups")
   await bru.runRequest("Study/Post Study")
   await bru.runRequest("Components/Questionnaire - Create")
   await bru.runRequest("Components/Informational - Create")
   await bru.runRequest("Components/HealthData - Create")
+}
+
+docs {
+  This source file is part of the SpeziStudyServer open source project
+  
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+  
+  SPDX-License-Identifier: MIT
 }

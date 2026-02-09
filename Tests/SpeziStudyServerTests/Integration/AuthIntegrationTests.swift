@@ -1,0 +1,181 @@
+//
+// This source file is part of the SpeziStudyServer open source project
+//
+// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+//
+// SPDX-License-Identifier: MIT
+//
+
+import Foundation
+import SpeziHealthKit
+import SpeziLocalization
+@testable import SpeziStudyServer
+import Testing
+import VaporTesting
+
+
+@Suite(.serialized)
+struct AuthIntegrationTests {
+    private struct Endpoint: Sendable {
+        let method: HTTPMethod
+        let path: String
+        let body: Data?
+        let minRole: AuthContext.GroupRole
+        let successStatus: HTTPStatus
+
+        init(method: HTTPMethod, path: String, body: Data? = nil, minRole: AuthContext.GroupRole, successStatus: HTTPStatus) {
+            self.method = method
+            self.path = path
+            self.body = body
+            self.minRole = minRole
+            self.successStatus = successStatus
+        }
+    }
+
+    // MARK: - Endpoint Definitions
+
+    private static func allEndpoints(groupId: UUID, studyId: UUID, componentId: UUID) -> [Endpoint] {
+        let informational = jsonData(Components.Schemas.InformationalComponentInput(
+            name: "X",
+            data: LocalizedDictionary([.enUS: InformationalContent(title: "T", lede: nil, content: "C")])
+        ))
+        let questionnaire = jsonData(Components.Schemas.QuestionnaireComponentInput(
+            name: "X",
+            data: LocalizedDictionary([.enUS: QuestionnaireContent(questionnaire: "{}")])
+        ))
+        let healthData = jsonData(Components.Schemas.HealthDataComponentInput(
+            name: "X",
+            data: .init(sampleTypes: [.quantity(.heartRate)], historicalDataCollection: .init())
+        ))
+
+        return [
+            // Studies
+            .init(method: .GET, path: "studies/\(studyId)", minRole: .researcher, successStatus: .ok),
+            .init(method: .GET, path: "groups/\(groupId)/studies", minRole: .researcher, successStatus: .ok),
+            .init(method: .PUT, path: "studies/\(studyId)", body: jsonData(studyBody(id: studyId)), minRole: .researcher, successStatus: .ok),
+            .init(method: .POST, path: "groups/\(groupId)/studies", body: jsonData(studyBody()), minRole: .admin, successStatus: .created),
+            .init(method: .DELETE, path: "studies/\(studyId)", minRole: .admin, successStatus: .noContent),
+
+            // Components
+            .init(method: .GET, path: "studies/\(studyId)/components", minRole: .researcher, successStatus: .ok),
+            .init(method: .GET, path: "studies/\(studyId)/components/informational/\(componentId)", minRole: .researcher, successStatus: .ok),
+            .init(method: .GET, path: "studies/\(studyId)/components/questionnaire/\(componentId)", minRole: .researcher, successStatus: .ok),
+            .init(method: .GET, path: "studies/\(studyId)/components/health-data/\(componentId)", minRole: .researcher, successStatus: .ok),
+            .init(method: .POST, path: "studies/\(studyId)/components/informational", body: informational, minRole: .researcher, successStatus: .created),
+            .init(method: .POST, path: "studies/\(studyId)/components/questionnaire", body: questionnaire, minRole: .researcher, successStatus: .created),
+            .init(method: .POST, path: "studies/\(studyId)/components/health-data", body: healthData, minRole: .researcher, successStatus: .created),
+            .init(method: .PUT, path: "studies/\(studyId)/components/informational/\(componentId)", body: informational, minRole: .researcher, successStatus: .ok),
+            .init(method: .PUT, path: "studies/\(studyId)/components/questionnaire/\(componentId)", body: questionnaire, minRole: .researcher, successStatus: .ok),
+            .init(method: .PUT, path: "studies/\(studyId)/components/health-data/\(componentId)", body: healthData, minRole: .researcher, successStatus: .ok),
+            .init(method: .DELETE, path: "studies/\(studyId)/components/\(componentId)", minRole: .researcher, successStatus: .noContent),
+        ]
+    }
+
+    // MARK: - Auth Tests
+
+    @Test
+    func unauthenticatedReturns401() async throws {
+        try await withFixtures(groups: nil) { app, token, endpoints in
+            for ep in endpoints {
+                try await self.expectStatus(.unauthorized, for: ep, token: token, on: app)
+            }
+        }
+    }
+
+    @Test
+    func wrongGroupReturns403() async throws {
+        try await withFixtures(groups: ["/Other Group/admin"]) { app, token, endpoints in
+            for ep in endpoints {
+                try await self.expectStatus(.forbidden, for: ep, token: token, on: app)
+            }
+        }
+    }
+
+    @Test
+    func researcherDeniedAdminActions() async throws {
+        try await withFixtures(groups: ["/Test Group/researcher"]) { app, token, endpoints in
+            for ep in endpoints where ep.minRole > .researcher {
+                try await self.expectStatus(.forbidden, for: ep, token: token, on: app)
+            }
+        }
+    }
+
+    @Test
+    func researcherAllowedActions() async throws {
+        try await withFixtures(groups: ["/Test Group/researcher"]) { app, token, endpoints in
+            for ep in endpoints where ep.minRole <= .researcher && !ep.path.contains("/components") {
+                try await self.expectStatus(ep.successStatus, for: ep, token: token, on: app)
+            }
+        }
+    }
+
+    @Test
+    func adminAllowedActions() async throws {
+        try await withFixtures(groups: ["/Test Group/admin"]) { app, token, endpoints in
+            for ep in endpoints where ep.minRole == .admin && !ep.path.contains("/components") {
+                try await self.expectStatus(ep.successStatus, for: ep, token: token, on: app)
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func withFixtures(
+        groups: [String]?,
+        _ test: @escaping @Sendable (Application, String?, [Endpoint]) async throws -> Void
+    ) async throws {
+        try await TestApp.withApp(groups: groups) { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
+            let studyId = try study.requireId()
+            let (component, _) = try await ComponentFixtures.createHealthDataComponent(on: app.db, studyId: studyId)
+            let componentId = try component.requireId()
+            try await test(app, token, Self.allEndpoints(groupId: groupId, studyId: studyId, componentId: componentId))
+        }
+    }
+
+    private func expectStatus(
+        _ expected: HTTPStatus,
+        for endpoint: Endpoint,
+        token: String?,
+        on app: Application
+    ) async throws {
+        try await app.test(endpoint.method, endpoint.path, beforeRequest: { req in
+            req.bearerAuth(token)
+            if let body = endpoint.body {
+                req.headers.contentType = .json
+                req.body = .init(data: body)
+            }
+        }) { response in
+            #expect(response.status == expected, "Expected \(expected.code) for \(endpoint.method) /\(endpoint.path)")
+        }
+    }
+
+    private static func jsonData(_ dict: [String: Any]) -> Data? {
+        try? JSONSerialization.data(withJSONObject: dict)
+    }
+
+    private static func jsonData(_ value: some Encodable) -> Data? {
+        try? JSONEncoder().encode(value)
+    }
+
+    private static func studyBody(title: String = "X", id: UUID? = nil) -> [String: Any] {
+        var metadata: [String: Any] = [
+            "title": ["en-US": title],
+            "shortTitle": ["en-US": "Test"],
+            "explanationText": ["en-US": "Explanation text"],
+            "shortExplanationText": ["en-US": "Short explanation"],
+            "participationCriterion": [
+                "all": ["_0": [[String: Any]]()]
+            ],
+            "enrollmentConditions": [
+                "none": [String: Any]()
+            ]
+        ]
+        if let id {
+            metadata["id"] = id.uuidString
+        }
+        return ["metadata": metadata]
+    }
+}

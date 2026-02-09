@@ -32,6 +32,15 @@ class StudyRepository: VaporModule, @unchecked Sendable {
         try await Study.find(id, on: database)
     }
 
+    func findGroupName(forStudyId id: UUID) async throws -> String? {
+        try await Study.query(on: database)
+            .filter(\.$id == id)
+            .join(Group.self, on: \Study.$group.$id == \Group.$id)
+            .field(Group.self, \.$name)
+            .first()
+            .flatMap { try? $0.joined(Group.self).name }
+    }
+
     func findWithComponents(id: UUID) async throws -> Study? {
         try await Study.query(on: database)
             .filter(\.$id == id)

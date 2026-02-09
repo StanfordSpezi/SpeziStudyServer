@@ -14,7 +14,7 @@ final class ComponentService: VaporModule, @unchecked Sendable {
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func listComponents(studyId: UUID) async throws -> [Components.Schemas.Component] {
-        try await studyService.validateExists(id: studyId)
+        try await studyService.requireStudyAccess(id: studyId)
 
         let components = try await componentRepository.findAll(studyId: studyId)
         return components.compactMap { component in
@@ -36,7 +36,7 @@ final class ComponentService: VaporModule, @unchecked Sendable {
     }
 
     func deleteComponent(studyId: UUID, componentId: UUID) async throws {
-        try await studyService.validateExists(id: studyId)
+        try await studyService.requireStudyAccess(id: studyId)
 
         // Cascade delete will handle specialized table cleanup
         let deleted = try await componentRepository.delete(id: componentId, studyId: studyId)

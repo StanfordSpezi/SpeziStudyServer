@@ -28,10 +28,12 @@ final class GroupService: @unchecked Sendable, Module {
         return try .init(group)
     }
 
-    func validateExists(id: UUID) async throws {
-        if try await repository.find(id: id) == nil {
+    func requireGroupAccess(id: UUID, role: AuthContext.GroupRole = .researcher) async throws {
+        guard let group = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Group", identifier: id.uuidString)
         }
+
+        try AuthContext.requireCurrent().requireGroupAccess(groupName: group.name, role: role)
     }
 
     /// Creates local groups for any Keycloak top-level groups not yet in the database.

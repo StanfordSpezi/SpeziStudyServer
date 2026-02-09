@@ -1,0 +1,60 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
+meta {
+  name: Post Study
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/studies
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "metadata": {
+      "title": {
+        "en-US": "Simple Test Study"
+      },
+      "shortTitle": {
+        "en-US": "STS"
+      },
+      "icon": {
+        "systemSymbol": {
+          "_0": "heart.fill"
+        }
+      },
+      "explanationText": {
+        "en-US": "This is a simple test study for development"
+      },
+      "shortExplanationText": {
+        "en-US": "Test study"
+      },
+      "participationCriterion": {
+        "ageAtLeast": {
+          "_0": 18
+        }
+      },
+      "enrollmentConditions": {
+        "none": {}
+      }
+    }
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("studyId", body.id);
+}

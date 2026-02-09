@@ -1,0 +1,36 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
+meta {
+  name: Informational - Update
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/studies/{{studyId}}/components/informational/{{componentId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Welcome Information Updated",
+    "data": {
+      "en-US": {
+        "title": "Welcome Updated",
+        "lede": "Updated introduction to the study",
+        "content": "Welcome to the study - updated content"
+      }
+    }
+  }
+}

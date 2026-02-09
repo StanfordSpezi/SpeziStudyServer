@@ -1,0 +1,40 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
+meta {
+  name: Questionnaire - Create
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/studies/{{studyId}}/components/questionnaire
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Daily Survey",
+    "data": {
+      "en-US": {
+        "questionnaire": "{\"resourceType\": \"Questionnaire\", \"title\": \"Daily Survey\"}"
+      }
+    }
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("componentId", body.id);
+  console.log("Component created with id: " + body.id);
+}

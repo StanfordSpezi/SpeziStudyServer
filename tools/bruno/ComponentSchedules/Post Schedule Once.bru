@@ -1,0 +1,56 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
+meta {
+  name: Post Schedule Once
+  type: http
+  seq: 2.5
+}
+
+post {
+  url: {{baseUrl}}/studies/{{studyId}}/components/{{componentId}}/schedules
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "scheduleDefinition": {
+      "once": {
+        "_0": {
+          "event": {
+            "_0": {
+              "enrollment": {}
+            },
+            "offsetInDays": 0,
+            "time": {
+              "hour": 9,
+              "minute": 0,
+              "second": 0
+            }
+          }
+        }
+      }
+    },
+    "completionPolicy": {
+      "anytime": {}
+    },
+    "notifications": {
+      "disabled": {}
+    }
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar("scheduleId", body.id);
+}

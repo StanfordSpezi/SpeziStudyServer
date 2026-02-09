@@ -1,0 +1,23 @@
+#
+# This source file is part of the SpeziStudyServer open source project
+#
+# SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+#
+# SPDX-License-Identifier: MIT
+#
+
+generate:
+  - types
+  - server
+namingStrategy: idiomatic
+additionalImports:
+  - SpeziLocalization
+  - SpeziHealthKit
+typeOverrides:
+  schemas:
+    InformationalContent: SpeziStudyServer.InformationalContent
+    InformationalComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.InformationalContent>
+    QuestionnaireContent: SpeziStudyServer.QuestionnaireContent
+    QuestionnaireComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.QuestionnaireContent>
+    DateComponents: Foundation.DateComponents
+    SampleTypesCollection: "[SpeziHealthKit.SampleTypeProxy]"

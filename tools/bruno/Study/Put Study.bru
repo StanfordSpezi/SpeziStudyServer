@@ -1,0 +1,56 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
+meta {
+  name: Put Study
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/studies/{{studyId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "metadata": {
+      "id": "{{studyId}}",
+      "title": {
+        "en-US": "Updated Study Title"
+      },
+      "shortTitle": {
+        "en-US": "UST"
+      },
+      "icon": {
+        "systemSymbol": {
+          "_0": "heart.fill"
+        }
+      },
+      "explanationText": {
+        "en-US": "Updated explanation text for the study"
+      },
+      "shortExplanationText": {
+        "en-US": "Updated short explanation"
+      },
+      "participationCriterion": {
+        "ageAtLeast": {
+          "_0": 18
+        }
+      },
+      "enrollmentConditions": {
+        "none": {}
+      }
+    }
+  }
+}

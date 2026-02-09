@@ -1,0 +1,19 @@
+docs {
+  This source file is part of the SpeziStudyServer open source project
+
+  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+
+  SPDX-License-Identifier: MIT
+}
+
+meta {
+  name: Delete Component
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{baseUrl}}/studies/{{studyId}}/components/{{componentId}}
+  body: none
+  auth: inherit
+}

@@ -1,0 +1,979 @@
+#
+# This source file is part of the SpeziStudyServer open source project
+#
+# SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+#
+# SPDX-License-Identifier: MIT
+#
+
+openapi: 3.0.3
+info:
+  title: Study Definition API
+  version: 1.0.0
+
+paths:
+  /studies:
+    get:
+      tags:
+        - Studies
+      summary: List all studies with metadata
+      responses:
+        '200':
+          description: List of studies with ID and metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudyResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+          
+    post:
+      tags:
+        - Studies
+      summary: Create a study with metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyInput'
+      responses:
+        '201':
+          description: Study created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /studies/{id}:
+    get:
+      tags:
+        - Studies
+      summary: Get a study by ID (metadata only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Study with ID and metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Studies
+      summary: Update study metadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyInput'
+      responses:
+        '200':
+          description: Study updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Studies
+      summary: Delete a study definition by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Study deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/bundle:
+    get:
+      tags:
+        - Download
+      summary: Download the full study bundle as a ZIP file
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Study bundle ZIP file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: Attachment header for file download
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components:
+    get:
+      tags:
+        - Components
+      summary: List all components for a study
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of components
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Component'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/{componentId}:
+    delete:
+      tags:
+        - Components
+      summary: Remove a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Component deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/informational:
+    post:
+      tags:
+        - Informational Components
+      summary: Add an informational component to a study
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InformationalComponentInput'
+      responses:
+        '201':
+          description: Component added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InformationalComponentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/informational/{componentId}:
+    get:
+      tags:
+        - Informational Components
+      summary: Get a single informational component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The informational component
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InformationalComponentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Informational Components
+      summary: Replace an informational component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InformationalComponentInput'
+      responses:
+        '200':
+          description: Component replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InformationalComponentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/questionnaire:
+    post:
+      tags:
+        - Questionnaire Components
+      summary: Add a questionnaire component to a study
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireComponentInput'
+      responses:
+        '201':
+          description: Component added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireComponentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/questionnaire/{componentId}:
+    get:
+      tags:
+        - Questionnaire Components
+      summary: Get a single questionnaire component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The questionnaire component
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireComponentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Questionnaire Components
+      summary: Replace a questionnaire component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireComponentInput'
+      responses:
+        '200':
+          description: Component replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireComponentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/health-data:
+    post:
+      tags:
+        - Health Data Components
+      summary: Add a health data component to a study
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthDataComponentInput'
+      responses:
+        '201':
+          description: Component added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDataComponentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/health-data/{componentId}:
+    get:
+      tags:
+        - Health Data Components
+      summary: Get a single health data component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The health data component
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDataComponentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Health Data Components
+      summary: Replace a health data component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthDataComponentInput'
+      responses:
+        '200':
+          description: Component replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDataComponentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/{componentId}/schedules:
+    get:
+      tags:
+        - Schedules
+      summary: List all schedules for a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComponentSchedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Schedules
+      summary: Add a schedule to a component
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentSchedule'
+      responses:
+        '201':
+          description: Schedule added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentSchedule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /studies/{id}/components/{componentId}/schedules/{scheduleId}:
+    get:
+      tags:
+        - Schedules
+      summary: Get a single schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentSchedule'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Schedules
+      summary: Replace a schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentSchedule'
+      responses:
+        '200':
+          description: Schedule replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComponentSchedule'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Schedules
+      summary: Remove a schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: componentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Schedule deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  schemas:
+    ProblemDetails:
+      type: object
+      description: RFC 7807 Problem Details for HTTP APIs
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type
+        status:
+          type: integer
+          description: The HTTP status code
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence
+
+    StudyInput:
+      type: object
+      description: Request body for creating or updating a study (metadata only)
+      required:
+        - metadata
+      properties:
+        metadata:
+          type: object
+          additionalProperties: true
+
+    StudyResponse:
+      type: object
+      description: Study response with ID and metadata (no components)
+      required:
+        - id
+        - metadata
+      properties:
+        id:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+          additionalProperties: true
+
+    Component:
+      type: object
+      description: A component summary with type, id, and name
+      required:
+        - id
+        - type
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          description: Component type matching StudyDefinition.Component case names
+        name:
+          type: string
+          description: Display name for the component
+
+    InformationalComponentInput:
+      type: object
+      description: Request body for creating or updating an informational component
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/InformationalComponentData'
+
+    InformationalComponentData:
+      type: object
+      description: Localized informational content keyed by locale (e.g., "en-US", "de-DE")
+      additionalProperties:
+        $ref: '#/components/schemas/InformationalContent'
+      example:
+        en-US:
+          title: "Welcome"
+          lede: "Introduction to the study"
+          content: "Welcome to the study"
+        de-DE:
+          title: "Willkommen"
+          lede: "Einführung in die Studie"
+          content: "Willkommen zur Studie"
+
+    InformationalContent:
+      type: object
+      description: Content for a single locale in an informational component
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          description: The title of the informational component
+        lede:
+          type: string
+          description: A short introductory text or subtitle
+        content:
+          type: string
+          description: The main content text
+
+    QuestionnaireComponentInput:
+      type: object
+      description: Request body for creating or updating a questionnaire component
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/QuestionnaireComponentData'
+
+    QuestionnaireComponentData:
+      type: object
+      description: Localized questionnaire content keyed by locale (e.g., "en-US", "de-DE")
+      additionalProperties:
+        $ref: '#/components/schemas/QuestionnaireContent'
+      example:
+        en-US:
+          questionnaire: "{\"resourceType\": \"Questionnaire\", \"title\": \"Daily Survey\"}"
+        de-DE:
+          questionnaire: "{\"resourceType\": \"Questionnaire\", \"title\": \"Tägliche Umfrage\"}"
+
+    QuestionnaireContent:
+      type: object
+      description: Content for a single locale in a questionnaire component
+      required:
+        - questionnaire
+      properties:
+        questionnaire:
+          type: string
+          description: FHIR Questionnaire as JSON string
+
+    HealthDataComponentInput:
+      type: object
+      description: Request body for creating or updating a health data component
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/HealthDataComponentData'
+
+    HealthDataComponentData:
+      type: object
+      description: A health data component for collecting health metrics
+      required:
+        - sampleTypes
+      properties:
+        sampleTypes:
+          $ref: '#/components/schemas/SampleTypesCollection'
+        historicalDataCollection:
+          type: object
+          description: Configuration for collecting historical health data
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            startDate:
+              $ref: '#/components/schemas/ExportSessionStartDate'
+
+    InformationalComponentResponse:
+      type: object
+      description: Response containing informational component with ID and name
+      required:
+        - id
+        - name
+        - data
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/InformationalComponentData'
+
+    QuestionnaireComponentResponse:
+      type: object
+      description: Response containing questionnaire component with ID and name
+      required:
+        - id
+        - name
+        - data
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/QuestionnaireComponentData'
+
+    HealthDataComponentResponse:
+      type: object
+      description: Response containing health data component with ID and name
+      required:
+        - id
+        - name
+        - data
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/HealthDataComponentData'
+
+    ComponentSchedule:
+      type: object
+      description: A component schedule from SpeziStudyDefinition
+      additionalProperties: true
+
+    ExportSessionStartDate:
+      description: >
+        Defines how the start date of an export session is determined.
+        This represents a strategy rather than a concrete date.
+      oneOf:
+        - $ref: '#/components/schemas/OldestSampleStartDate'
+        - $ref: '#/components/schemas/RelativeStartDate'
+        - $ref: '#/components/schemas/AbsoluteStartDate'
+      discriminator:
+        propertyName: type
+        mapping:
+          oldestSample: '#/components/schemas/OldestSampleStartDate'
+          last: '#/components/schemas/RelativeStartDate'
+          absolute: '#/components/schemas/AbsoluteStartDate'
+
+    OldestSampleStartDate:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [oldestSample]
+      additionalProperties: false
+      description: >
+        Uses the oldest available sample as the start date.
+
+    RelativeStartDate:
+      type: object
+      required:
+        - type
+        - components
+      properties:
+        type:
+          type: string
+          enum: [last]
+        components:
+          $ref: '#/components/schemas/DateComponents'
+      additionalProperties: false
+      description: >
+        Uses a calendar-relative offset from the time the session was created.
+
+    AbsoluteStartDate:
+      type: object
+      required:
+        - type
+        - date
+      properties:
+        type:
+          type: string
+          enum: [absolute]
+        date:
+          type: string
+          format: date-time
+      additionalProperties: false
+      description: >
+        Uses a fixed absolute date as the start date.
+
+    DateComponents:
+      type: object
+      description: >
+        Calendar-relative offset applied from the session creation time.
+        At least one component must be provided. Uses Swift DateComponents naming (singular).
+      properties:
+        year:
+          type: integer
+          minimum: 0
+        month:
+          type: integer
+          minimum: 0
+        day:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+
+    SampleTypesCollection:
+      type: array
+      description: HealthKit sample types in SpeziHealthKit format (ClassName;Identifier)
+      items:
+        type: string
+      example:
+        - "HKQuantityType;HKQuantityTypeIdentifierHeartRate"
+        - "HKQuantityType;HKQuantityTypeIdentifierStepCount"
+        - "HKCategoryType;HKCategoryTypeIdentifierSleepAnalysis"

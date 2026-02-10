@@ -47,7 +47,7 @@ struct AuthContextTests {
         "",                         // empty string
         "no-leading-slash/admin",   // no leading slash
         "/Group/admin/extra",       // trailing segment
-        "/",                        // slash only
+        "/"                         // slash only
     ])
     func ignoresInvalidGroupPath(path: String) {
         let context = AuthContext(roles: [], groups: [path])

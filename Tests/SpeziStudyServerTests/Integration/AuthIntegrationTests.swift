@@ -23,7 +23,9 @@ struct AuthIntegrationTests {
         let minRole: AuthContext.GroupRole
         let successStatus: HTTPStatus
 
-        init(method: HTTPMethod, path: String, body: Data? = nil, minRole: AuthContext.GroupRole, successStatus: HTTPStatus) {
+        init( // swiftlint:disable:next function_default_parameter_at_end
+            method: HTTPMethod, path: String, body: Data? = nil, minRole: AuthContext.GroupRole, successStatus: HTTPStatus
+        ) {
             self.method = method
             self.path = path
             self.body = body
@@ -67,8 +69,35 @@ struct AuthIntegrationTests {
             .init(method: .PUT, path: "studies/\(studyId)/components/informational/\(componentId)", body: informational, minRole: .researcher, successStatus: .ok),
             .init(method: .PUT, path: "studies/\(studyId)/components/questionnaire/\(componentId)", body: questionnaire, minRole: .researcher, successStatus: .ok),
             .init(method: .PUT, path: "studies/\(studyId)/components/health-data/\(componentId)", body: healthData, minRole: .researcher, successStatus: .ok),
-            .init(method: .DELETE, path: "studies/\(studyId)/components/\(componentId)", minRole: .researcher, successStatus: .noContent),
+            .init(method: .DELETE, path: "studies/\(studyId)/components/\(componentId)", minRole: .researcher, successStatus: .noContent)
         ]
+    }
+
+    private static func jsonData(_ dict: [String: Any]) -> Data? {
+        try? JSONSerialization.data(withJSONObject: dict)
+    }
+
+    private static func jsonData(_ value: some Encodable) -> Data? {
+        try? JSONEncoder().encode(value)
+    }
+
+    private static func studyBody(title: String = "X", id: UUID? = nil) -> [String: Any] {
+        var metadata: [String: Any] = [
+            "title": ["en-US": title],
+            "shortTitle": ["en-US": "Test"],
+            "explanationText": ["en-US": "Explanation text"],
+            "shortExplanationText": ["en-US": "Short explanation"],
+            "participationCriterion": [
+                "all": ["_0": [[String: Any]]()]
+            ],
+            "enrollmentConditions": [
+                "none": [String: Any]()
+            ]
+        ]
+        if let id {
+            metadata["id"] = id.uuidString
+        }
+        return ["metadata": metadata]
     }
 
     // MARK: - Auth Tests
@@ -76,8 +105,8 @@ struct AuthIntegrationTests {
     @Test
     func unauthenticatedReturns401() async throws {
         try await withFixtures(groups: nil) { app, token, endpoints in
-            for ep in endpoints {
-                try await self.expectStatus(.unauthorized, for: ep, token: token, on: app)
+            for endpoint in endpoints {
+                try await self.expectStatus(.unauthorized, for: endpoint, token: token, on: app)
             }
         }
     }
@@ -85,8 +114,8 @@ struct AuthIntegrationTests {
     @Test
     func wrongGroupReturns403() async throws {
         try await withFixtures(groups: ["/Other Group/admin"]) { app, token, endpoints in
-            for ep in endpoints {
-                try await self.expectStatus(.forbidden, for: ep, token: token, on: app)
+            for endpoint in endpoints {
+                try await self.expectStatus(.forbidden, for: endpoint, token: token, on: app)
             }
         }
     }
@@ -94,8 +123,8 @@ struct AuthIntegrationTests {
     @Test
     func researcherDeniedAdminActions() async throws {
         try await withFixtures(groups: ["/Test Group/researcher"]) { app, token, endpoints in
-            for ep in endpoints where ep.minRole > .researcher {
-                try await self.expectStatus(.forbidden, for: ep, token: token, on: app)
+            for endpoint in endpoints where endpoint.minRole > .researcher {
+                try await self.expectStatus(.forbidden, for: endpoint, token: token, on: app)
             }
         }
     }
@@ -103,8 +132,8 @@ struct AuthIntegrationTests {
     @Test
     func researcherAllowedActions() async throws {
         try await withFixtures(groups: ["/Test Group/researcher"]) { app, token, endpoints in
-            for ep in endpoints where ep.minRole <= .researcher && !ep.path.contains("/components") {
-                try await self.expectStatus(ep.successStatus, for: ep, token: token, on: app)
+            for endpoint in endpoints where endpoint.minRole <= .researcher && !endpoint.path.contains("/components") {
+                try await self.expectStatus(endpoint.successStatus, for: endpoint, token: token, on: app)
             }
         }
     }
@@ -112,15 +141,15 @@ struct AuthIntegrationTests {
     @Test
     func adminAllowedActions() async throws {
         try await withFixtures(groups: ["/Test Group/admin"]) { app, token, endpoints in
-            for ep in endpoints where ep.minRole == .admin && !ep.path.contains("/components") {
-                try await self.expectStatus(ep.successStatus, for: ep, token: token, on: app)
+            for endpoint in endpoints where endpoint.minRole == .admin && !endpoint.path.contains("/components") {
+                try await self.expectStatus(endpoint.successStatus, for: endpoint, token: token, on: app)
             }
         }
     }
 
     // MARK: - Helpers
 
-    private func withFixtures(
+    private func withFixtures( // swiftlint:disable:next discouraged_optional_collection
         groups: [String]?,
         _ test: @escaping @Sendable (Application, String?, [Endpoint]) async throws -> Void
     ) async throws {
@@ -150,32 +179,5 @@ struct AuthIntegrationTests {
         }) { response in
             #expect(response.status == expected, "Expected \(expected.code) for \(endpoint.method) /\(endpoint.path)")
         }
-    }
-
-    private static func jsonData(_ dict: [String: Any]) -> Data? {
-        try? JSONSerialization.data(withJSONObject: dict)
-    }
-
-    private static func jsonData(_ value: some Encodable) -> Data? {
-        try? JSONEncoder().encode(value)
-    }
-
-    private static func studyBody(title: String = "X", id: UUID? = nil) -> [String: Any] {
-        var metadata: [String: Any] = [
-            "title": ["en-US": title],
-            "shortTitle": ["en-US": "Test"],
-            "explanationText": ["en-US": "Explanation text"],
-            "shortExplanationText": ["en-US": "Short explanation"],
-            "participationCriterion": [
-                "all": ["_0": [[String: Any]]()]
-            ],
-            "enrollmentConditions": [
-                "none": [String: Any]()
-            ]
-        ]
-        if let id {
-            metadata["id"] = id.uuidString
-        }
-        return ["metadata": metadata]
     }
 }

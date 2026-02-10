@@ -11,8 +11,8 @@ import JWTKit
 
 struct KeycloakJWTPayload: JWTPayload {
     var exp: ExpirationClaim
-    var roles: [String]?
-    var groups: [String]?
+    var roles: [String]? // swiftlint:disable:this discouraged_optional_collection
+    var groups: [String]? // swiftlint:disable:this discouraged_optional_collection
 
     func verify(using algorithm: some JWTAlgorithm) async throws {
         try exp.verifyNotExpired()

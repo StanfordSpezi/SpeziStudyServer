@@ -40,6 +40,7 @@ public func configure(_ app: Application) async throws {
     try configureRoutes(for: app, middlewares: middlewares)
 }
 
+/// Registers all database migrations and runs auto-migrate.
 public func configureMigrations(for app: Application) async throws {
     app.migrations.add(CreateGroups())
     app.migrations.add(CreateStudy())
@@ -51,6 +52,7 @@ public func configureMigrations(for app: Application) async throws {
     try await app.autoMigrate()
 }
 
+/// Configures services and repositories.
 public func configureServices(for app: Application) async {
     await app.spezi.configure {
         KeycloakService()
@@ -69,6 +71,7 @@ public func configureServices(for app: Application) async {
     }
 }
 
+/// Registers OpenAPI routes and the health endpoint.
 public func configureRoutes(for app: Application, middlewares: [any ServerMiddleware]) throws {
     let controller = Controller(spezi: app.spezi)
 

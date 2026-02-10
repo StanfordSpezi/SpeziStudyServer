@@ -18,7 +18,7 @@ enum TestApp {
     private static let testSecret = "test-hmac-secret-for-jwt-signing"
     private static let requiredRole = "spezistudyplatform-authorized-users"
 
-    static func withApp(
+    static func withApp( // swiftlint:disable:next discouraged_optional_collection
         groups: [String]? = ["/Test Group/admin"],
         _ test: @escaping @Sendable (Application, String?) async throws -> Void
     ) async throws {

@@ -1,0 +1,6 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Files: tools/bruno/*
+Copyright: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+License: MIT
+

@@ -10,7 +10,7 @@ import Foundation
 import Spezi
 
 
-final class GroupService: @unchecked Sendable, Module {
+final class GroupService: Module, @unchecked Sendable {
     @Dependency(GroupRepository.self) var repository: GroupRepository
 
     init() {}

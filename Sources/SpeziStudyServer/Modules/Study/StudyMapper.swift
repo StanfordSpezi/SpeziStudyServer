@@ -23,13 +23,9 @@ extension Study {
 
 extension Components.Schemas.StudyResponse {
     init(_ model: Study) throws {
-        guard let id = model.id else {
-            throw ServerError.Defaults.unexpectedError
-        }
-
         let metadata: Components.Schemas.StudyResponse.MetadataPayload = try model.metadata.recode()
         self.init(
-            id: id.uuidString,
+            id: try model.requireId().uuidString,
             metadata: metadata
         )
     }

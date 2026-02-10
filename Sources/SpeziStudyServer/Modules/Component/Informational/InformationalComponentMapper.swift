@@ -9,12 +9,12 @@
 import Foundation
 
 
-extension Components.Schemas.GroupResponse {
-    init(_ model: Group) throws {
+extension Components.Schemas.InformationalComponentResponse {
+    init(_ model: InformationalComponent, name: String) throws {
         self.init(
             id: try model.requireId().uuidString,
-            name: model.name,
-            icon: model.icon
+            name: name,
+            data: model.data
         )
     }
 }

@@ -30,7 +30,7 @@ enum KeycloakError: Error, CustomStringConvertible {
     }
 }
 
-final class KeycloakService: VaporModule, @unchecked Sendable {
+final class KeycloakService: Module, @unchecked Sendable {
     private struct TokenResponse: Decodable {
         let access_token: String // swiftlint:disable:this identifier_name
     }

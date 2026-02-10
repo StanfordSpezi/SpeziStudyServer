@@ -7,10 +7,11 @@
 //
 
 import Foundation
+import Spezi
 import SpeziLocalization
 
 
-final class InformationalComponentService: VaporModule, @unchecked Sendable {
+final class InformationalComponentService: Module, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
     @Dependency(InformationalComponentRepository.self) var repository: InformationalComponentRepository
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
@@ -31,15 +32,6 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
         }
 
         return data
-    }
-
-    func getName(studyId: UUID, id: UUID) async throws -> String? {
-        try await studyService.requireStudyAccess(id: studyId)
-
-        guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
-            return nil
-        }
-        return component.name
     }
 
     func createComponent(

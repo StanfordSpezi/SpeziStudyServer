@@ -7,9 +7,10 @@
 //
 
 import Foundation
+import Spezi
 
 
-final class ComponentService: VaporModule, @unchecked Sendable {
+final class ComponentService: Module, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
@@ -27,6 +28,15 @@ final class ComponentService: VaporModule, @unchecked Sendable {
                 name: component.name
             )
         }
+    }
+
+    func getComponentName(studyId: UUID, componentId: UUID) async throws -> String {
+        try await studyService.requireStudyAccess(id: studyId)
+
+        guard let component = try await componentRepository.find(id: componentId, studyId: studyId) else {
+            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
+        }
+        return component.name
     }
 
     func validateExists(studyId: UUID, componentId: UUID) async throws {

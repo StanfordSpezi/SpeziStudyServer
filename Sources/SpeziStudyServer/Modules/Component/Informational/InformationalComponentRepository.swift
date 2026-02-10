@@ -8,10 +8,11 @@
 
 import Fluent
 import Foundation
+import Spezi
 import SpeziLocalization
 
 
-class InformationalComponentRepository: VaporModule, @unchecked Sendable {
+final class InformationalComponentRepository: Module, Sendable {
     let database: any Database
 
     init(database: any Database) {

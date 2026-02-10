@@ -8,10 +8,11 @@
 
 import Fluent
 import Foundation
+import Spezi
 import SpeziStudyDefinition
 
 
-class StudyRepository: VaporModule, @unchecked Sendable {
+final class StudyRepository: Module, Sendable {
     let database: any Database
 
     init(database: any Database) {

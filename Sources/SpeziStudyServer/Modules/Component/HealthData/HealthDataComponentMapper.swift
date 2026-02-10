@@ -13,6 +13,17 @@ import SpeziHealthKitBulkExport
 import SpeziStudyDefinition
 
 
+extension Components.Schemas.HealthDataComponentResponse {
+    init(_ model: HealthDataComponent, name: String) throws {
+        self.init(
+            id: try model.requireId().uuidString,
+            name: name,
+            data: .init(model.data)
+        )
+    }
+}
+
+
 // MARK: - Model to Schema
 
 extension Components.Schemas.HealthDataComponentData {

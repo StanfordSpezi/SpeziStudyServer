@@ -8,9 +8,10 @@
 
 import Fluent
 import Foundation
+import Spezi
 
 
-class GroupRepository: VaporModule, @unchecked Sendable {
+final class GroupRepository: Module, Sendable {
     let database: any Database
 
     init(database: any Database) {

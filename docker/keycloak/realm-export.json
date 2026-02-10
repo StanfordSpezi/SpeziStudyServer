@@ -3,7 +3,7 @@
   "enabled": true,
   "ssoSessionIdleTimeout": 86400,
   "ssoSessionMaxLifespan": 86400,
-  "accessTokenLifespan": 300,
+  "accessTokenLifespan": 86400,
   "accessTokenLifespanForImplicitFlow": 900,
   "registrationAllowed": true,
   "registrationEmailAsUsername": false,

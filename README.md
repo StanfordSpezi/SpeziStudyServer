@@ -31,50 +31,64 @@ The server integrates with [SpeziStudy](https://github.com/StanfordSpezi/SpeziSt
 ## Requirements
 
 - Swift 6.0+
-- PostgreSQL (production) or SQLite (development/testing)
-- Docker (optional, for local PostgreSQL)
+- Docker
 
 
-## Getting Started
+## Local Development Setup
 
-### Run with Docker
+### 1. Start Infrastructure
+
+The project uses PostgreSQL for the application database and [Keycloak](https://www.keycloak.org) for authentication. Both run via Docker Compose:
 
 ```bash
-# Start PostgreSQL
-docker-compose up -d db
+docker compose up -d db keycloak-db keycloak
+```
 
-# Run the server
+This starts:
+- **PostgreSQL** on `localhost:5432` — application database
+- **Keycloak** on `localhost:8180` — identity provider with a pre-configured realm imported from `docker/keycloak/realm-export.json`
+
+### 2. Configure Environment
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+The defaults work out of the box with the Docker Compose setup. See `.env.example` for all available options.
+
+### 3. Run the Server
+
+```bash
 swift run
 ```
 
-### Run Tests
+On startup the server connects to PostgreSQL, runs migrations, fetches JWKS from Keycloak, and syncs groups.
+
+### 4. Run Tests
 
 ```bash
 swift test
 ```
 
-Tests use an in-memory SQLite database and require no external dependencies.
+Tests use an in-memory SQLite database and mock JWT signing — no Docker services required.
+
+### Docker Compose Services
+
+| Service | Description | Port |
+|---|---|---|
+| `db` | PostgreSQL for the application | `5432` |
+| `keycloak-db` | PostgreSQL for Keycloak | internal |
+| `keycloak` | Keycloak identity provider | `8180` |
+| `app` | Production server (requires `docker compose build` first) | `8080` |
+| `migrate` | Run migrations manually (`docker compose run migrate`) | — |
+| `revert` | Revert migrations (`docker compose run revert`) | — |
 
 
 ## API Documentation
 
 The API is defined using OpenAPI. See [`Sources/SpeziStudyServer/openapi.yaml`](Sources/SpeziStudyServer/openapi.yaml) for the full specification.
-
-### Example: Create a Study
-
-```bash
-curl -X POST http://localhost:8080/studies \
-  -H "Content-Type: application/json" \
-  -d '{
-    "metadata": {
-      "title": {"en-US": "My Study"},
-      "explanationText": {"en-US": "Study description"},
-      "shortExplanationText": {"en-US": "Short description"},
-      "participationCriterion": {"all": {"_0": []}},
-      "enrollmentConditions": {"none": {}}
-    }
-  }'
-```
 
 ### API Testing with Bruno
 

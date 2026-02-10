@@ -1,0 +1,11 @@
+meta {
+  name: Get Studies In Group
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/groups/{{groupId}}/studies
+  body: none
+  auth: inherit
+}

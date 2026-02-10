@@ -5,10 +5,12 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 
+
 extension String {
-    func requireID() throws -> UUID {
+    func requireId() throws -> UUID {
         guard let uuid = Foundation.UUID(uuidString: self) else {
             throw ServerError.invalidUUID(self)
         }

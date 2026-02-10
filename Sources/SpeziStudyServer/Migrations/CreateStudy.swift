@@ -5,13 +5,21 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
+
 
 struct CreateStudy: AsyncMigration {
     func prepare(on database: any Database) async throws {
         try await database.schema("studies")
             .id()
             .field("metadata", .json, .required)
+            .field(
+                "group_id",
+                .uuid,
+                .required,
+                .references("groups", "id", onDelete: .cascade)
+            )
             .create()
     }
 

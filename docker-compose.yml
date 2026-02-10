@@ -6,52 +6,45 @@
 # SPDX-License-Identifier: MIT
 #
 
-# Docker Compose file for Vapor
-#
-# Install Docker on your system to run and test
-# your Vapor app in a production-like environment.
-#
-# Note: This file is intended for testing and does not
-# implement best practices for a production deployment.
-#
-# Learn more: https://docs.docker.com/compose/reference/
-#
-#   Build images: docker compose build
-#      Start app: docker compose up app
-# Start database: docker compose up db
-# Run migrations: docker compose run migrate
-#       Stop all: docker compose down (add -v to wipe db)
-#
-
 volumes:
   db_data:
+  keycloak_db_data:
 
-x-shared_environment: &shared_environment
-  LOG_LEVEL: ${LOG_LEVEL:-debug}
-  DATABASE_HOST: db
-  DATABASE_NAME: &db_name vapor_database
-  DATABASE_USERNAME: &db_username vapor_username
-  DATABASE_PASSWORD: &db_password vapor_password
-  
 services:
+  db:
+    image: postgres:18-alpine
+    volumes:
+      - db_data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: &db_username ${DATABASE_USERNAME:-vapor_username}
+      POSTGRES_PASSWORD: &db_password ${DATABASE_PASSWORD:-vapor_password}
+      POSTGRES_DB: &db_name ${DATABASE_NAME:-vapor_database}
+    ports:
+      - '5432:5432'
   app:
     image: spezistudyserver:latest
     build:
       context: .
     environment:
-      <<: *shared_environment
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      DATABASE_HOST: db
+      DATABASE_NAME: *db_name
+      DATABASE_USERNAME: *db_username
+      DATABASE_PASSWORD: *db_password
     depends_on:
       - db
     ports:
       - '8080:8080'
-    # user: '0' # uncomment to run as root for testing purposes even though Dockerfile defines 'vapor' user.
     command: ["serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
   migrate:
     image: spezistudyserver:latest
     build:
       context: .
     environment:
-      <<: *shared_environment
+      DATABASE_HOST: db
+      DATABASE_NAME: *db_name
+      DATABASE_USERNAME: *db_username
+      DATABASE_PASSWORD: *db_password
     depends_on:
       - db
     command: ["migrate", "--yes"]
@@ -62,19 +55,36 @@ services:
     build:
       context: .
     environment:
-      <<: *shared_environment
+      DATABASE_HOST: db
+      DATABASE_NAME: *db_name
+      DATABASE_USERNAME: *db_username
+      DATABASE_PASSWORD: *db_password
     depends_on:
       - db
     command: ["migrate", "--revert", "--yes"]
     deploy:
       replicas: 0
-  db:
+  keycloak-db:
     image: postgres:18-alpine
     volumes:
-      - db_data:/var/lib/postgresql
+      - keycloak_db_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: *db_username
-      POSTGRES_PASSWORD: *db_password
-      POSTGRES_DB: *db_name
+      POSTGRES_USER: &kc_db_username ${KEYCLOAK_DB_USERNAME:-keycloak}
+      POSTGRES_PASSWORD: &kc_db_password ${KEYCLOAK_DB_PASSWORD:-keycloak}
+      POSTGRES_DB: &kc_db_name ${KEYCLOAK_DB_NAME:-keycloak}
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB_NAME:-keycloak}
+      KC_DB_USERNAME: *kc_db_username
+      KC_DB_PASSWORD: *kc_db_password
+    volumes:
+      - ./docker/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      - keycloak-db
     ports:
-      - '5432:5432'
+      - '8180:8080'

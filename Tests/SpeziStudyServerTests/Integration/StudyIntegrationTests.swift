@@ -5,29 +5,23 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 @testable import SpeziStudyServer
 import Testing
 import VaporTesting
 
+
 @Suite(.serialized)
 struct StudyIntegrationTests {
     @Test
-    func listStudiesEmpty() async throws {
-        try await TestApp.withApp { app in
-            try await app.test(.GET, "studies") { response in
-                #expect(response.status == .ok)
-
-                let studies = try response.content.decode([Components.Schemas.StudyResponse].self)
-                #expect(studies.isEmpty)
-            }
-        }
-    }
-
-    @Test
     func createStudy() async throws {
-        try await TestApp.withApp { app in
-            try await app.test(.POST, "studies", beforeRequest: { req in
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+
+            try await app.test(.POST, "groups/\(groupId)/studies", beforeRequest: { req in
+                req.bearerAuth(token)
                 try req.encodeJSONBody(createStudyRequestBody(title: "New Study"))
             }) { response in
                 #expect(response.status == .created)
@@ -39,12 +33,30 @@ struct StudyIntegrationTests {
     }
 
     @Test
-    func getStudy() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db, title: "Test Study")
-            let studyId = try study.requireID()
+    func createStudyGroupNotFound() async throws {
+        try await TestApp.withApp { app, token in
+            let nonExistentId = UUID()
 
-            try await app.test(.GET, "studies/\(studyId)") { response in
+            try await app.test(.POST, "groups/\(nonExistentId)/studies", beforeRequest: { req in
+                req.bearerAuth(token)
+                try req.encodeJSONBody(createStudyRequestBody(title: "New Study"))
+            }) { response in
+                #expect(response.status == .notFound)
+            }
+        }
+    }
+
+    @Test
+    func getStudy() async throws {
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId, title: "Test Study")
+            let studyId = try study.requireId()
+
+            try await app.test(.GET, "studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .ok)
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
@@ -55,10 +67,12 @@ struct StudyIntegrationTests {
 
     @Test
     func getStudyNotFound() async throws {
-        try await TestApp.withApp { app in
+        try await TestApp.withApp { app, token in
             let nonExistentId = UUID()
 
-            try await app.test(.GET, "studies/\(nonExistentId)") { response in
+            try await app.test(.GET, "studies/\(nonExistentId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .notFound)
             }
         }
@@ -66,11 +80,14 @@ struct StudyIntegrationTests {
 
     @Test
     func updateStudy() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db, title: "Original Title")
-            let studyId = try study.requireID()
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId, title: "Original Title")
+            let studyId = try study.requireId()
 
             try await app.test(.PUT, "studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
                 try req.encodeJSONBody(createStudyRequestBody(title: "Updated Title", id: studyId))
             }) { response in
                 #expect(response.status == .ok)
@@ -80,16 +97,21 @@ struct StudyIntegrationTests {
 
     @Test
     func deleteStudy() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
+            let studyId = try study.requireId()
 
-            try await app.test(.DELETE, "studies/\(studyId)") { response in
+            try await app.test(.DELETE, "studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .noContent)
             }
 
-            // Verify deletion
-            try await app.test(.GET, "studies/\(studyId)") { response in
+            try await app.test(.GET, "studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .notFound)
             }
         }
@@ -97,31 +119,48 @@ struct StudyIntegrationTests {
 
     @Test
     func deleteStudyNotFound() async throws {
-        try await TestApp.withApp { app in
+        try await TestApp.withApp { app, token in
             let nonExistentId = UUID()
 
-            try await app.test(.DELETE, "studies/\(nonExistentId)") { response in
+            try await app.test(.DELETE, "studies/\(nonExistentId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .notFound)
             }
         }
     }
 
     @Test
-    func listStudiesWithData() async throws {
-        try await TestApp.withApp { app in
-            try await StudyFixtures.createStudy(on: app.db, title: "Study 1")
-            try await StudyFixtures.createStudy(on: app.db, title: "Study 2")
+    func listStudiesInGroup() async throws {
+        try await TestApp.withApp(groups: ["/Group 1/admin", "/Group 2/admin"]) { app, token in
+            let group1 = try await GroupFixtures.createGroup(on: app.db, name: "Group 1")
+            let group1Id = try group1.requireId()
+            let group2 = try await GroupFixtures.createGroup(on: app.db, name: "Group 2")
+            let group2Id = try group2.requireId()
 
-            try await app.test(.GET, "studies") { response in
+            try await StudyFixtures.createStudy(on: app.db, groupId: group1Id, title: "Study A")
+            try await StudyFixtures.createStudy(on: app.db, groupId: group1Id, title: "Study B")
+            try await StudyFixtures.createStudy(on: app.db, groupId: group2Id, title: "Study C")
+
+            try await app.test(.GET, "groups/\(group1Id)/studies", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .ok)
 
                 let studies = try response.content.decode([Components.Schemas.StudyResponse].self)
                 #expect(studies.count == 2)
             }
+
+            try await app.test(.GET, "groups/\(group2Id)/studies", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
+                #expect(response.status == .ok)
+
+                let studies = try response.content.decode([Components.Schemas.StudyResponse].self)
+                #expect(studies.count == 1)
+            }
         }
     }
-
-    // MARK: - Helpers
 
     private func createStudyRequestBody(title: String, id: UUID? = nil) -> [String: Any] {
         var metadata: [String: Any] = [

@@ -20,11 +20,15 @@ Sources/SpeziStudyServer/
 ├── openapi-generator-config.yaml # Generator config
 ├── App/                          # Application bootstrap
 │   ├── entrypoint.swift          # @main entry point
-│   ├── configure.swift           # App configuration and DI registration
-│   └── routes.swift              # Route registration
+│   └── configure.swift           # App configuration, DI, routes, migrations
 │
 ├── Modules/                      # Feature modules
-│   ├── Controller.swift          # Base controller protocol
+│   ├── Controller.swift          # Root APIProtocol implementation + service accessors
+│   ├── Group/                    # Group management (synced from Keycloak)
+│   │   ├── GroupController.swift
+│   │   ├── GroupService.swift
+│   │   ├── GroupRepository.swift
+│   │   └── GroupMapper.swift
 │   ├── Study/                    # Study management
 │   │   ├── StudyController.swift
 │   │   ├── StudyService.swift
@@ -40,6 +44,7 @@ Sources/SpeziStudyServer/
 │   └── ComponentSchedule/        # Schedule management
 │
 ├── Models/                       # Fluent database models
+│   ├── Group.swift
 │   ├── Study.swift
 │   ├── Component.swift
 │   ├── ComponentType.swift
@@ -51,17 +56,19 @@ Sources/SpeziStudyServer/
 ├── Migrations/                   # Fluent database migrations
 │
 └── Core/                         # Shared infrastructure
-    ├── DatabaseConfiguration.swift  # Injectable DB config
-    ├── VaporModule.swift
-    ├── Errors/
-    │   ├── ServerError.swift
-    │   ├── ServerError+Defaults.swift
-    │   └── ProblemDetails+ServerError.swift
+    ├── AuthContext.swift              # Auth domain type (roles, group memberships)
+    ├── DatabaseConfiguration.swift    # Injectable DB config
+    ├── ServerError.swift              # Error enum with RFC 7807 ProblemDetails
     ├── Extensions/
     │   ├── Encodable+Recode.swift
     │   ├── Model+RequireID.swift
     │   └── String+RequireID.swift
+    ├── Keycloak/
+    │   ├── KeycloakConfiguration.swift  # Environment-based config struct
+    │   ├── KeycloakJWTPayload.swift     # JWT payload with roles/groups
+    │   └── KeycloakService.swift        # Group fetching & access token
     └── Middleware/
+        ├── AuthMiddleware.swift          # JWT validation + AuthContext
         └── ErrorMiddleware.swift
 ```
 
@@ -81,25 +88,33 @@ Each module (feature) contains its own:
 Uses Spezi's dependency injection system:
 
 ```swift
-final class StudyService: VaporModule, @unchecked Sendable {
+final class StudyService: Module, @unchecked Sendable {
     @Dependency(StudyRepository.self) var repository: StudyRepository
 }
 ```
 
-Dependencies are registered in `App/configure.swift`:
+Dependencies are registered in `App/configure.swift` via shared `configureServices(for:)`:
 
 ```swift
 await app.spezi.configure {
     // Services
+    GroupService()
     StudyService()
     ComponentService()
     // Repositories
+    GroupRepository(database: app.db)
     StudyRepository(database: app.db)
     ComponentRepository(database: app.db)
 }
 ```
 
-### Database Configuration
+### Configuration
+
+`App/configure.swift` contains production `configure()` and shared helpers used by both production and tests:
+
+- `configureMigrations(for:)` - Shared migration registration + auto-migrate
+- `configureServices(for:)` - Shared Spezi DI setup
+- `configureRoutes(for:middlewares:)` - OpenAPI handler registration + /health endpoint
 
 Database configuration is injectable via `DatabaseConfiguration`:
 
@@ -110,6 +125,18 @@ try await configure(app, database: .production)
 // Testing (in-memory SQLite)
 try await configure(app, database: .testing)
 ```
+
+### Authentication (Keycloak)
+
+JWT-based auth via Keycloak:
+
+- JWKS fetched from Keycloak on startup for JWT validation
+- `AuthMiddleware` implements `ServerMiddleware` (OpenAPIRuntime, not Vapor middleware)
+- `AuthContext` with `@TaskLocal static var current` — set by middleware, read by handlers
+- `GroupRole` enum (`researcher` < `admin`) with comparison for RBAC
+- Groups synced from Keycloak Admin API on startup via `GroupService.syncGroups()`
+
+Middleware stack: `ErrorMiddleware` → `AuthMiddleware`, registered in `configureRoutes(for:middlewares:)`.
 
 ### Component Types
 
@@ -215,7 +242,7 @@ Key points:
 
 - Fluent models: `Study`, `Component`, `HealthDataComponent`
 - Repositories: `StudyRepository`, `ComponentRepository` (class, not protocol)
-- Services: `StudyService` conforming to `VaporModule`
+- Services: `StudyService` conforming to `Module`
 - Controllers: Extensions on `Controller`
 
 ### Error Handling
@@ -273,16 +300,20 @@ swiftlint
 ```
 Tests/SpeziStudyServerTests/
 ├── Integration/                    # HTTP endpoint tests
+│   ├── AuthIntegrationTests.swift
 │   ├── StudyIntegrationTests.swift
 │   ├── ComponentIntegrationTests.swift
 │   ├── HealthDataComponentIntegrationTests.swift
 │   ├── QuestionnaireComponentIntegrationTests.swift
 │   └── InformationalComponentIntegrationTests.swift
+├── Unit/
+│   └── AuthContextTests.swift      # GroupRole & groupMemberships parsing
 └── Support/
-    ├── TestApp.swift               # App lifecycle management
-    ├── Request+JSON.swift          # JSON encoding helper
+    ├── TestApp.swift               # App lifecycle, JWT signing with HMAC
+    ├── Request+JSON.swift          # bearerAuth() + encodeJSONBody() helpers
     └── Fixtures/
-        ├── StudyFixtures.swift     # Test data factories
+        ├── GroupFixtures.swift     # Test data factories
+        ├── StudyFixtures.swift
         └── ComponentFixtures.swift
 ```
 
@@ -291,7 +322,10 @@ Tests/SpeziStudyServerTests/
 - Uses Swift Testing framework (`@Suite`, `@Test`, `#expect`)
 - In-memory SQLite database (configured via `DatabaseConfiguration.testing`)
 - Fixtures create data directly via Fluent models (fast, focused tests)
-- `TestApp.withApp()` manages app lifecycle and cleanup
+- `TestApp.withApp(groups:)` manages app lifecycle and provides `(Application, String?)` — app + signed bearer token
+  - `groups: nil` → no token (tests 401)
+  - `groups: [...]` → signed JWT with those groups via HMAC test key
+- Tests use real `AuthMiddleware` with HMAC-signed JWTs (not mocked)
 
 ### Running Tests
 
@@ -308,20 +342,24 @@ API requests are defined in `tools/bruno/`. Bruno is an open-source API client (
 
 ```
 tools/bruno/
-├── environments/Local.bru    # Environment variables
-├── Hello.bru                 # Health check + seeding script
-├── Study/                    # Study CRUD requests
-├── Components/               # Component requests by type
-├── ComponentSchedules/       # Schedule requests
-└── Auth/                     # Authentication requests
+├── environments/SpeziStudy.bru  # Environment variables
+├── Health Check.bru             # Health check endpoint
+├── Seed.bru                     # Database seeding script
+├── Auth/                        # Login + Refresh Token
+├── Group/                       # Group listing requests
+├── Study/                       # Study CRUD requests
+├── Components/                  # Component requests by type
+└── ComponentSchedules/          # Schedule requests
 ```
 
 ### Database Seeding
 
-The `Hello` request (`tools/bruno/Hello.bru`) includes a post-response script that seeds the database:
+The `Seed` request (`tools/bruno/Seed.bru`) includes a post-response script that seeds the database:
 
 ```javascript
 script:post-response {
+  await bru.runRequest("Auth/Login")
+  await bru.runRequest("Group/Get Groups")
   await bru.runRequest("Study/Post Study")
   await bru.runRequest("Components/Questionnaire - Create")
   await bru.runRequest("Components/Informational - Create")
@@ -329,4 +367,4 @@ script:post-response {
 }
 ```
 
-Run the `Hello` request to create a study with sample components for testing.
+Run the `Seed` request to authenticate, fetch groups, and create a study with sample components for testing.

@@ -5,14 +5,17 @@
 //
 // SPDX-License-Identifier: MIT
 //
-import Foundation
 
-final class ComponentService: VaporModule, @unchecked Sendable {
+import Foundation
+import Spezi
+
+
+final class ComponentService: Module, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func listComponents(studyId: UUID) async throws -> [Components.Schemas.Component] {
-        try await studyService.validateExists(id: studyId)
+        try await studyService.requireStudyAccess(id: studyId)
 
         let components = try await componentRepository.findAll(studyId: studyId)
         return components.compactMap { component in
@@ -27,6 +30,15 @@ final class ComponentService: VaporModule, @unchecked Sendable {
         }
     }
 
+    func getComponentName(studyId: UUID, componentId: UUID) async throws -> String {
+        try await studyService.requireStudyAccess(id: studyId)
+
+        guard let component = try await componentRepository.find(id: componentId, studyId: studyId) else {
+            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
+        }
+        return component.name
+    }
+
     func validateExists(studyId: UUID, componentId: UUID) async throws {
         guard try await componentRepository.find(id: componentId, studyId: studyId) != nil else {
             throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
@@ -34,7 +46,7 @@ final class ComponentService: VaporModule, @unchecked Sendable {
     }
 
     func deleteComponent(studyId: UUID, componentId: UUID) async throws {
-        try await studyService.validateExists(id: studyId)
+        try await studyService.requireStudyAccess(id: studyId)
 
         // Cascade delete will handle specialized table cleanup
         let deleted = try await componentRepository.delete(id: componentId, studyId: studyId)

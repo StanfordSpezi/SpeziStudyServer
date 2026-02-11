@@ -12,20 +12,20 @@ import Foundation
 extension Controller {
     func getStudiesStudyId(_ input: Operations.GetStudiesStudyId.Input) async throws -> Operations.GetStudiesStudyId.Output {
         let studyId = try input.path.studyId.requireId()
-        let response = try await studyService.getStudy(id: studyId)
-        return .ok(.init(body: .json(response)))
+        let study = try await studyService.getStudy(id: studyId)
+        return .ok(.init(body: .json(try .init(study))))
     }
 
     func postGroupsGroupIdStudies(
         _ input: Operations.PostGroupsGroupIdStudies.Input
     ) async throws -> Operations.PostGroupsGroupIdStudies.Output {
-        guard case .json(let studySchema) = input.body else {
+        guard case .json(let schema) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
         let groupId = try input.path.groupId.requireId()
-        let response = try await studyService.createStudy(groupId: groupId, studySchema)
-        return .created(.init(body: .json(response)))
+        let study = try await studyService.createStudy(groupId: groupId, study: Study(schema, groupId: groupId))
+        return .created(.init(body: .json(try .init(study))))
     }
 
     func getGroupsGroupIdStudies(
@@ -33,17 +33,17 @@ extension Controller {
     ) async throws -> Operations.GetGroupsGroupIdStudies.Output {
         let groupId = try input.path.groupId.requireId()
         let studies = try await studyService.listStudies(groupId: groupId)
-        return .ok(.init(body: .json(studies)))
+        return .ok(.init(body: .json(try studies.map { try .init($0) })))
     }
 
-    func putStudiesStudyId(_ input: Operations.PutStudiesStudyId.Input) async throws -> Operations.PutStudiesStudyId.Output {
-        guard case .json(let studySchema) = input.body else {
+    func patchStudiesStudyId(_ input: Operations.PatchStudiesStudyId.Input) async throws -> Operations.PatchStudiesStudyId.Output {
+        guard case .json(let schema) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
         let studyId = try input.path.studyId.requireId()
-        let response = try await studyService.updateStudy(id: studyId, schema: studySchema)
-        return .ok(.init(body: .json(response)))
+        let study = try await studyService.patchStudy(id: studyId, patch: StudyPatch(schema))
+        return .ok(.init(body: .json(try .init(study))))
     }
 
     func deleteStudiesStudyId(_ input: Operations.DeleteStudiesStudyId.Input) async throws -> Operations.DeleteStudiesStudyId.Output {

@@ -26,6 +26,10 @@ final class GroupRepository: Module, Sendable {
         try await Group.query(on: database).all()
     }
 
+    func findByNames(_ names: [String]) async throws -> [Group] {
+        try await Group.query(on: database).filter(\.$name ~~ names).all()
+    }
+
     func create(_ group: Group) async throws -> Group {
         try await group.save(on: database)
 

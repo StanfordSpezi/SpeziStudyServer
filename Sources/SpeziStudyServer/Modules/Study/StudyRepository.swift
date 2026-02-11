@@ -9,7 +9,6 @@
 import Fluent
 import Foundation
 import Spezi
-import SpeziStudyDefinition
 
 
 final class StudyRepository: Module, Sendable {
@@ -74,12 +73,7 @@ final class StudyRepository: Module, Sendable {
             .all()
     }
 
-    func update(id: UUID, metadata: StudyDefinition.Metadata) async throws -> Study? {
-        guard let study = try await Study.find(id, on: database) else {
-            return nil
-        }
-
-        study.metadata = metadata
+    func update(_ study: Study) async throws -> Study {
         try await study.save(on: database)
         return study
     }

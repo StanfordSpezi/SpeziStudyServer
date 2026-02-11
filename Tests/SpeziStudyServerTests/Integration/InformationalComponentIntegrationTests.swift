@@ -23,7 +23,7 @@ struct InformationalComponentIntegrationTests {
 
             try await app.test(
                 .POST,
-                "studies/\(studyId)/components/informational",
+                "\(apiBasePath)/studies/\(studyId)/components/informational",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                     try req.encodeJSONBody(createRequestBody(name: "Test Article"))
@@ -56,7 +56,7 @@ struct InformationalComponentIntegrationTests {
 
             try await app.test(
                 .GET,
-                "studies/\(studyId)/components/informational/\(componentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/informational/\(componentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                 }
@@ -82,7 +82,7 @@ struct InformationalComponentIntegrationTests {
 
             try await app.test(
                 .GET,
-                "studies/\(studyId)/components/informational/\(nonExistentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/informational/\(nonExistentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                 }
@@ -108,7 +108,7 @@ struct InformationalComponentIntegrationTests {
 
             try await app.test(
                 .PUT,
-                "studies/\(studyId)/components/informational/\(componentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/informational/\(componentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                     try req.encodeJSONBody(createRequestBody(name: "Updated Name"))

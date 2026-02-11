@@ -15,17 +15,18 @@ final class GroupService: Module, @unchecked Sendable {
 
     init() {}
 
-    func listGroups() async throws -> [Components.Schemas.GroupResponse] {
-        let groups = try await repository.listAll()
-        return try groups.map { try .init($0) }
+    func listGroups() async throws -> [Group] {
+        let accessibleNames = Array(try AuthContext.requireCurrent().groupMemberships.keys)
+        return try await repository.findByNames(accessibleNames)
     }
 
-    func getGroup(id: UUID) async throws -> Components.Schemas.GroupResponse {
+    func getGroup(id: UUID) async throws -> Group {
         guard let group = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Group", identifier: id.uuidString)
         }
 
-        return try .init(group)
+        try AuthContext.requireCurrent().requireGroupAccess(groupName: group.name)
+        return group
     }
 
     func requireGroupAccess(id: UUID, role: AuthContext.GroupRole = .researcher) async throws {
@@ -42,7 +43,7 @@ final class GroupService: Module, @unchecked Sendable {
         let existingNames = Set(try await repository.listAll().map(\.name))
 
         for keycloakGroup in keycloakGroups where !existingNames.contains(keycloakGroup.name) {
-            _ = try await repository.create(Group(name: keycloakGroup.name, icon: "tree"))
+            _ = try await repository.create(Group(name: keycloakGroup.name, icon: "tree-pine"))
         }
     }
 }

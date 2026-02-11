@@ -14,17 +14,17 @@ extension Controller {
         _ input: Operations.PostStudiesStudyIdComponentsQuestionnaire.Input
     ) async throws -> Operations.PostStudiesStudyIdComponentsQuestionnaire.Output {
         let studyId = try input.path.studyId.requireId()
-        guard case .json(let content) = input.body else {
+        guard case .json(let schema) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
-        let created = try await questionnaireComponentService.createComponent(
+        let component = try await questionnaireComponentService.createComponent(
             studyId: studyId,
-            name: content.name,
-            content: content.data
+            name: schema.name,
+            content: schema.data
         )
 
-        return .created(.init(body: .json(try .init(created, name: content.name))))
+        return .created(.init(body: .json(try .init(component, name: schema.name))))
     }
 
     func getStudiesStudyIdComponentsQuestionnaireComponentId(
@@ -49,17 +49,17 @@ extension Controller {
         let studyId = try input.path.studyId.requireId()
         let componentId = try input.path.componentId.requireId()
 
-        guard case .json(let content) = input.body else {
+        guard case .json(let schema) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
-        let updated = try await questionnaireComponentService.updateComponent(
+        let component = try await questionnaireComponentService.updateComponent(
             studyId: studyId,
             id: componentId,
-            name: content.name,
-            content: content.data
+            name: schema.name,
+            content: schema.data
         )
 
-        return .ok(.init(body: .json(try .init(updated, name: content.name))))
+        return .ok(.init(body: .json(try .init(component, name: schema.name))))
     }
 }

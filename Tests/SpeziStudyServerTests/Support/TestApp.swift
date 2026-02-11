@@ -43,7 +43,8 @@ enum TestApp {
 
     private static func configureTesting(_ app: Application) async throws -> JWTKeyCollection {
         try DatabaseConfiguration.inMemory.configure(for: app)
-        try await configureMigrations(for: app)
+        configureMigrations(for: app)
+        try await app.autoMigrate()
         await configureServices(for: app)
 
         let keys = JWTKeyCollection()

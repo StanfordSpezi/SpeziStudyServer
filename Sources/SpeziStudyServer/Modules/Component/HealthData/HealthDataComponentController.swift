@@ -15,22 +15,22 @@ extension Controller {
         _ input: Operations.PostStudiesStudyIdComponentsHealthData.Input
     ) async throws -> Operations.PostStudiesStudyIdComponentsHealthData.Output {
         let studyId = try input.path.studyId.requireId()
-        guard case .json(let content) = input.body else {
+        guard case .json(let schema) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
         let data = StudyDefinition.HealthDataCollectionComponent(
             id: UUID(),
-            content.data
+            schema.data
         )
 
-        let created = try await healthDataComponentService.createComponent(
+        let component = try await healthDataComponentService.createComponent(
             studyId: studyId,
-            name: content.name,
+            name: schema.name,
             data: data
         )
 
-        return .created(.init(body: .json(try .init(created, name: content.name))))
+        return .created(.init(body: .json(try .init(component, name: schema.name))))
     }
 
     func getStudiesStudyIdComponentsHealthDataComponentId(
@@ -55,22 +55,22 @@ extension Controller {
         let studyId = try input.path.studyId.requireId()
         let componentId = try input.path.componentId.requireId()
 
-        guard case .json(let content) = input.body else {
+        guard case .json(let schema) = input.body else {
             throw ServerError.Defaults.jsonBodyRequired
         }
 
         let data = StudyDefinition.HealthDataCollectionComponent(
             id: componentId,
-            content.data
+            schema.data
         )
 
-        let updated = try await healthDataComponentService.updateComponent(
+        let component = try await healthDataComponentService.updateComponent(
             studyId: studyId,
             id: componentId,
-            name: content.name,
+            name: schema.name,
             data: data
         )
 
-        return .ok(.init(body: .json(try .init(updated, name: content.name))))
+        return .ok(.init(body: .json(try .init(component, name: schema.name))))
     }
 }

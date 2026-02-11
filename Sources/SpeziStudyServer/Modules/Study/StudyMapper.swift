@@ -11,29 +11,91 @@ import SpeziStudyDefinition
 
 
 extension Study {
-    convenience init(_ schema: Components.Schemas.StudyInput, groupId: UUID) throws {
-        let studyId = UUID()
-        var metadataPayload = schema.metadata.additionalProperties
-        metadataPayload.value["id"] = studyId.uuidString
-        var metadata: StudyDefinition.Metadata = try metadataPayload.recode()
-        metadata.id = studyId
-        self.init(groupId: groupId, metadata: metadata, id: studyId)
+    convenience init(_ schema: Components.Schemas.StudyCreateInput, groupId: UUID) {
+        self.init(
+            groupId: groupId,
+            title: schema.title,
+            locales: schema.locales,
+            icon: schema.icon,
+            participationCriterion: schema.participationCriterion.map { .init($0) } ?? .all([]),
+            id: UUID()
+        )
+    }
+}
+
+extension StudyPatch {
+    init(_ schema: Components.Schemas.StudyPatchInput) {
+        self.init(
+            title: schema.title,
+            locales: schema.locales,
+            icon: schema.icon,
+            details: schema.details,
+            participationCriterion: schema.participationCriterion.map { .init($0) }
+        )
+    }
+}
+
+extension Components.Schemas.StudyListItem {
+    init(_ model: Study) throws {
+        self.init(
+            id: try model.requireId().uuidString,
+            title: model.title
+        )
     }
 }
 
 extension Components.Schemas.StudyResponse {
     init(_ model: Study) throws {
-        let metadata: Components.Schemas.StudyResponse.MetadataPayload = try model.metadata.recode()
         self.init(
             id: try model.requireId().uuidString,
-            metadata: metadata
+            title: model.title,
+            locales: model.locales,
+            icon: model.icon,
+            details: model.details,
+            participationCriterion: .init(model.participationCriterion)
         )
     }
 }
 
-extension StudyDefinition.Metadata {
-    init(_ schema: Components.Schemas.StudyInput) throws {
-        let metadataPayload = schema.metadata.additionalProperties
-        self = try metadataPayload.recode()
+
+// MARK: - ParticipationCriterion Mapping
+
+extension Components.Schemas.ParticipationCriterion {
+    init(_ model: StudyDefinition.ParticipationCriterion) {
+        switch model {
+        case .ageAtLeast(let age):
+            self = .ageAtLeast(.init(_type: .ageAtLeast, age: age))
+        case .isFromRegion(let region):
+            self = .isFromRegion(.init(_type: .isFromRegion, region: region.identifier))
+        case .speaksLanguage(let language):
+            self = .speaksLanguage(.init(_type: .speaksLanguage, language: language.minimalIdentifier))
+        case .custom:
+            fatalError("Custom criteria are not supported by the API")
+        case .not(let criterion):
+            self = .not(.init(_type: .not, criterion: .init(criterion)))
+        case .all(let criteria):
+            self = .all(.init(_type: .all, criteria: criteria.map { .init($0) }))
+        case .any(let criteria):
+            self = .any(.init(_type: .any, criteria: criteria.map { .init($0) }))
+        }
+    }
+}
+
+extension StudyDefinition.ParticipationCriterion {
+    init(_ schema: Components.Schemas.ParticipationCriterion) {
+        switch schema {
+        case .ageAtLeast(let value):
+            self = .ageAtLeast(value.age)
+        case .isFromRegion(let value):
+            self = .isFromRegion(Locale.Region(value.region))
+        case .speaksLanguage(let value):
+            self = .speaksLanguage(Locale.Language(identifier: value.language))
+        case .not(let value):
+            self = .not(.init(value.criterion))
+        case .all(let value):
+            self = .all(value.criteria.map { .init($0) })
+        case .any(let value):
+            self = .any(value.criteria.map { .init($0) })
+        }
     }
 }

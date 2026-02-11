@@ -14,20 +14,9 @@ final class ComponentService: Module, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
-    func listComponents(studyId: UUID) async throws -> [Components.Schemas.Component] {
+    func listComponents(studyId: UUID) async throws -> [Component] {
         try await studyService.requireStudyAccess(id: studyId)
-
-        let components = try await componentRepository.findAll(studyId: studyId)
-        return components.compactMap { component in
-            guard let id = component.id else {
-                return nil
-            }
-            return Components.Schemas.Component(
-                id: id.uuidString,
-                _type: component.type.rawValue,
-                name: component.name
-            )
-        }
+        return try await componentRepository.findAll(studyId: studyId)
     }
 
     func getComponentName(studyId: UUID, componentId: UUID) async throws -> String {

@@ -15,10 +15,20 @@ import SpeziVapor
 import Vapor
 
 
-/// Configures the application services and routes for production.
+/// Configures the application: database, migrations, services, and routes.
+private var isServing: Bool {
+    !CommandLine.arguments.dropFirst().contains(where: { $0 == "migrate" || $0 == "revert" })
+}
+
+/// Configures the application: database, migrations, and (when serving) services and routes.
 public func configure(_ app: Application) async throws {
     try DatabaseConfiguration.production.configure(for: app)
-    try await configureMigrations(for: app)
+    configureMigrations(for: app)
+
+    guard isServing else {
+        return
+    }
+
     await configureServices(for: app)
 
     var middlewares: [any ServerMiddleware] = [ErrorMiddleware(logger: app.logger)]
@@ -40,18 +50,6 @@ public func configure(_ app: Application) async throws {
     try configureRoutes(for: app, middlewares: middlewares)
 }
 
-/// Registers all database migrations and runs auto-migrate.
-public func configureMigrations(for app: Application) async throws {
-    app.migrations.add(CreateGroups())
-    app.migrations.add(CreateStudy())
-    app.migrations.add(CreateComponents())
-    app.migrations.add(CreateComponentSchedules())
-    app.migrations.add(CreateInformationalComponents())
-    app.migrations.add(CreateQuestionnaireComponents())
-    app.migrations.add(CreateHealthDataComponents())
-    try await app.autoMigrate()
-}
-
 /// Configures services and repositories.
 public func configureServices(for app: Application) async {
     await app.spezi.configure {
@@ -71,6 +69,15 @@ public func configureServices(for app: Application) async {
     }
 }
 
+/// The API route prefix component.
+let apiPrefix = "api"
+
+/// The API version component.
+let apiVersion = "v0"
+
+/// The base path prefix for all API routes.
+public let apiBasePath = "\(apiPrefix)/\(apiVersion)"
+
 /// Registers OpenAPI routes and the health endpoint.
 public func configureRoutes(for app: Application, middlewares: [any ServerMiddleware]) throws {
     let controller = Controller(spezi: app.spezi)
@@ -78,11 +85,11 @@ public func configureRoutes(for app: Application, middlewares: [any ServerMiddle
     let transport = VaporTransport(routesBuilder: app)
     try controller.registerHandlers(
         on: transport,
-        serverURL: URL(string: "/")!,
+        serverURL: URL(string: "/\(apiBasePath)")!,
         middlewares: middlewares
     )
 
-    app.get("health") { _ async in
+    app.get("\(apiPrefix)", "\(apiVersion)", "health") { _ async in
         ["status": "ok"]
     }
 }

@@ -19,5 +19,8 @@ typeOverrides:
     InformationalComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.InformationalContent>
     QuestionnaireContent: SpeziStudyServer.QuestionnaireContent
     QuestionnaireComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.QuestionnaireContent>
+    LocalizedString: "SpeziLocalization.LocalizedDictionary<Swift.String>"
+    StudyDetailContent: SpeziStudyServer.StudyDetailContent
+    StudyDetailData: "SpeziLocalization.LocalizedDictionary<SpeziStudyServer.StudyDetailContent>"
     DateComponents: Foundation.DateComponents
     SampleTypesCollection: "[SpeziHealthKit.SampleTypeProxy]"

@@ -21,7 +21,7 @@ struct ComponentIntegrationTests {
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
-            try await app.test(.GET, "studies/\(studyId)/components", beforeRequest: { req in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)/components", beforeRequest: { req in
                 req.bearerAuth(token)
             }) { response in
                 #expect(response.status == .ok)
@@ -43,7 +43,7 @@ struct ComponentIntegrationTests {
             try await ComponentFixtures.createQuestionnaireComponent(on: app.db, studyId: studyId)
             try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
 
-            try await app.test(.GET, "studies/\(studyId)/components", beforeRequest: { req in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)/components", beforeRequest: { req in
                 req.bearerAuth(token)
             }) { response in
                 #expect(response.status == .ok)
@@ -59,7 +59,7 @@ struct ComponentIntegrationTests {
         try await TestApp.withApp { app, token in
             let nonExistentId = UUID()
 
-            try await app.test(.GET, "studies/\(nonExistentId)/components", beforeRequest: { req in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(nonExistentId)/components", beforeRequest: { req in
                 req.bearerAuth(token)
             }) { response in
                 #expect(response.status == .notFound)
@@ -80,13 +80,13 @@ struct ComponentIntegrationTests {
             )
             let componentId = try component.requireId()
 
-            try await app.test(.DELETE, "studies/\(studyId)/components/\(componentId)", beforeRequest: { req in
+            try await app.test(.DELETE, "\(apiBasePath)/studies/\(studyId)/components/\(componentId)", beforeRequest: { req in
                 req.bearerAuth(token)
             }) { response in
                 #expect(response.status == .noContent)
             }
 
-            try await app.test(.GET, "studies/\(studyId)/components", beforeRequest: { req in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)/components", beforeRequest: { req in
                 req.bearerAuth(token)
             }) { response in
                 let components = try response.content.decode([Components.Schemas.Component].self)
@@ -103,7 +103,7 @@ struct ComponentIntegrationTests {
             let studyId = try study.requireId()
             let nonExistentId = UUID()
 
-            try await app.test(.DELETE, "studies/\(studyId)/components/\(nonExistentId)", beforeRequest: { req in
+            try await app.test(.DELETE, "\(apiBasePath)/studies/\(studyId)/components/\(nonExistentId)", beforeRequest: { req in
                 req.bearerAuth(token)
             }) { response in
                 #expect(response.status == .notFound)
@@ -120,7 +120,7 @@ struct ComponentIntegrationTests {
 
             try await ComponentFixtures.createHealthDataComponent(on: app.db, studyId: studyId)
 
-            try await app.test(.DELETE, "studies/\(studyId)", beforeRequest: { req in
+            try await app.test(.DELETE, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
                 req.bearerAuth(token)
             }) { response in
                 #expect(response.status == .noContent)

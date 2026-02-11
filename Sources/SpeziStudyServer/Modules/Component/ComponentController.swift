@@ -15,7 +15,7 @@ extension Controller {
     ) async throws -> Operations.GetStudiesStudyIdComponents.Output {
         let studyId = try input.path.studyId.requireId()
         let components = try await componentService.listComponents(studyId: studyId)
-        return .ok(.init(body: .json(components)))
+        return .ok(.init(body: .json(try components.map { try Components.Schemas.Component($0) })))
     }
 
     func deleteStudiesStudyIdComponentsComponentId(

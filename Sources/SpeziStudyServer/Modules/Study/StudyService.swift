@@ -9,7 +9,6 @@
 import Foundation
 import Logging
 import Spezi
-import SpeziStudyDefinition
 
 
 final class StudyService: Module, @unchecked Sendable {
@@ -17,7 +16,7 @@ final class StudyService: Module, @unchecked Sendable {
     @Dependency(GroupService.self) var groupService: GroupService
 
     init() {}
-    
+
     func requireStudyAccess(id: UUID, role: AuthContext.GroupRole = .researcher) async throws {
         guard let groupName = try await repository.findGroupName(forStudyId: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
@@ -26,43 +25,35 @@ final class StudyService: Module, @unchecked Sendable {
         try AuthContext.requireCurrent().requireGroupAccess(groupName: groupName, role: role)
     }
 
-    func getStudy(id: UUID) async throws -> Components.Schemas.StudyResponse {
+    func getStudy(id: UUID) async throws -> Study {
         try await requireStudyAccess(id: id)
 
         guard let study = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        return try .init(study)
+        return study
     }
 
-    func createStudy(
-        groupId: UUID,
-        _ schema: Components.Schemas.StudyInput
-    ) async throws -> Components.Schemas.StudyResponse {
+    func createStudy(groupId: UUID, study: Study) async throws -> Study {
         try await groupService.requireGroupAccess(id: groupId, role: .admin)
-        
-        let study = try Study(schema, groupId: groupId)
-        let createdStudy = try await repository.create(study)
-        return try .init(createdStudy)
+        return try await repository.create(study)
     }
 
-    func listStudies(groupId: UUID) async throws -> [Components.Schemas.StudyResponse] {
+    func listStudies(groupId: UUID) async throws -> [Study] {
         try await groupService.requireGroupAccess(id: groupId)
-        
-        let studies = try await repository.listAll(groupId: groupId)
-        return try studies.map { try .init($0) }
+        return try await repository.listAll(groupId: groupId)
     }
 
-    func updateStudy(id: UUID, schema: Components.Schemas.StudyInput) async throws -> Components.Schemas.StudyResponse {
+    func patchStudy(id: UUID, patch: StudyPatch) async throws -> Study {
         try await requireStudyAccess(id: id)
 
-        let metadata = try StudyDefinition.Metadata(schema)
-        guard let updatedStudy = try await repository.update(id: id, metadata: metadata) else {
+        guard let study = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        return try .init(updatedStudy)
+        study.apply(patch)
+        return try await repository.update(study)
     }
 
     func deleteStudy(id: UUID) async throws {

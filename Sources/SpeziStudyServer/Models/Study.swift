@@ -7,8 +7,39 @@
 //
 
 import Fluent
+import SpeziLocalization
 import SpeziStudyDefinition
 import Vapor
+
+
+/// Note: This type is mapped from Components.Schemas.StudyDetailContent via typeOverrides in openapi-generator-config.yaml
+struct StudyDetailContent: Codable, Sendable, Hashable {
+    var shortTitle: String
+    var explanationText: String
+    var shortExplanationText: String
+
+    init(shortTitle: String = "", explanationText: String = "", shortExplanationText: String = "") {
+        self.shortTitle = shortTitle
+        self.explanationText = explanationText
+        self.shortExplanationText = shortExplanationText
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.shortTitle = try container.decodeIfPresent(String.self, forKey: .shortTitle) ?? ""
+        self.explanationText = try container.decodeIfPresent(String.self, forKey: .explanationText) ?? ""
+        self.shortExplanationText = try container.decodeIfPresent(String.self, forKey: .shortExplanationText) ?? ""
+    }
+}
+
+
+struct StudyPatch: Sendable {
+    var title: LocalizedDictionary<String>?
+    var locales: [String]? // swiftlint:disable:this discouraged_optional_collection
+    var icon: String?
+    var details: LocalizedDictionary<StudyDetailContent>?
+    var participationCriterion: StudyDefinition.ParticipationCriterion?
+}
 
 
 final class Study: Model, @unchecked Sendable {
@@ -18,7 +49,15 @@ final class Study: Model, @unchecked Sendable {
 
     @Parent(key: "group_id") var group: Group
 
-    @Field(key: "metadata") var metadata: StudyDefinition.Metadata
+    @Field(key: "title") var title: LocalizedDictionary<String>
+
+    @Field(key: "locales") var locales: [String]
+
+    @Field(key: "icon") var icon: String
+
+    @Field(key: "details") var details: LocalizedDictionary<StudyDetailContent>
+
+    @Field(key: "participation_criterion") var participationCriterion: StudyDefinition.ParticipationCriterion
 
     @Children(for: \.$study) var components: [Component]
 
@@ -26,11 +65,27 @@ final class Study: Model, @unchecked Sendable {
 
     init(
         groupId: UUID,
-        metadata: StudyDefinition.Metadata,
+        title: LocalizedDictionary<String>,
+        locales: [String],
+        icon: String,
+        details: LocalizedDictionary<StudyDetailContent> = .init(),
+        participationCriterion: StudyDefinition.ParticipationCriterion = .all([]),
         id: UUID? = nil
     ) {
         self.id = id
         self.$group.id = groupId
-        self.metadata = metadata
+        self.title = title
+        self.locales = locales
+        self.icon = icon
+        self.details = details
+        self.participationCriterion = participationCriterion
+    }
+
+    func apply(_ patch: StudyPatch) {
+        if let title = patch.title { self.title = title }
+        if let locales = patch.locales { self.locales = locales }
+        if let icon = patch.icon { self.icon = icon }
+        if let details = patch.details { self.details = details }
+        if let participationCriterion = patch.participationCriterion { self.participationCriterion = participationCriterion }
     }
 }

@@ -51,25 +51,28 @@ struct AuthIntegrationTests {
         ))
 
         return [
+            // Groups (GET /groups is excluded — it returns an empty list, not 403)
+            .init(method: .GET, path: "\(apiBasePath)/groups/\(groupId)", minRole: .researcher, successStatus: .ok),
+
             // Studies
-            .init(method: .GET, path: "studies/\(studyId)", minRole: .researcher, successStatus: .ok),
-            .init(method: .GET, path: "groups/\(groupId)/studies", minRole: .researcher, successStatus: .ok),
-            .init(method: .PUT, path: "studies/\(studyId)", body: jsonData(studyBody(id: studyId)), minRole: .researcher, successStatus: .ok),
-            .init(method: .POST, path: "groups/\(groupId)/studies", body: jsonData(studyBody()), minRole: .admin, successStatus: .created),
-            .init(method: .DELETE, path: "studies/\(studyId)", minRole: .admin, successStatus: .noContent),
+            .init(method: .GET, path: "\(apiBasePath)/studies/\(studyId)", minRole: .researcher, successStatus: .ok),
+            .init(method: .GET, path: "\(apiBasePath)/groups/\(groupId)/studies", minRole: .researcher, successStatus: .ok),
+            .init(method: .PATCH, path: "\(apiBasePath)/studies/\(studyId)", body: jsonData(patchBody()), minRole: .researcher, successStatus: .ok),
+            .init(method: .POST, path: "\(apiBasePath)/groups/\(groupId)/studies", body: jsonData(studyBody()), minRole: .admin, successStatus: .created),
+            .init(method: .DELETE, path: "\(apiBasePath)/studies/\(studyId)", minRole: .admin, successStatus: .noContent),
 
             // Components
-            .init(method: .GET, path: "studies/\(studyId)/components", minRole: .researcher, successStatus: .ok),
-            .init(method: .GET, path: "studies/\(studyId)/components/informational/\(componentId)", minRole: .researcher, successStatus: .ok),
-            .init(method: .GET, path: "studies/\(studyId)/components/questionnaire/\(componentId)", minRole: .researcher, successStatus: .ok),
-            .init(method: .GET, path: "studies/\(studyId)/components/health-data/\(componentId)", minRole: .researcher, successStatus: .ok),
-            .init(method: .POST, path: "studies/\(studyId)/components/informational", body: informational, minRole: .researcher, successStatus: .created),
-            .init(method: .POST, path: "studies/\(studyId)/components/questionnaire", body: questionnaire, minRole: .researcher, successStatus: .created),
-            .init(method: .POST, path: "studies/\(studyId)/components/health-data", body: healthData, minRole: .researcher, successStatus: .created),
-            .init(method: .PUT, path: "studies/\(studyId)/components/informational/\(componentId)", body: informational, minRole: .researcher, successStatus: .ok),
-            .init(method: .PUT, path: "studies/\(studyId)/components/questionnaire/\(componentId)", body: questionnaire, minRole: .researcher, successStatus: .ok),
-            .init(method: .PUT, path: "studies/\(studyId)/components/health-data/\(componentId)", body: healthData, minRole: .researcher, successStatus: .ok),
-            .init(method: .DELETE, path: "studies/\(studyId)/components/\(componentId)", minRole: .researcher, successStatus: .noContent)
+            .init(method: .GET, path: "\(apiBasePath)/studies/\(studyId)/components", minRole: .researcher, successStatus: .ok),
+            .init(method: .GET, path: "\(apiBasePath)/studies/\(studyId)/components/informational/\(componentId)", minRole: .researcher, successStatus: .ok),
+            .init(method: .GET, path: "\(apiBasePath)/studies/\(studyId)/components/questionnaire/\(componentId)", minRole: .researcher, successStatus: .ok),
+            .init(method: .GET, path: "\(apiBasePath)/studies/\(studyId)/components/health-data/\(componentId)", minRole: .researcher, successStatus: .ok),
+            .init(method: .POST, path: "\(apiBasePath)/studies/\(studyId)/components/informational", body: informational, minRole: .researcher, successStatus: .created),
+            .init(method: .POST, path: "\(apiBasePath)/studies/\(studyId)/components/questionnaire", body: questionnaire, minRole: .researcher, successStatus: .created),
+            .init(method: .POST, path: "\(apiBasePath)/studies/\(studyId)/components/health-data", body: healthData, minRole: .researcher, successStatus: .created),
+            .init(method: .PUT, path: "\(apiBasePath)/studies/\(studyId)/components/informational/\(componentId)", body: informational, minRole: .researcher, successStatus: .ok),
+            .init(method: .PUT, path: "\(apiBasePath)/studies/\(studyId)/components/questionnaire/\(componentId)", body: questionnaire, minRole: .researcher, successStatus: .ok),
+            .init(method: .PUT, path: "\(apiBasePath)/studies/\(studyId)/components/health-data/\(componentId)", body: healthData, minRole: .researcher, successStatus: .ok),
+            .init(method: .DELETE, path: "\(apiBasePath)/studies/\(studyId)/components/\(componentId)", minRole: .researcher, successStatus: .noContent)
         ]
     }
 
@@ -81,23 +84,18 @@ struct AuthIntegrationTests {
         try? JSONEncoder().encode(value)
     }
 
-    private static func studyBody(title: String = "X", id: UUID? = nil) -> [String: Any] {
-        var metadata: [String: Any] = [
+    private static func studyBody(title: String = "X") -> [String: Any] {
+        [
             "title": ["en-US": title],
-            "shortTitle": ["en-US": "Test"],
-            "explanationText": ["en-US": "Explanation text"],
-            "shortExplanationText": ["en-US": "Short explanation"],
-            "participationCriterion": [
-                "all": ["_0": [[String: Any]]()]
-            ],
-            "enrollmentConditions": [
-                "none": [String: Any]()
-            ]
-        ]
-        if let id {
-            metadata["id"] = id.uuidString
-        }
-        return ["metadata": metadata]
+            "locales": ["en-US"],
+            "icon": "heart"
+        ] as [String: Any]
+    }
+
+    private static func patchBody() -> [String: Any] {
+        [
+            "title": ["en-US": "Updated"]
+        ] as [String: Any]
     }
 
     // MARK: - Auth Tests

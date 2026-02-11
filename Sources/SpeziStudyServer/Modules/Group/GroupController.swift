@@ -14,7 +14,7 @@ extension Controller {
         _ input: Operations.GetGroups.Input
     ) async throws -> Operations.GetGroups.Output {
         let groups = try await groupService.listGroups()
-        return .ok(.init(body: .json(groups)))
+        return .ok(.init(body: .json(try groups.map { try .init($0) })))
     }
 
     func getGroupsGroupId(
@@ -22,6 +22,6 @@ extension Controller {
     ) async throws -> Operations.GetGroupsGroupId.Output {
         let groupId = try input.path.groupId.requireId()
         let group = try await groupService.getGroup(id: groupId)
-        return .ok(.init(body: .json(group)))
+        return .ok(.init(body: .json(try .init(group))))
     }
 }

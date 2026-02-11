@@ -23,7 +23,7 @@ struct HealthDataComponentIntegrationTests {
 
             try await app.test(
                 .POST,
-                "studies/\(studyId)/components/health-data",
+                "\(apiBasePath)/studies/\(studyId)/components/health-data",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                     try req.encodeJSONBody(createRequestBody(name: "Heart Rate Collection"))
@@ -56,7 +56,7 @@ struct HealthDataComponentIntegrationTests {
 
             try await app.test(
                 .GET,
-                "studies/\(studyId)/components/health-data/\(componentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/health-data/\(componentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                 }
@@ -82,7 +82,7 @@ struct HealthDataComponentIntegrationTests {
 
             try await app.test(
                 .GET,
-                "studies/\(studyId)/components/health-data/\(nonExistentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/health-data/\(nonExistentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                 }
@@ -108,7 +108,7 @@ struct HealthDataComponentIntegrationTests {
 
             try await app.test(
                 .PUT,
-                "studies/\(studyId)/components/health-data/\(componentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/health-data/\(componentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                     try req.encodeJSONBody(createRequestBody(name: "Updated Name"))

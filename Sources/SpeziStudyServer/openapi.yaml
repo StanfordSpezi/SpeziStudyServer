@@ -68,13 +68,13 @@ paths:
         - $ref: '#/components/parameters/GroupId'
       responses:
         '200':
-          description: List of studies with ID and metadata
+          description: List of studies with ID and title
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StudyResponse'
+                  $ref: '#/components/schemas/StudyListItem'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -93,7 +93,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StudyInput'
+              $ref: '#/components/schemas/StudyCreateInput'
       responses:
         '201':
           description: Study created
@@ -136,10 +136,10 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-    put:
+    patch:
       tags:
         - Studies
-      summary: Update study metadata
+      summary: Partially update a study
       parameters:
         - name: studyId
           in: path
@@ -152,10 +152,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StudyInput'
+              $ref: '#/components/schemas/StudyPatchInput'
       responses:
         '200':
-          description: Study updated successfully
+          description: Study updated
           content:
             application/json:
               schema:
@@ -172,7 +172,7 @@ paths:
     delete:
       tags:
         - Studies
-      summary: Delete a study definition by ID
+      summary: Delete a study by ID
       parameters:
         - name: studyId
           in: path
@@ -835,6 +835,9 @@ components:
       bearerFormat: JWT
       description: Keycloak-issued JWT access token
   schemas:
+
+    # ── Shared ────────────────────────────────────────────────────────────
+
     ProblemDetails:
       type: object
       description: RFC 7807 Problem Details for HTTP APIs
@@ -851,6 +854,43 @@ components:
         detail:
           type: string
           description: A human-readable explanation specific to this occurrence
+
+    LocalizedString:
+      type: object
+      description: Localized string keyed by locale (e.g., "en-US" -> "value")
+      additionalProperties:
+        type: string
+      example:
+        en-US: "Hello"
+
+    DateComponents:
+      type: object
+      description: >
+        Calendar-relative offset applied from the session creation time.
+        At least one component must be provided. Uses Swift DateComponents naming (singular).
+      properties:
+        year:
+          type: integer
+          minimum: 0
+        month:
+          type: integer
+          minimum: 0
+        day:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+
+    SampleTypesCollection:
+      type: array
+      description: HealthKit sample types in SpeziHealthKit format (ClassName;Identifier)
+      items:
+        type: string
+      example:
+        - "HKQuantityType;HKQuantityTypeIdentifierHeartRate"
+        - "HKQuantityType;HKQuantityTypeIdentifierStepCount"
+        - "HKCategoryType;HKCategoryTypeIdentifierSleepAnalysis"
+
+    # ── Groups ────────────────────────────────────────────────────────────
 
     GroupResponse:
       type: object
@@ -871,29 +911,247 @@ components:
           type: string
           description: Icon identifier (e.g. SF Symbol name, stored as Keycloak group attribute)
 
-    StudyInput:
-      type: object
-      description: Request body for creating or updating a study (metadata only)
-      required:
-        - metadata
-      properties:
-        metadata:
-          type: object
-          additionalProperties: true
+    # ── Studies — Building Blocks ─────────────────────────────────────────
 
-    StudyResponse:
+    StudyDetailContent:
       type: object
-      description: Study response with ID and metadata (no components)
+      description: Per-locale study detail fields
+      properties:
+        shortTitle:
+          type: string
+        explanationText:
+          type: string
+        shortExplanationText:
+          type: string
+
+    StudyDetailData:
+      type: object
+      description: Localized study details keyed by locale
+      additionalProperties:
+        $ref: '#/components/schemas/StudyDetailContent'
+      example:
+        en-US:
+          shortTitle: "MHC"
+          explanationText: "This study aims to..."
+          shortExplanationText: "A heart health study"
+
+    ParticipationCriterion:
+      description: >
+        A criterion which must be satisfied for a person to participate in a study.
+        Uses a discriminated union on "type". Leaf criteria carry a single value.
+        Logical operators (not, all, any) are recursive.
+      oneOf:
+        - $ref: '#/components/schemas/AgeAtLeastCriterion'
+        - $ref: '#/components/schemas/IsFromRegionCriterion'
+        - $ref: '#/components/schemas/SpeaksLanguageCriterion'
+        - $ref: '#/components/schemas/NotCriterion'
+        - $ref: '#/components/schemas/AllCriterion'
+        - $ref: '#/components/schemas/AnyCriterion'
+      discriminator:
+        propertyName: type
+        mapping:
+          ageAtLeast: '#/components/schemas/AgeAtLeastCriterion'
+          isFromRegion: '#/components/schemas/IsFromRegionCriterion'
+          speaksLanguage: '#/components/schemas/SpeaksLanguageCriterion'
+          not: '#/components/schemas/NotCriterion'
+          all: '#/components/schemas/AllCriterion'
+          any: '#/components/schemas/AnyCriterion'
+
+    AgeAtLeastCriterion:
+      type: object
+      description: Requires the participant to be at least a certain age
+      required:
+        - type
+        - age
+      properties:
+        type:
+          type: string
+          enum: [ageAtLeast]
+        age:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+
+    IsFromRegionCriterion:
+      type: object
+      description: Requires the participant to be from a specific region
+      required:
+        - type
+        - region
+      properties:
+        type:
+          type: string
+          enum: [isFromRegion]
+        region:
+          type: string
+          description: Region identifier (e.g. "US", "DE")
+      additionalProperties: false
+
+    SpeaksLanguageCriterion:
+      type: object
+      description: Requires the participant to speak a specific language
+      required:
+        - type
+        - language
+      properties:
+        type:
+          type: string
+          enum: [speaksLanguage]
+        language:
+          type: string
+          description: Language identifier (e.g. "en", "de")
+      additionalProperties: false
+
+    NotCriterion:
+      type: object
+      description: Negates a criterion
+      required:
+        - type
+        - criterion
+      properties:
+        type:
+          type: string
+          enum: [not]
+        criterion:
+          $ref: '#/components/schemas/ParticipationCriterion'
+      additionalProperties: false
+
+    AllCriterion:
+      type: object
+      description: Requires all criteria to be satisfied (logical AND)
+      required:
+        - type
+        - criteria
+      properties:
+        type:
+          type: string
+          enum: [all]
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParticipationCriterion'
+      additionalProperties: false
+      example:
+        type: all
+        criteria:
+          - type: ageAtLeast
+            age: 18
+          - type: any
+            criteria:
+              - type: isFromRegion
+                region: "US"
+              - type: isFromRegion
+                region: "DE"
+
+    AnyCriterion:
+      type: object
+      description: Requires at least one criterion to be satisfied (logical OR)
+      required:
+        - type
+        - criteria
+      properties:
+        type:
+          type: string
+          enum: [any]
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParticipationCriterion'
+      additionalProperties: false
+
+    # ── Studies — Request / Response ──────────────────────────────────────
+
+    StudyListItem:
+      type: object
+      description: Summary of a study for list views
       required:
         - id
-        - metadata
+        - title
       properties:
         id:
           type: string
           format: uuid
-        metadata:
-          type: object
-          additionalProperties: true
+        title:
+          $ref: '#/components/schemas/LocalizedString'
+
+    StudyCreateInput:
+      type: object
+      description: Request body for creating a new study
+      required:
+        - title
+        - locales
+        - icon
+      properties:
+        title:
+          $ref: '#/components/schemas/LocalizedString'
+        locales:
+          type: array
+          description: Supported locales for the study
+          items:
+            type: string
+          minItems: 1
+          example: ["en-US"]
+        icon:
+          type: string
+          description: Icon identifier (e.g. SF Symbol name)
+          example: heart
+        participationCriterion:
+          $ref: '#/components/schemas/ParticipationCriterion'
+
+    StudyPatchInput:
+      type: object
+      description: Partial update for a study. All fields are optional.
+      properties:
+        title:
+          $ref: '#/components/schemas/LocalizedString'
+        locales:
+          type: array
+          description: Supported locales for the study
+          items:
+            type: string
+          minItems: 1
+          example: ["en-US", "de-DE"]
+        icon:
+          type: string
+          description: Icon identifier (e.g. SF Symbol name)
+          example: heart
+        details:
+          $ref: '#/components/schemas/StudyDetailData'
+        participationCriterion:
+          $ref: '#/components/schemas/ParticipationCriterion'
+
+    StudyResponse:
+      type: object
+      description: Full study response
+      required:
+        - id
+        - title
+        - locales
+        - icon
+        - details
+        - participationCriterion
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          $ref: '#/components/schemas/LocalizedString'
+        locales:
+          type: array
+          description: Supported locales for the study
+          items:
+            type: string
+          example: ["en-US", "de-DE"]
+        icon:
+          type: string
+          description: Icon identifier (e.g. SF Symbol name)
+          example: heart
+        details:
+          $ref: '#/components/schemas/StudyDetailData'
+        participationCriterion:
+          $ref: '#/components/schemas/ParticipationCriterion'
+
+    # ── Components — Shared ───────────────────────────────────────────────
 
     Component:
       type: object
@@ -913,33 +1171,12 @@ components:
           type: string
           description: Display name for the component
 
-    InformationalComponentInput:
+    ComponentSchedule:
       type: object
-      description: Request body for creating or updating an informational component
-      required:
-        - name
-        - data
-      properties:
-        name:
-          type: string
-          description: Display name for the component
-        data:
-          $ref: '#/components/schemas/InformationalComponentData'
+      description: A component schedule from SpeziStudyDefinition
+      additionalProperties: true
 
-    InformationalComponentData:
-      type: object
-      description: Localized informational content keyed by locale (e.g., "en-US", "de-DE")
-      additionalProperties:
-        $ref: '#/components/schemas/InformationalContent'
-      example:
-        en-US:
-          title: "Welcome"
-          lede: "Introduction to the study"
-          content: "Welcome to the study"
-        de-DE:
-          title: "Willkommen"
-          lede: "Einführung in die Studie"
-          content: "Willkommen zur Studie"
+    # ── Components — Informational ────────────────────────────────────────
 
     InformationalContent:
       type: object
@@ -958,43 +1195,24 @@ components:
           type: string
           description: The main content text
 
-    QuestionnaireComponentInput:
+    InformationalComponentData:
       type: object
-      description: Request body for creating or updating a questionnaire component
-      required:
-        - name
-        - data
-      properties:
-        name:
-          type: string
-          description: Display name for the component
-        data:
-          $ref: '#/components/schemas/QuestionnaireComponentData'
-
-    QuestionnaireComponentData:
-      type: object
-      description: Localized questionnaire content keyed by locale (e.g., "en-US", "de-DE")
+      description: Localized informational content keyed by locale (e.g., "en-US", "de-DE")
       additionalProperties:
-        $ref: '#/components/schemas/QuestionnaireContent'
+        $ref: '#/components/schemas/InformationalContent'
       example:
         en-US:
-          questionnaire: "{\"resourceType\": \"Questionnaire\", \"title\": \"Daily Survey\"}"
+          title: "Welcome"
+          lede: "Introduction to the study"
+          content: "Welcome to the study"
         de-DE:
-          questionnaire: "{\"resourceType\": \"Questionnaire\", \"title\": \"Tägliche Umfrage\"}"
+          title: "Willkommen"
+          lede: "Einführung in die Studie"
+          content: "Willkommen zur Studie"
 
-    QuestionnaireContent:
+    InformationalComponentInput:
       type: object
-      description: Content for a single locale in a questionnaire component
-      required:
-        - questionnaire
-      properties:
-        questionnaire:
-          type: string
-          description: FHIR Questionnaire as JSON string
-
-    HealthDataComponentInput:
-      type: object
-      description: Request body for creating or updating a health data component
+      description: Request body for creating or updating an informational component
       required:
         - name
         - data
@@ -1003,25 +1221,7 @@ components:
           type: string
           description: Display name for the component
         data:
-          $ref: '#/components/schemas/HealthDataComponentData'
-
-    HealthDataComponentData:
-      type: object
-      description: A health data component for collecting health metrics
-      required:
-        - sampleTypes
-      properties:
-        sampleTypes:
-          $ref: '#/components/schemas/SampleTypesCollection'
-        historicalDataCollection:
-          type: object
-          description: Configuration for collecting historical health data
-          properties:
-            enabled:
-              type: boolean
-              default: false
-            startDate:
-              $ref: '#/components/schemas/ExportSessionStartDate'
+          $ref: '#/components/schemas/InformationalComponentData'
 
     InformationalComponentResponse:
       type: object
@@ -1040,6 +1240,42 @@ components:
         data:
           $ref: '#/components/schemas/InformationalComponentData'
 
+    # ── Components — Questionnaire ────────────────────────────────────────
+
+    QuestionnaireContent:
+      type: object
+      description: Content for a single locale in a questionnaire component
+      required:
+        - questionnaire
+      properties:
+        questionnaire:
+          type: string
+          description: FHIR Questionnaire as JSON string
+
+    QuestionnaireComponentData:
+      type: object
+      description: Localized questionnaire content keyed by locale (e.g., "en-US", "de-DE")
+      additionalProperties:
+        $ref: '#/components/schemas/QuestionnaireContent'
+      example:
+        en-US:
+          questionnaire: "{\"resourceType\": \"Questionnaire\", \"title\": \"Daily Survey\"}"
+        de-DE:
+          questionnaire: "{\"resourceType\": \"Questionnaire\", \"title\": \"Tägliche Umfrage\"}"
+
+    QuestionnaireComponentInput:
+      type: object
+      description: Request body for creating or updating a questionnaire component
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/QuestionnaireComponentData'
+
     QuestionnaireComponentResponse:
       type: object
       description: Response containing questionnaire component with ID and name
@@ -1057,27 +1293,7 @@ components:
         data:
           $ref: '#/components/schemas/QuestionnaireComponentData'
 
-    HealthDataComponentResponse:
-      type: object
-      description: Response containing health data component with ID and name
-      required:
-        - id
-        - name
-        - data
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-          description: Display name for the component
-        data:
-          $ref: '#/components/schemas/HealthDataComponentData'
-
-    ComponentSchedule:
-      type: object
-      description: A component schedule from SpeziStudyDefinition
-      additionalProperties: true
+    # ── Components — Health Data ──────────────────────────────────────────
 
     ExportSessionStartDate:
       description: >
@@ -1137,29 +1353,50 @@ components:
       description: >
         Uses a fixed absolute date as the start date.
 
-    DateComponents:
+    HealthDataComponentData:
       type: object
-      description: >
-        Calendar-relative offset applied from the session creation time.
-        At least one component must be provided. Uses Swift DateComponents naming (singular).
+      description: A health data component for collecting health metrics
+      required:
+        - sampleTypes
       properties:
-        year:
-          type: integer
-          minimum: 0
-        month:
-          type: integer
-          minimum: 0
-        day:
-          type: integer
-          minimum: 0
-      additionalProperties: false
+        sampleTypes:
+          $ref: '#/components/schemas/SampleTypesCollection'
+        historicalDataCollection:
+          type: object
+          description: Configuration for collecting historical health data
+          properties:
+            enabled:
+              type: boolean
+              default: false
+            startDate:
+              $ref: '#/components/schemas/ExportSessionStartDate'
 
-    SampleTypesCollection:
-      type: array
-      description: HealthKit sample types in SpeziHealthKit format (ClassName;Identifier)
-      items:
-        type: string
-      example:
-        - "HKQuantityType;HKQuantityTypeIdentifierHeartRate"
-        - "HKQuantityType;HKQuantityTypeIdentifierStepCount"
-        - "HKCategoryType;HKCategoryTypeIdentifierSleepAnalysis"
+    HealthDataComponentInput:
+      type: object
+      description: Request body for creating or updating a health data component
+      required:
+        - name
+        - data
+      properties:
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/HealthDataComponentData'
+
+    HealthDataComponentResponse:
+      type: object
+      description: Response containing health data component with ID and name
+      required:
+        - id
+        - name
+        - data
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Display name for the component
+        data:
+          $ref: '#/components/schemas/HealthDataComponentData'

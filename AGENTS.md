@@ -53,7 +53,7 @@ Sources/SpeziStudyServer/
 │   ├── QuestionnaireComponent.swift
 │   └── HealthDataComponent.swift
 │
-├── Migrations/                   # Fluent database migrations
+├── Migrations/                   # Fluent database migrations + Migrations.swift (registration)
 │
 └── Core/                         # Shared infrastructure
     ├── AuthContext.swift              # Auth domain type (roles, group memberships)
@@ -78,10 +78,12 @@ Sources/SpeziStudyServer/
 
 Each module (feature) contains its own:
 
-1. **Controller** - HTTP request handling, input validation, response mapping
-2. **Service** - Business logic, orchestration
-3. **Repository** - Database access via Fluent ORM
-4. **Mapper** - Conversion between API schemas and domain types
+1. **Controller** - HTTP request handling, input validation, response mapping. Controllers use `Components.Schemas.*` types. **Controllers must NEVER perform authorization checks** — all auth/access control logic belongs in the Service layer.
+2. **Service** - Business logic, orchestration, and **authorization checks** (e.g., `requireGroupAccess`, filtering by user context). **Services must NEVER use `Components.Schemas.*` types.** They only work with domain models (Fluent models and plain Swift types). All conversion between API schemas and domain types happens in the Controller/Mapper layer.
+3. **Repository** - Database access via Fluent ORM. Repositories only work with Fluent models.
+4. **Mapper** - Conversion between API schemas and domain types. This is the boundary between the API layer and the domain layer. Mappers follow strict naming conventions:
+   - **Schema → Domain**: `DomainType.init(_ schema: Components.Schemas.X)`
+   - **Domain → Schema**: `Components.Schemas.X.init(_ model: DomainType)`
 
 ### Dependency Injection
 
@@ -110,11 +112,14 @@ await app.spezi.configure {
 
 ### Configuration
 
-`App/configure.swift` contains production `configure()` and shared helpers used by both production and tests:
+`App/configure.swift` contains the startup functions and shared helpers:
 
-- `configureMigrations(for:)` - Shared migration registration + auto-migrate
+- `configure(_:)` - Registers database and migrations. Safe for all commands (serve, migrate).
+- `boot(_:)` - Serve-specific setup: Keycloak sync, JWKS, routes. Only called when serving, not for `migrate`.
 - `configureServices(for:)` - Shared Spezi DI setup
 - `configureRoutes(for:middlewares:)` - OpenAPI handler registration + /health endpoint
+
+`Migrations/Migrations.swift` contains `configureMigrations(for:)` — shared migration registration used by both `configure()` and tests.
 
 Database configuration is injectable via `DatabaseConfiguration`:
 
@@ -170,23 +175,23 @@ The server uses SpeziStudyDefinition types which encode with specific JSON patte
 }
 ```
 
-### Swift Enums with Associated Values
+### Participation Criterion
 
-Enums use `_0` keys for associated values:
+Uses a discriminated union with `type` property — no Swift enum `_0` syntax on the API surface:
 
 ```json
 {
   "participationCriterion": {
-    "all": {
-      "_0": [
-        { "ageAtLeast": { "_0": 18 } },
-        { "isFromRegion": { "_0": "US" } }
-      ]
-    }
-  },
-  "enrollmentConditions": { "none": {} }
+    "type": "all",
+    "criteria": [
+      { "type": "ageAtLeast", "age": 18 },
+      { "type": "isFromRegion", "region": "US" }
+    ]
+  }
 }
 ```
+
+Internally stored as `StudyDefinition.ParticipationCriterion` (Swift enum). The mapper in `StudyMapper.swift` converts between the API schema and the domain type.
 
 ### Health Data Sample Types
 
@@ -307,7 +312,8 @@ Tests/SpeziStudyServerTests/
 │   ├── QuestionnaireComponentIntegrationTests.swift
 │   └── InformationalComponentIntegrationTests.swift
 ├── Unit/
-│   └── AuthContextTests.swift      # GroupRole & groupMemberships parsing
+│   ├── AuthContextTests.swift                    # GroupRole & groupMemberships parsing
+│   └── ParticipationCriterionMapperTests.swift   # Schema ↔ domain round-trip
 └── Support/
     ├── TestApp.swift               # App lifecycle, JWT signing with HMAC
     ├── Request+JSON.swift          # bearerAuth() + encodeJSONBody() helpers

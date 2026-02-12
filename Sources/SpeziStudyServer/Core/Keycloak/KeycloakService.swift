@@ -7,7 +7,9 @@
 //
 
 import Foundation
+import JWTKit
 import Spezi
+import Vapor
 
 
 struct KeycloakGroup: Decodable, Sendable {
@@ -35,48 +37,56 @@ final class KeycloakService: Module, @unchecked Sendable {
         let access_token: String // swiftlint:disable:this identifier_name
     }
 
-    init() {}
+    let client: any Client
+    let config: KeycloakConfiguration
 
-    func fetchGroups(config: KeycloakConfiguration) async throws -> [KeycloakGroup] {
-        let token = try await fetchAccessToken(config: config)
-
-        var request = URLRequest(url: URL(string: "\(config.url)/admin/realms/\(config.realm)/groups")!)
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        let httpResponse = response as? HTTPURLResponse
-        guard httpResponse?.statusCode == 200 else {
-            let body = String(data: data, encoding: .utf8) ?? ""
-            throw KeycloakError.failedToFetchGroups(statusCode: httpResponse?.statusCode ?? 0, body: body)
-        }
-
-        return try JSONDecoder().decode([KeycloakGroup].self, from: data)
+    init(client: any Client, config: KeycloakConfiguration) {
+        self.client = client
+        self.config = config
     }
 
-    private func fetchAccessToken(config: KeycloakConfiguration) async throws -> String {
-        let tokenURL = URL(string: "\(config.url)/realms/\(config.realm)/protocol/openid-connect/token")!
+    func fetchGroups() async throws -> [KeycloakGroup] {
+        let token = try await fetchAccessToken()
 
-        var request = URLRequest(url: tokenURL)
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-
-        let body = [
-            "grant_type=client_credentials",
-            "client_id=\(config.clientId)",
-            "client_secret=\(config.clientSecret)"
-        ].joined(separator: "&")
-        request.httpBody = body.data(using: .utf8)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        let httpResponse = response as? HTTPURLResponse
-        guard httpResponse?.statusCode == 200 else {
-            let body = String(data: data, encoding: .utf8) ?? ""
-            throw KeycloakError.failedToAuthenticate(statusCode: httpResponse?.statusCode ?? 0, body: body)
+        let response = try await client.get(URI(string: "\(config.url)/admin/realms/\(config.realm)/groups")) { req in
+            req.headers.bearerAuthorization = .init(token: token)
         }
 
-        let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
+        guard response.status == .ok else {
+            let body = response.body.map { String(buffer: $0) } ?? ""
+            throw KeycloakError.failedToFetchGroups(statusCode: Int(response.status.code), body: body)
+        }
+
+        return try response.content.decode([KeycloakGroup].self)
+    }
+
+    func fetchJWKS() async throws -> JWKS {
+        let response = try await client.get(URI(string: config.jwksURL))
+
+        guard response.status == .ok else {
+            let body = response.body.map { String(buffer: $0) } ?? ""
+            throw KeycloakError.failedToAuthenticate(statusCode: Int(response.status.code), body: body)
+        }
+
+        return try response.content.decode(JWKS.self)
+    }
+
+    private func fetchAccessToken() async throws -> String {
+        let response = try await client.post(URI(string: "\(config.url)/realms/\(config.realm)/protocol/openid-connect/token")) { req in
+            req.headers.contentType = .urlEncodedForm
+            try req.content.encode([
+                "grant_type": "client_credentials",
+                "client_id": config.clientId,
+                "client_secret": config.clientSecret
+            ], as: .urlEncodedForm)
+        }
+
+        guard response.status == .ok else {
+            let body = response.body.map { String(buffer: $0) } ?? ""
+            throw KeycloakError.failedToAuthenticate(statusCode: Int(response.status.code), body: body)
+        }
+
+        let tokenResponse = try response.content.decode(TokenResponse.self)
         return tokenResponse.access_token
     }
 }

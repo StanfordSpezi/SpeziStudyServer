@@ -37,7 +37,7 @@ final class QuestionnaireComponentService: Module, @unchecked Sendable {
     func createComponent(
         studyId: UUID,
         name: String,
-        content: LocalizedDictionary<QuestionnaireContent>
+        content: LocalizationsDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
         try await studyService.requireStudyAccess(id: studyId)
 
@@ -56,7 +56,7 @@ final class QuestionnaireComponentService: Module, @unchecked Sendable {
         studyId: UUID,
         id: UUID,
         name: String,
-        content: LocalizedDictionary<QuestionnaireContent>
+        content: LocalizationsDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
         try await studyService.requireStudyAccess(id: studyId)
 

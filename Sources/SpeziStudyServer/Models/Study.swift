@@ -34,10 +34,10 @@ struct StudyDetailContent: Codable, Sendable, Hashable {
 
 
 struct StudyPatch: Sendable {
-    var title: LocalizedDictionary<String>?
+    var title: LocalizationsDictionary<String>?
     var locales: [String]? // swiftlint:disable:this discouraged_optional_collection
     var icon: String?
-    var details: LocalizedDictionary<StudyDetailContent>?
+    var details: LocalizationsDictionary<StudyDetailContent>?
     var participationCriterion: StudyDefinition.ParticipationCriterion?
 }
 
@@ -49,13 +49,13 @@ final class Study: Model, @unchecked Sendable {
 
     @Parent(key: "group_id") var group: Group
 
-    @Field(key: "title") var title: LocalizedDictionary<String>
+    @Field(key: "title") var title: LocalizationsDictionary<String>
 
     @Field(key: "locales") var locales: [String]
 
     @Field(key: "icon") var icon: String
 
-    @Field(key: "details") var details: LocalizedDictionary<StudyDetailContent>
+    @Field(key: "details") var details: LocalizationsDictionary<StudyDetailContent>
 
     @Field(key: "participation_criterion") var participationCriterion: StudyDefinition.ParticipationCriterion
 
@@ -65,10 +65,10 @@ final class Study: Model, @unchecked Sendable {
 
     init(
         groupId: UUID,
-        title: LocalizedDictionary<String>,
+        title: LocalizationsDictionary<String>,
         locales: [String],
         icon: String,
-        details: LocalizedDictionary<StudyDetailContent> = .init(),
+        details: LocalizationsDictionary<StudyDetailContent> = .init(),
         participationCriterion: StudyDefinition.ParticipationCriterion = .all([]),
         id: UUID? = nil
     ) {

@@ -22,7 +22,7 @@ enum StudyFixtures {
     ) async throws -> Study {
         let study = Study(
             groupId: groupId,
-            title: LocalizedDictionary([.enUS: title]),
+            title: LocalizationsDictionary([.enUS: title]),
             locales: ["en-US"],
             icon: "heart",
             id: id

@@ -25,7 +25,7 @@ final class QuestionnaireComponentRepository: Module, Sendable {
 
     func create(
         componentId: UUID,
-        data: LocalizedDictionary<QuestionnaireContent>
+        data: LocalizationsDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
         let component = QuestionnaireComponent(componentId: componentId, data: data)
         try await component.save(on: database)

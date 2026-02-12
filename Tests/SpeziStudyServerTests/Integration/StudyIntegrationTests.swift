@@ -28,7 +28,7 @@ struct StudyIntegrationTests {
 
                 let study = try response.content.decode(Components.Schemas.StudyResponse.self)
                 #expect(study.id.isEmpty == false)
-                #expect(study.title["en-US"] == "New Study")
+                #expect(study.title[.enUS] == "New Study")
                 #expect(study.locales == ["en-US"])
                 #expect(study.icon == "heart")
             }
@@ -64,7 +64,7 @@ struct StudyIntegrationTests {
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
                 #expect(responseStudy.id == studyId.uuidString)
-                #expect(responseStudy.title["en-US"] == "Test Study")
+                #expect(responseStudy.title[.enUS] == "Test Study")
                 #expect(responseStudy.locales == ["en-US"])
                 #expect(responseStudy.icon == "heart")
             }
@@ -99,7 +99,7 @@ struct StudyIntegrationTests {
                 #expect(response.status == .ok)
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
-                #expect(responseStudy.title["en-US"] == "Updated Title")
+                #expect(responseStudy.title[.enUS] == "Updated Title")
                 #expect(responseStudy.locales == ["en-US"])
             }
         }
@@ -129,9 +129,9 @@ struct StudyIntegrationTests {
                 #expect(response.status == .ok)
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
-                #expect(responseStudy.details["en-US"]?.shortTitle == "TS")
-                #expect(responseStudy.details["en-US"]?.explanationText == "A test study explanation")
-                #expect(responseStudy.details["en-US"]?.shortExplanationText.isEmpty == true)
+                #expect(responseStudy.details[.enUS]?.shortTitle == "TS")
+                #expect(responseStudy.details[.enUS]?.explanationText == "A test study explanation")
+                #expect(responseStudy.details[.enUS]?.shortExplanationText.isEmpty == true)
             }
         }
     }

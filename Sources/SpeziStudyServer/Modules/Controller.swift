@@ -46,6 +46,10 @@ extension Controller {
         spezi[ComponentService.self]
     }
 
+    var componentScheduleService: ComponentScheduleService {
+        spezi[ComponentScheduleService.self]
+    }
+
     var groupService: GroupService {
         spezi[GroupService.self]
     }

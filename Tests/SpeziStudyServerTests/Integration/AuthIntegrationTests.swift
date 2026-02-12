@@ -39,11 +39,11 @@ struct AuthIntegrationTests {
     private static func allEndpoints(groupId: UUID, studyId: UUID, componentId: UUID) -> [Endpoint] {
         let informational = jsonData(Components.Schemas.InformationalComponentInput(
             name: "X",
-            data: LocalizedDictionary([.enUS: InformationalContent(title: "T", lede: nil, content: "C")])
+            data: LocalizationsDictionary([.enUS: InformationalContent(title: "T", lede: nil, content: "C")])
         ))
         let questionnaire = jsonData(Components.Schemas.QuestionnaireComponentInput(
             name: "X",
-            data: LocalizedDictionary([.enUS: QuestionnaireContent(questionnaire: "{}")])
+            data: LocalizationsDictionary([.enUS: QuestionnaireContent(questionnaire: "{}")])
         ))
         let healthData = jsonData(Components.Schemas.HealthDataComponentInput(
             name: "X",

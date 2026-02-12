@@ -21,11 +21,11 @@ final class QuestionnaireComponent: Model, @unchecked Sendable {
 
     @ID(custom: "component_id") var id: UUID?
 
-    @Field(key: "data") var data: LocalizedDictionary<QuestionnaireContent>
+    @Field(key: "data") var data: LocalizationsDictionary<QuestionnaireContent>
 
     init() {}
 
-    init(componentId: UUID, data: LocalizedDictionary<QuestionnaireContent>) {
+    init(componentId: UUID, data: LocalizationsDictionary<QuestionnaireContent>) {
         self.id = componentId
         self.data = data
     }

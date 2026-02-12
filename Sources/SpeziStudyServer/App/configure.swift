@@ -29,19 +29,17 @@ public func configure(_ app: Application) async throws {
         return
     }
 
-    await configureServices(for: app)
+    let keycloakConfig = KeycloakConfiguration.default
+    await configureServices(for: app, client: app.client, keycloakConfig: keycloakConfig)
 
     var middlewares: [any ServerMiddleware] = [ErrorMiddleware(logger: app.logger)]
 
-    let keycloakConfig = KeycloakConfiguration.default
     let keycloakService = app.spezi[KeycloakService.self]
-    let groups = try await keycloakService.fetchGroups(config: keycloakConfig)
+    let groups = try await keycloakService.fetchGroups()
     let groupService = app.spezi[GroupService.self]
     try await groupService.syncGroups(from: groups)
 
-    let jwksURL = URL(string: keycloakConfig.jwksURL)!
-    let (jwksData, _) = try await URLSession.shared.data(from: jwksURL)
-    let jwks = try JSONDecoder().decode(JWKS.self, from: jwksData)
+    let jwks = try await keycloakService.fetchJWKS()
     let keyCollection = JWTKeyCollection()
     try await keyCollection.add(jwks: jwks)
 
@@ -51,14 +49,15 @@ public func configure(_ app: Application) async throws {
 }
 
 /// Configures services and repositories.
-public func configureServices(for app: Application) async {
+public func configureServices(for app: Application, client: any Client, keycloakConfig: KeycloakConfiguration) async {
     await app.spezi.configure {
-        KeycloakService()
+        KeycloakService(client: client, config: keycloakConfig)
         GroupService()
         StudyService()
         InformationalComponentService()
         QuestionnaireComponentService()
         HealthDataComponentService()
+        ComponentScheduleService()
         ComponentService()
         GroupRepository(database: app.db)
         StudyRepository(database: app.db)
@@ -66,6 +65,7 @@ public func configureServices(for app: Application) async {
         InformationalComponentRepository(database: app.db)
         QuestionnaireComponentRepository(database: app.db)
         HealthDataComponentRepository(database: app.db)
+        ComponentScheduleRepository(database: app.db)
     }
 }
 

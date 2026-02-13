@@ -35,9 +35,9 @@ let package = Package(
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0"),
         .package(url: "https://github.com/StanfordSpezi/Spezi", from: "1.10.1"),
         .package(url: "https://github.com/StanfordSpezi/SpeziVapor", .upToNextMajor(from: "0.1.0")),
-        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation", branch: "localizations-dictionary"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", revision: "b81e3d3"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziHealthKit", from: "1.3.2")
+        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation", from: "2.7.3"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", revision: "fc1e5fabf0b49219f714da6b9532cb3bc866ef5b"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziHealthKit", branch: "lukas/linux-support")
     ] + swiftLintPackage(),
     targets: [
         .executableTarget(

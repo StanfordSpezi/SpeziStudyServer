@@ -17,22 +17,17 @@ headers {
 body:json {
   {
     "scheduleDefinition": {
-      "repeated": {
-        "_0": {
-          "daily": {
-            "hour": 14,
-            "minute": 0,
-            "second": 0
-          }
-        },
-        "_1": {}
+      "type": "repeated",
+      "pattern": {
+        "type": "daily",
+        "hour": 14,
+        "minute": 0,
+        "second": 0
       }
     },
-    "completionPolicy": {
-      "anytime": {}
-    },
+    "completionPolicy": "anytime",
     "notifications": {
-      "disabled": {}
+      "type": "disabled"
     }
   }
 }

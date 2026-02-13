@@ -669,6 +669,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
   /studies/{studyId}/components/{componentId}/schedules/{scheduleId}:
     get:
@@ -752,6 +754,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
     delete:
       tags:
@@ -817,6 +821,12 @@ components:
             $ref: '#/components/schemas/ProblemDetails'
     Forbidden:
       description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    Conflict:
+      description: Conflict
       content:
         application/json:
           schema:
@@ -1171,10 +1181,445 @@ components:
           type: string
           description: Display name for the component
 
+    # ── Component Schedules ─────────────────────────────────────────────
+
     ComponentSchedule:
       type: object
-      description: A component schedule from SpeziStudyDefinition
-      additionalProperties: true
+      description: A schedule defining when a component should be presented to the participant
+      required:
+        - scheduleDefinition
+        - completionPolicy
+        - notifications
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Schedule ID (assigned by server on creation)
+        scheduleDefinition:
+          $ref: '#/components/schemas/ScheduleDefinition'
+        completionPolicy:
+          $ref: '#/components/schemas/AllowedCompletionPolicy'
+        notifications:
+          $ref: '#/components/schemas/NotificationsConfig'
+
+    ScheduleDefinition:
+      description: Defines when and how often a schedule fires
+      oneOf:
+        - $ref: '#/components/schemas/OnceScheduleDefinition'
+        - $ref: '#/components/schemas/RepeatedScheduleDefinition'
+      discriminator:
+        propertyName: type
+        mapping:
+          once: '#/components/schemas/OnceScheduleDefinition'
+          repeated: '#/components/schemas/RepeatedScheduleDefinition'
+
+    OnceScheduleDefinition:
+      type: object
+      description: A schedule that fires a single time
+      required:
+        - type
+        - pattern
+      properties:
+        type:
+          type: string
+          enum: [once]
+        pattern:
+          $ref: '#/components/schemas/OneTimeSchedule'
+      additionalProperties: false
+
+    RepeatedScheduleDefinition:
+      type: object
+      description: A schedule that fires repeatedly based on a pattern
+      required:
+        - type
+        - pattern
+      properties:
+        type:
+          type: string
+          enum: [repeated]
+        pattern:
+          $ref: '#/components/schemas/RepetitionPattern'
+        offset:
+          $ref: '#/components/schemas/DateComponents'
+      additionalProperties: false
+
+    OneTimeSchedule:
+      description: Defines when a one-time schedule fires
+      oneOf:
+        - $ref: '#/components/schemas/DateOneTimeSchedule'
+        - $ref: '#/components/schemas/EventOneTimeSchedule'
+      discriminator:
+        propertyName: type
+        mapping:
+          date: '#/components/schemas/DateOneTimeSchedule'
+          event: '#/components/schemas/EventOneTimeSchedule'
+
+    DateOneTimeSchedule:
+      type: object
+      description: Fires once at a specific date
+      required:
+        - type
+        - dateComponents
+      properties:
+        type:
+          type: string
+          enum: [date]
+        dateComponents:
+          $ref: '#/components/schemas/DateComponents'
+      additionalProperties: false
+
+    EventOneTimeSchedule:
+      type: object
+      description: Fires once in response to a study lifecycle event
+      required:
+        - type
+        - event
+      properties:
+        type:
+          type: string
+          enum: [event]
+        event:
+          $ref: '#/components/schemas/StudyLifecycleEvent'
+        offsetInDays:
+          type: integer
+          default: 0
+          description: Number of days after the event
+        time:
+          $ref: '#/components/schemas/ScheduleTime'
+      additionalProperties: false
+      example:
+        type: event
+        event:
+          type: activation
+        offsetInDays: 1
+        time:
+          hour: 9
+          minute: 0
+
+    RepetitionPattern:
+      description: Defines how a repeated schedule recurs
+      oneOf:
+        - $ref: '#/components/schemas/DailyRepetition'
+        - $ref: '#/components/schemas/WeeklyRepetition'
+        - $ref: '#/components/schemas/MonthlyRepetition'
+      discriminator:
+        propertyName: type
+        mapping:
+          daily: '#/components/schemas/DailyRepetition'
+          weekly: '#/components/schemas/WeeklyRepetition'
+          monthly: '#/components/schemas/MonthlyRepetition'
+
+    DailyRepetition:
+      type: object
+      description: Repeats every N days at a specific time
+      required:
+        - type
+        - hour
+      properties:
+        type:
+          type: string
+          enum: [daily]
+        interval:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Repeat every N days
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+        minute:
+          type: integer
+          minimum: 0
+          maximum: 59
+          default: 0
+        second:
+          type: integer
+          minimum: 0
+          maximum: 59
+          default: 0
+      additionalProperties: false
+
+    WeeklyRepetition:
+      type: object
+      description: Repeats every N weeks on an optional weekday at a specific time
+      required:
+        - type
+        - hour
+      properties:
+        type:
+          type: string
+          enum: [weekly]
+        interval:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Repeat every N weeks
+        weekday:
+          type: string
+          description: Day of week (e.g. "monday", "tuesday"). Omit to repeat relative to enrollment date.
+          enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+        minute:
+          type: integer
+          minimum: 0
+          maximum: 59
+          default: 0
+        second:
+          type: integer
+          minimum: 0
+          maximum: 59
+          default: 0
+      additionalProperties: false
+
+    MonthlyRepetition:
+      type: object
+      description: Repeats every N months on an optional day at a specific time
+      required:
+        - type
+        - hour
+      properties:
+        type:
+          type: string
+          enum: [monthly]
+        interval:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Repeat every N months
+        day:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Day of month. Omit to repeat relative to enrollment date.
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+        minute:
+          type: integer
+          minimum: 0
+          maximum: 59
+          default: 0
+        second:
+          type: integer
+          minimum: 0
+          maximum: 59
+          default: 0
+      additionalProperties: false
+
+    StudyLifecycleEvent:
+      description: A study lifecycle event that can trigger a one-time schedule
+      oneOf:
+        - $ref: '#/components/schemas/EnrollmentEvent'
+        - $ref: '#/components/schemas/ActivationEvent'
+        - $ref: '#/components/schemas/UnenrollmentEvent'
+        - $ref: '#/components/schemas/StudyEndEvent'
+        - $ref: '#/components/schemas/CompletedTaskEvent'
+      discriminator:
+        propertyName: type
+        mapping:
+          enrollment: '#/components/schemas/EnrollmentEvent'
+          activation: '#/components/schemas/ActivationEvent'
+          unenrollment: '#/components/schemas/UnenrollmentEvent'
+          studyEnd: '#/components/schemas/StudyEndEvent'
+          completedTask: '#/components/schemas/CompletedTaskEvent'
+
+    EnrollmentEvent:
+      type: object
+      description: Triggered on first enrollment
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [enrollment]
+      additionalProperties: false
+
+    ActivationEvent:
+      type: object
+      description: Triggered on study activation
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [activation]
+      additionalProperties: false
+
+    UnenrollmentEvent:
+      type: object
+      description: Triggered when participant unenrolls
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [unenrollment]
+      additionalProperties: false
+
+    StudyEndEvent:
+      type: object
+      description: Triggered when the study officially ends
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [studyEnd]
+      additionalProperties: false
+
+    CompletedTaskEvent:
+      type: object
+      description: Triggered when a specific component task is completed
+      required:
+        - type
+        - componentId
+      properties:
+        type:
+          type: string
+          enum: [completedTask]
+        componentId:
+          type: string
+          format: uuid
+          description: ID of the component whose completion triggers this event
+      additionalProperties: false
+
+    ScheduleTime:
+      type: object
+      description: Time of day for a schedule occurrence
+      required:
+        - hour
+      properties:
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+        minute:
+          type: integer
+          minimum: 0
+          maximum: 59
+          default: 0
+        second:
+          type: integer
+          minimum: 0
+          maximum: 59
+          default: 0
+      additionalProperties: false
+
+    AllowedCompletionPolicy:
+      type: string
+      description: When a scheduled event is allowed to be completed
+      enum:
+        - sameDay
+        - afterStart
+        - sameDayAfterStart
+        - duringEvent
+        - anytime
+
+    NotificationsConfig:
+      description: Notification configuration for a schedule
+      oneOf:
+        - $ref: '#/components/schemas/NotificationsDisabled'
+        - $ref: '#/components/schemas/NotificationsEnabled'
+      discriminator:
+        propertyName: type
+        mapping:
+          disabled: '#/components/schemas/NotificationsDisabled'
+          enabled: '#/components/schemas/NotificationsEnabled'
+
+    NotificationsDisabled:
+      type: object
+      description: No notifications for schedule occurrences
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [disabled]
+      additionalProperties: false
+
+    NotificationsEnabled:
+      type: object
+      description: Enable notifications for schedule occurrences
+      required:
+        - type
+        - thread
+      properties:
+        type:
+          type: string
+          enum: [enabled]
+        thread:
+          $ref: '#/components/schemas/NotificationThread'
+        time:
+          $ref: '#/components/schemas/ScheduleTime'
+      additionalProperties: false
+
+    NotificationThread:
+      description: How notifications are grouped
+      oneOf:
+        - $ref: '#/components/schemas/GlobalNotificationThread'
+        - $ref: '#/components/schemas/TaskNotificationThread'
+        - $ref: '#/components/schemas/CustomNotificationThread'
+        - $ref: '#/components/schemas/NoneNotificationThread'
+      discriminator:
+        propertyName: type
+        mapping:
+          global: '#/components/schemas/GlobalNotificationThread'
+          task: '#/components/schemas/TaskNotificationThread'
+          custom: '#/components/schemas/CustomNotificationThread'
+          none: '#/components/schemas/NoneNotificationThread'
+
+    GlobalNotificationThread:
+      type: object
+      description: All notifications grouped in the global SpeziScheduler thread
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [global]
+      additionalProperties: false
+
+    TaskNotificationThread:
+      type: object
+      description: Notifications grouped by task
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [task]
+      additionalProperties: false
+
+    CustomNotificationThread:
+      type: object
+      description: Notifications grouped by a custom thread identifier
+      required:
+        - type
+        - identifier
+      properties:
+        type:
+          type: string
+          enum: [custom]
+        identifier:
+          type: string
+          description: Custom thread identifier
+      additionalProperties: false
+
+    NoneNotificationThread:
+      type: object
+      description: No thread identifier — grouping done automatically by iOS
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [none]
+      additionalProperties: false
 
     # ── Components — Informational ────────────────────────────────────────
 

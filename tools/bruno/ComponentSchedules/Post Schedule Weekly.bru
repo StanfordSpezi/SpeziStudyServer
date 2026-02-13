@@ -17,28 +17,20 @@ headers {
 body:json {
   {
     "scheduleDefinition": {
-      "repeated": {
-        "_0": {
-          "weekly": {
-            "weekday": {
-              "monday": {}
-            },
-            "hour": 10,
-            "minute": 30,
-            "second": 0
-          }
-        },
-        "_1": {}
+      "type": "repeated",
+      "pattern": {
+        "type": "weekly",
+        "weekday": "monday",
+        "hour": 10,
+        "minute": 30,
+        "second": 0
       }
     },
-    "completionPolicy": {
-      "anytime": {}
-    },
+    "completionPolicy": "anytime",
     "notifications": {
-      "enabled": {
-        "_0": {
-          "study": {}
-        }
+      "type": "enabled",
+      "thread": {
+        "type": "global"
       }
     }
   }

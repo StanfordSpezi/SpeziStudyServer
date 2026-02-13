@@ -10,6 +10,7 @@ import Fluent
 import Foundation
 import SpeziHealthKit
 import SpeziLocalization
+import SpeziScheduler
 import SpeziStudyDefinition
 @testable import SpeziStudyServer
 
@@ -90,5 +91,28 @@ enum ComponentFixtures {
         try await informational.save(on: database)
 
         return (component, informational)
+    }
+
+    @discardableResult
+    static func createSchedule(
+        on database: any Database,
+        componentId: UUID,
+        scheduleDefinition: StudyDefinition.ComponentSchedule.ScheduleDefinition = .repeated(
+            .daily(interval: 1, hour: 9, minute: 0, second: 0),
+            offset: DateComponents()
+        ),
+        completionPolicy: AllowedCompletionPolicy = .anytime,
+        notifications: StudyDefinition.ComponentSchedule.NotificationsConfig = .disabled
+    ) async throws -> ComponentSchedule {
+        let data = StudyDefinition.ComponentSchedule(
+            id: UUID(),
+            componentId: componentId,
+            scheduleDefinition: scheduleDefinition,
+            completionPolicy: completionPolicy,
+            notifications: notifications
+        )
+        let schedule = ComponentSchedule(componentId: componentId, scheduleData: data)
+        try await schedule.save(on: database)
+        return schedule
     }
 }

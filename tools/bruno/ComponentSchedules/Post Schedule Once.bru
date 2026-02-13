@@ -17,27 +17,22 @@ headers {
 body:json {
   {
     "scheduleDefinition": {
-      "once": {
-        "_0": {
-          "event": {
-            "_0": {
-              "enrollment": {}
-            },
-            "offsetInDays": 0,
-            "time": {
-              "hour": 9,
-              "minute": 0,
-              "second": 0
-            }
-          }
+      "type": "once",
+      "pattern": {
+        "type": "event",
+        "event": {
+          "type": "enrollment"
+        },
+        "offsetInDays": 0,
+        "time": {
+          "hour": 9,
+          "minute": 0
         }
       }
     },
-    "completionPolicy": {
-      "anytime": {}
-    },
+    "completionPolicy": "anytime",
     "notifications": {
-      "disabled": {}
+      "type": "disabled"
     }
   }
 }

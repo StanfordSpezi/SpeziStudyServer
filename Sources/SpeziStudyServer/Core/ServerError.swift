@@ -14,6 +14,7 @@ import OpenAPIRuntime
 enum ServerError: Error, Sendable {
     case invalidUUID(String)
     case validation(message: String)
+    case conflict(message: String)
     case notFound(resource: String, identifier: String)
     case unauthorized(message: String)
     case forbidden(message: String)
@@ -40,6 +41,8 @@ extension ServerError {
             return "Invalid UUID"
         case .validation:
             return "Validation Error"
+        case .conflict:
+            return "Conflict"
         case .notFound:
             return "Not Found"
         case .unauthorized:
@@ -55,6 +58,8 @@ extension ServerError {
         switch self {
         case .invalidUUID, .validation:
             return 400
+        case .conflict:
+            return 409
         case .notFound:
             return 404
         case .unauthorized:
@@ -71,6 +76,8 @@ extension ServerError {
         case let .invalidUUID(value):
             return "Invalid UUID format: '\(value)'"
         case let .validation(message):
+            return message
+        case let .conflict(message):
             return message
         case let .notFound(resource, identifier):
             return "\(resource) with identifier '\(identifier)' was not found"

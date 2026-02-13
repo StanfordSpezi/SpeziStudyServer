@@ -8,6 +8,7 @@ SPDX-License-Identifier: MIT
 
 -->
 
+https://swiftpackageindex.com/stanfordspezi/spezistudy/0.1.19/documentation/spezistudy1
 # Spezi Study Server
 
 [![Build and Test](https://github.com/StanfordSpezi/SpeziStudyServer/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/StanfordSpezi/SpeziStudyServer/actions/workflows/build-and-test.yml)

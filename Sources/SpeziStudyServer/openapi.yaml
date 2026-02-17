@@ -8,7 +8,7 @@
 
 openapi: 3.0.3
 info:
-  title: Study Definition API
+  title: Spezi Study API
   version: 1.0.0
 
 security:

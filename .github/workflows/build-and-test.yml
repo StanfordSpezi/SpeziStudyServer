@@ -46,6 +46,22 @@ jobs:
       fail-fast: false
     with:
       artifact_name: ${{ format('SpeziStudyServer-Package-Linux-{0}.lcov', matrix.config) }}
+  linux_tests_docker:
+    name: Build and Test Swift Package Linux Docker (${{ matrix.config }})
+    runs-on: [macOS, self-hosted]
+    strategy:
+      matrix:
+        config: [Debug, Release]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and Test
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/src:ro" \
+            -w /build \
+            swift:6.2-noble \
+            bash -c "cp -r /src/. /build && swift build --configuration ${{ matrix.config }} && swift test --configuration ${{ matrix.config }}"
   uploadcoveragereport:
     name: Upload Coverage Report
     needs: [macos_tests, linux_tests]

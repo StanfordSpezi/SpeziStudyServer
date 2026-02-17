@@ -39,7 +39,7 @@ jobs:
       artifactname: ${{ format('SpeziStudyServer-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
   linux_tests:
     name: Build and Test Swift Package Linux (${{ matrix.config }})
-    uses: StanfordBDHG/.github/.github/workflows/swift-test.yml@v2
+    uses: ./.github/workflows/swift-test.yml
     strategy:
       matrix:
         config: [Debug, Release]

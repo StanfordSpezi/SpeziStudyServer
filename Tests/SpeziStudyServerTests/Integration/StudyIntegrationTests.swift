@@ -28,7 +28,7 @@ struct StudyIntegrationTests {
 
                 let study = try response.content.decode(Components.Schemas.StudyResponse.self)
                 #expect(study.id.isEmpty == false)
-                #expect(study.title[.enUS] == "New Study")
+                #expect(study.details[.enUS]?.title == "New Study")
                 #expect(study.locales == ["en-US"])
                 #expect(study.icon == "heart")
             }
@@ -64,7 +64,7 @@ struct StudyIntegrationTests {
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
                 #expect(responseStudy.id == studyId.uuidString)
-                #expect(responseStudy.title[.enUS] == "Test Study")
+                #expect(responseStudy.details[.enUS]?.title == "Test Study")
                 #expect(responseStudy.locales == ["en-US"])
                 #expect(responseStudy.icon == "heart")
             }
@@ -92,14 +92,22 @@ struct StudyIntegrationTests {
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId, title: "Original Title")
             let studyId = try study.requireId()
 
+            let patchBody: [String: Any] = [
+                "details": [
+                    "en-US": [
+                        "title": "Updated Title"
+                    ] as [String: Any]
+                ] as [String: Any]
+            ]
+
             try await app.test(.PATCH, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
                 req.bearerAuth(token)
-                try req.encodeJSONBody(["title": ["en-US": "Updated Title"]])
+                try req.encodeJSONBody(patchBody)
             }) { response in
                 #expect(response.status == .ok)
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
-                #expect(responseStudy.title[.enUS] == "Updated Title")
+                #expect(responseStudy.details[.enUS]?.title == "Updated Title")
                 #expect(responseStudy.locales == ["en-US"])
             }
         }
@@ -205,8 +213,7 @@ struct StudyIntegrationTests {
 
     private func createStudyRequestBody(title: String) -> [String: Any] {
         [
-            "title": ["en-US": title],
-            "locales": ["en-US"],
+            "title": title,
             "icon": "heart"
         ] as [String: Any]
     }

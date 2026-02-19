@@ -14,11 +14,13 @@ import Vapor
 
 /// Note: This type is mapped from Components.Schemas.StudyDetailContent via typeOverrides in openapi-generator-config.yaml
 struct StudyDetailContent: Codable, Sendable, Hashable {
+    var title: String
     var shortTitle: String
     var explanationText: String
     var shortExplanationText: String
 
-    init(shortTitle: String = "", explanationText: String = "", shortExplanationText: String = "") {
+    init(title: String = "", shortTitle: String = "", explanationText: String = "", shortExplanationText: String = "") {
+        self.title = title
         self.shortTitle = shortTitle
         self.explanationText = explanationText
         self.shortExplanationText = shortExplanationText
@@ -26,6 +28,7 @@ struct StudyDetailContent: Codable, Sendable, Hashable {
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
         self.shortTitle = try container.decodeIfPresent(String.self, forKey: .shortTitle) ?? ""
         self.explanationText = try container.decodeIfPresent(String.self, forKey: .explanationText) ?? ""
         self.shortExplanationText = try container.decodeIfPresent(String.self, forKey: .shortExplanationText) ?? ""
@@ -34,7 +37,6 @@ struct StudyDetailContent: Codable, Sendable, Hashable {
 
 
 struct StudyPatch: Sendable {
-    var title: LocalizationsDictionary<String>?
     var locales: [String]? // swiftlint:disable:this discouraged_optional_collection
     var icon: String?
     var details: LocalizationsDictionary<StudyDetailContent>?
@@ -48,8 +50,6 @@ final class Study: Model, @unchecked Sendable {
     @ID(key: .id) var id: UUID?
 
     @Parent(key: "group_id") var group: Group
-
-    @Field(key: "title") var title: LocalizationsDictionary<String>
 
     @Field(key: "locales") var locales: [String]
 
@@ -65,7 +65,6 @@ final class Study: Model, @unchecked Sendable {
 
     init(
         groupId: UUID,
-        title: LocalizationsDictionary<String>,
         locales: [String],
         icon: String,
         details: LocalizationsDictionary<StudyDetailContent> = .init(),
@@ -74,7 +73,6 @@ final class Study: Model, @unchecked Sendable {
     ) {
         self.id = id
         self.$group.id = groupId
-        self.title = title
         self.locales = locales
         self.icon = icon
         self.details = details
@@ -82,7 +80,6 @@ final class Study: Model, @unchecked Sendable {
     }
 
     func apply(_ patch: StudyPatch) {
-        if let title = patch.title { self.title = title }
         if let locales = patch.locales { self.locales = locales }
         if let icon = patch.icon { self.icon = icon }
         if let details = patch.details { self.details = details }

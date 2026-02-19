@@ -926,7 +926,11 @@ components:
     StudyDetailContent:
       type: object
       description: Per-locale study detail fields
+      required:
+        - title
       properties:
+        title:
+          type: string
         shortTitle:
           type: string
         explanationText:
@@ -1082,38 +1086,29 @@ components:
           type: string
           format: uuid
         title:
-          $ref: '#/components/schemas/LocalizedString'
+          type: string
+          description: Study title (en-US preferred, falls back to first available locale)
 
     StudyCreateInput:
       type: object
       description: Request body for creating a new study
       required:
         - title
-        - locales
         - icon
       properties:
         title:
-          $ref: '#/components/schemas/LocalizedString'
-        locales:
-          type: array
-          description: Supported locales for the study
-          items:
-            type: string
-          minItems: 1
-          example: ["en-US"]
+          type: string
+          description: Study title (stored under en-US locale)
+          example: "My Heart Counts"
         icon:
           type: string
           description: Icon identifier (e.g. SF Symbol name)
           example: heart
-        participationCriterion:
-          $ref: '#/components/schemas/ParticipationCriterion'
 
     StudyPatchInput:
       type: object
       description: Partial update for a study. All fields are optional.
       properties:
-        title:
-          $ref: '#/components/schemas/LocalizedString'
         locales:
           type: array
           description: Supported locales for the study
@@ -1135,7 +1130,6 @@ components:
       description: Full study response
       required:
         - id
-        - title
         - locales
         - icon
         - details
@@ -1144,8 +1138,6 @@ components:
         id:
           type: string
           format: uuid
-        title:
-          $ref: '#/components/schemas/LocalizedString'
         locales:
           type: array
           description: Supported locales for the study
@@ -1189,7 +1181,7 @@ components:
       required:
         - scheduleDefinition
         - completionPolicy
-        - notifications
+        - notification
       properties:
         id:
           type: string
@@ -1199,8 +1191,9 @@ components:
           $ref: '#/components/schemas/ScheduleDefinition'
         completionPolicy:
           $ref: '#/components/schemas/AllowedCompletionPolicy'
-        notifications:
-          $ref: '#/components/schemas/NotificationsConfig'
+        notification:
+          type: boolean
+          description: Whether notifications are enabled for this schedule. When true, uses task-based notification threading.
 
     ScheduleDefinition:
       description: Defines when and how often a schedule fires
@@ -1519,107 +1512,6 @@ components:
         - sameDayAfterStart
         - duringEvent
         - anytime
-
-    NotificationsConfig:
-      description: Notification configuration for a schedule
-      oneOf:
-        - $ref: '#/components/schemas/NotificationsDisabled'
-        - $ref: '#/components/schemas/NotificationsEnabled'
-      discriminator:
-        propertyName: type
-        mapping:
-          disabled: '#/components/schemas/NotificationsDisabled'
-          enabled: '#/components/schemas/NotificationsEnabled'
-
-    NotificationsDisabled:
-      type: object
-      description: No notifications for schedule occurrences
-      required:
-        - type
-      properties:
-        type:
-          type: string
-          enum: [disabled]
-      additionalProperties: false
-
-    NotificationsEnabled:
-      type: object
-      description: Enable notifications for schedule occurrences
-      required:
-        - type
-        - thread
-      properties:
-        type:
-          type: string
-          enum: [enabled]
-        thread:
-          $ref: '#/components/schemas/NotificationThread'
-        time:
-          $ref: '#/components/schemas/ScheduleTime'
-      additionalProperties: false
-
-    NotificationThread:
-      description: How notifications are grouped
-      oneOf:
-        - $ref: '#/components/schemas/GlobalNotificationThread'
-        - $ref: '#/components/schemas/TaskNotificationThread'
-        - $ref: '#/components/schemas/CustomNotificationThread'
-        - $ref: '#/components/schemas/NoneNotificationThread'
-      discriminator:
-        propertyName: type
-        mapping:
-          global: '#/components/schemas/GlobalNotificationThread'
-          task: '#/components/schemas/TaskNotificationThread'
-          custom: '#/components/schemas/CustomNotificationThread'
-          none: '#/components/schemas/NoneNotificationThread'
-
-    GlobalNotificationThread:
-      type: object
-      description: All notifications grouped in the global SpeziScheduler thread
-      required:
-        - type
-      properties:
-        type:
-          type: string
-          enum: [global]
-      additionalProperties: false
-
-    TaskNotificationThread:
-      type: object
-      description: Notifications grouped by task
-      required:
-        - type
-      properties:
-        type:
-          type: string
-          enum: [task]
-      additionalProperties: false
-
-    CustomNotificationThread:
-      type: object
-      description: Notifications grouped by a custom thread identifier
-      required:
-        - type
-        - identifier
-      properties:
-        type:
-          type: string
-          enum: [custom]
-        identifier:
-          type: string
-          description: Custom thread identifier
-      additionalProperties: false
-
-    NoneNotificationThread:
-      type: object
-      description: No thread identifier — grouping done automatically by iOS
-      required:
-        - type
-      properties:
-        type:
-          type: string
-          enum: [none]
-      additionalProperties: false
 
     # ── Components — Informational ────────────────────────────────────────
 

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SpeziLocalization
 import SpeziStudyDefinition
 
 
@@ -14,10 +15,9 @@ extension Study {
     convenience init(_ schema: Components.Schemas.StudyCreateInput, groupId: UUID) {
         self.init(
             groupId: groupId,
-            title: schema.title,
-            locales: schema.locales,
+            locales: ["en-US"],
             icon: schema.icon,
-            participationCriterion: schema.participationCriterion.map { .init($0) } ?? .all([]),
+            details: .init([.enUS: StudyDetailContent(title: schema.title)]),
             id: UUID()
         )
     }
@@ -26,7 +26,6 @@ extension Study {
 extension StudyPatch {
     init(_ schema: Components.Schemas.StudyPatchInput) {
         self.init(
-            title: schema.title,
             locales: schema.locales,
             icon: schema.icon,
             details: schema.details,
@@ -37,9 +36,10 @@ extension StudyPatch {
 
 extension Components.Schemas.StudyListItem {
     init(_ model: Study) throws {
+        let title = model.details[.enUS]?.title ?? model.details.first?.value.title ?? ""
         self.init(
             id: try model.requireId().uuidString,
-            title: model.title
+            title: title
         )
     }
 }
@@ -48,7 +48,6 @@ extension Components.Schemas.StudyResponse {
     init(_ model: Study) throws {
         self.init(
             id: try model.requireId().uuidString,
-            title: model.title,
             locales: model.locales,
             icon: model.icon,
             details: model.details,

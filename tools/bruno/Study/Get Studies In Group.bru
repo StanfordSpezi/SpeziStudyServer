@@ -9,3 +9,10 @@ get {
   body: none
   auth: inherit
 }
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.length > 0) {
+    bru.setVar("studyId", body[0].id);
+  }
+}

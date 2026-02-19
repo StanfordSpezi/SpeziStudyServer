@@ -13,7 +13,6 @@ struct CreateStudy: AsyncMigration {
     func prepare(on database: any Database) async throws {
         try await database.schema("studies")
             .id()
-            .field("title", .json, .required)
             .field("locales", .array(of: .string), .required)
             .field("icon", .string, .required)
             .field("details", .json, .required)

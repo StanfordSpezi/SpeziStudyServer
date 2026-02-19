@@ -43,9 +43,7 @@ struct ComponentScheduleIntegrationTests {
                 ] as [String: Any]
             ] as [String: Any],
             "completionPolicy": "anytime",
-            "notifications": [
-                "type": "disabled"
-            ]
+            "notification": false
         ] as [String: Any]
     }
 
@@ -61,12 +59,7 @@ struct ComponentScheduleIntegrationTests {
                 ] as [String: Any]
             ] as [String: Any],
             "completionPolicy": "sameDay",
-            "notifications": [
-                "type": "enabled",
-                "thread": [
-                    "type": "task"
-                ] as [String: Any]
-            ] as [String: Any]
+            "notification": true
         ]
     }
 

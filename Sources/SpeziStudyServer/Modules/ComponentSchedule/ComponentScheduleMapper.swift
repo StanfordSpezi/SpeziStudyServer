@@ -15,11 +15,18 @@ import SpeziStudyDefinition
 
 extension Components.Schemas.ComponentSchedule {
     init(_ model: ComponentSchedule) throws {
+        let notificationEnabled: Bool
+        switch model.scheduleData.notifications {
+        case .disabled:
+            notificationEnabled = false
+        case .enabled:
+            notificationEnabled = true
+        }
         self.init(
             id: try model.requireId().uuidString,
             scheduleDefinition: .init(model.scheduleData.scheduleDefinition),
             completionPolicy: .init(model.scheduleData.completionPolicy),
-            notifications: .init(model.scheduleData.notifications)
+            notification: notificationEnabled
         )
     }
 }
@@ -31,7 +38,7 @@ extension StudyDefinition.ComponentSchedule {
             componentId: componentId,
             scheduleDefinition: .init(schema.scheduleDefinition),
             completionPolicy: .init(schema.completionPolicy),
-            notifications: .init(schema.notifications)
+            notifications: schema.notification ? .enabled(thread: .task, time: nil) : .disabled
         )
     }
 }
@@ -226,71 +233,6 @@ extension SpeziScheduler.AllowedCompletionPolicy {
 }
 
 
-// MARK: - NotificationsConfig
-
-extension Components.Schemas.NotificationsConfig {
-    init(_ model: StudyDefinition.ComponentSchedule.NotificationsConfig) {
-        switch model {
-        case .disabled:
-            self = .disabled(.init(_type: .disabled))
-        case let .enabled(thread, time):
-            self = .enabled(.init(
-                _type: .enabled,
-                thread: .init(thread),
-                time: time.map { .init($0) }
-            ))
-        }
-    }
-}
-
-extension StudyDefinition.ComponentSchedule.NotificationsConfig {
-    init(_ schema: Components.Schemas.NotificationsConfig) {
-        switch schema {
-        case .disabled:
-            self = .disabled
-        case .enabled(let value):
-            self = .enabled(
-                thread: SpeziScheduler.NotificationThread(value.thread),
-                time: value.time.map { SpeziScheduler.NotificationTime($0) }
-            )
-        }
-    }
-}
-
-
-// MARK: - NotificationThread
-
-extension Components.Schemas.NotificationThread {
-    init(_ model: SpeziScheduler.NotificationThread) {
-        switch model {
-        case .global:
-            self = .global(.init(_type: .global))
-        case .task:
-            self = .task(.init(_type: .task))
-        case .custom(let identifier):
-            self = .custom(.init(_type: .custom, identifier: identifier))
-        case .none:
-            self = .none(.init(_type: .none))
-        }
-    }
-}
-
-extension SpeziScheduler.NotificationThread {
-    init(_ schema: Components.Schemas.NotificationThread) {
-        switch schema {
-        case .global:
-            self = .global
-        case .task:
-            self = .task
-        case .custom(let value):
-            self = .custom(value.identifier)
-        case .none:
-            self = .none
-        }
-    }
-}
-
-
 // MARK: - ScheduleTime / ComponentSchedule.Time
 
 extension Components.Schemas.ScheduleTime {
@@ -312,27 +254,6 @@ extension StudyDefinition.ComponentSchedule.Time {
         )
     }
 }
-
-extension SpeziScheduler.NotificationTime {
-    init(_ schema: Components.Schemas.ScheduleTime) {
-        self.init(
-            hour: schema.hour,
-            minute: schema.minute ?? 0,
-            second: schema.second ?? 0
-        )
-    }
-}
-
-extension Components.Schemas.ScheduleTime {
-    init(_ model: SpeziScheduler.NotificationTime) {
-        self.init(
-            hour: model.hour,
-            minute: model.minute == 0 ? nil : model.minute,
-            second: model.second == 0 ? nil : model.second
-        )
-    }
-}
-
 
 // MARK: - DateComponents
 

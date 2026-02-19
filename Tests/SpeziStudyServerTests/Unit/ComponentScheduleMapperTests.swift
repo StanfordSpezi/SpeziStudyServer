@@ -16,7 +16,6 @@ import Testing
 @Suite
 struct ComponentScheduleMapperTests {
     private typealias CSTime = StudyDefinition.ComponentSchedule.Time
-    private typealias NotifConfig = StudyDefinition.ComponentSchedule.NotificationsConfig
 
     // MARK: - AllowedCompletionPolicy
 
@@ -130,85 +129,4 @@ struct ComponentScheduleMapperTests {
         #expect(back == .completedTask(componentId: componentId))
     }
 
-    // MARK: - NotificationThread
-
-    @Test
-    func notificationThreadGlobal() {
-        let schema = Components.Schemas.NotificationThread(SpeziScheduler.NotificationThread.global)
-        if case .global = schema {} else { Issue.record("Expected global") }
-        let back = SpeziScheduler.NotificationThread(schema)
-        #expect(back == .global)
-    }
-
-    @Test
-    func notificationThreadTask() {
-        let schema = Components.Schemas.NotificationThread(SpeziScheduler.NotificationThread.task)
-        if case .task = schema {} else { Issue.record("Expected task") }
-        let back = SpeziScheduler.NotificationThread(schema)
-        #expect(back == .task)
-    }
-
-    @Test
-    func notificationThreadNone() {
-        let schema = Components.Schemas.NotificationThread(SpeziScheduler.NotificationThread.none)
-        if case .none = schema {} else { Issue.record("Expected none") }
-        let back = SpeziScheduler.NotificationThread(schema)
-        #expect(back == .none)
-    }
-
-    @Test
-    func notificationThreadCustom() {
-        let schema = Components.Schemas.NotificationThread(.custom("my-thread"))
-        if case .custom(let value) = schema {
-            #expect(value.identifier == "my-thread")
-        } else {
-            Issue.record("Expected custom")
-        }
-        let back = SpeziScheduler.NotificationThread(schema)
-        #expect(back == .custom("my-thread"))
-    }
-
-    // MARK: - NotificationsConfig
-
-    @Test
-    func notificationsConfigDisabled() {
-        let schema = Components.Schemas.NotificationsConfig(NotifConfig.disabled)
-        if case .disabled = schema {} else { Issue.record("Expected disabled") }
-        let back = NotifConfig(schema)
-        if case .disabled = back {} else { Issue.record("Expected disabled") }
-    }
-
-    @Test
-    func notificationsConfigEnabledWithTime() {
-        let model = NotifConfig.enabled(
-            thread: .task,
-            time: NotificationTime(hour: 9, minute: 30, second: 0)
-        )
-        let schema = Components.Schemas.NotificationsConfig(model)
-        if case .enabled(let value) = schema {
-            if case .task = value.thread {} else { Issue.record("Expected task thread") }
-            #expect(value.time?.hour == 9)
-            #expect(value.time?.minute == 30)
-        } else {
-            Issue.record("Expected enabled")
-        }
-        let back = NotifConfig(schema)
-        if case .enabled(let thread, let time) = back {
-            #expect(thread == .task)
-            #expect(time?.hour == 9)
-        } else {
-            Issue.record("Expected enabled")
-        }
-    }
-
-    @Test
-    func notificationsConfigEnabledWithoutTime() {
-        let model = NotifConfig.enabled(thread: .global, time: nil)
-        let schema = Components.Schemas.NotificationsConfig(model)
-        if case .enabled(let value) = schema {
-            #expect(value.time == nil)
-        } else {
-            Issue.record("Expected enabled")
-        }
-    }
 }

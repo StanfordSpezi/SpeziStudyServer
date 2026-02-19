@@ -39,11 +39,11 @@ struct AuthIntegrationTests {
     private static func allEndpoints(groupId: UUID, studyId: UUID, componentId: UUID) -> [Endpoint] {
         let informational = jsonData(Components.Schemas.InformationalComponentInput(
             name: "X",
-            data: LocalizationsDictionary([.enUS: InformationalContent(title: "T", lede: nil, content: "C")])
+            data: .init([.enUS: InformationalContent(title: "T", lede: nil, content: "C")])
         ))
         let questionnaire = jsonData(Components.Schemas.QuestionnaireComponentInput(
             name: "X",
-            data: LocalizationsDictionary([.enUS: QuestionnaireContent(questionnaire: "{}")])
+            data: .init([.enUS: QuestionnaireContent(questionnaire: "{}")])
         ))
         let healthData = jsonData(Components.Schemas.HealthDataComponentInput(
             name: "X",
@@ -86,15 +86,14 @@ struct AuthIntegrationTests {
 
     private static func studyBody(title: String = "X") -> [String: Any] {
         [
-            "title": ["en-US": title],
-            "locales": ["en-US"],
+            "title": title,
             "icon": "heart"
         ] as [String: Any]
     }
 
     private static func patchBody() -> [String: Any] {
         [
-            "title": ["en-US": "Updated"]
+            "details": ["en-US": ["title": "Updated"] as [String: Any]] as [String: Any]
         ] as [String: Any]
     }
 

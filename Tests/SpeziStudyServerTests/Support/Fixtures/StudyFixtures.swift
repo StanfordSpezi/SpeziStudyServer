@@ -22,9 +22,9 @@ enum StudyFixtures {
     ) async throws -> Study {
         let study = Study(
             groupId: groupId,
-            title: LocalizationsDictionary([.enUS: title]),
             locales: ["en-US"],
             icon: "heart",
+            details: .init([.enUS: StudyDetailContent(title: title)]),
             id: id
         )
         try await study.save(on: database)

@@ -38,16 +38,17 @@ Sources/SpeziStudyServer/
 │   │   ├── ComponentController.swift
 │   │   ├── ComponentService.swift
 │   │   ├── ComponentRepository.swift
-│   │   ├── HealthData/           # Health data collection
-│   │   ├── Informational/        # Informational content
-│   │   └── Questionnaire/        # Questionnaires
-│   └── ComponentSchedule/        # Schedule management
+│   │   ├── ComponentMapper.swift
+│   │   ├── HealthData/           # Health data collection (Controller/Service/Repository/Mapper)
+│   │   ├── Informational/        # Informational content (Controller/Service/Repository/Mapper)
+│   │   └── Questionnaire/        # Questionnaires (Controller/Service/Repository/Mapper)
+│   └── ComponentSchedule/        # Schedule management (Controller/Service/Repository/Mapper)
 │
 ├── Models/                       # Fluent database models
 │   ├── Group.swift
-│   ├── Study.swift
+│   ├── Study.swift               # StudyDetailContent (title, shortTitle, etc.), StudyPatch
 │   ├── Component.swift
-│   ├── ComponentType.swift
+│   ├── ComponentType.swift       # Enum: informational, questionnaire, healthDataCollection
 │   ├── ComponentSchedule.swift
 │   ├── InformationalComponent.swift
 │   ├── QuestionnaireComponent.swift
@@ -160,18 +161,48 @@ API types are generated from `Sources/SpeziStudyServer/openapi.yaml` using swift
 - Generated types: `Components.Schemas.*`, `Operations.*`
 - Regenerate after schema changes: `swift build`
 
+## Study API Patterns
+
+### Study Creation (POST)
+
+Study creation uses a simplified input — just `title` (plain string) and `icon`. The server defaults `locales` to `["en-US"]` and wraps the title into `details["en-US"].title`:
+
+```json
+POST /groups/{groupId}/studies
+{
+  "title": "My Heart Counts",
+  "icon": "heart"
+}
+```
+
+Full details, locales, and participationCriterion are set via PATCH after creation.
+
+### Study Details
+
+`StudyDetailContent` contains all per-locale study fields: `title`, `shortTitle`, `explanationText`, `shortExplanationText`. These are stored in a `LocalizationsDictionary<StudyDetailContent>` keyed by locale.
+
+### Study List (GET)
+
+`StudyListItem` returns a flat `id` + `title` string (en-US preferred, falls back to first available locale).
+
 ## StudyDefinition JSON Format
 
 The server uses SpeziStudyDefinition types which encode with specific JSON patterns:
 
 ### Localized Strings
 
-`LocalizedDictionary` encodes as locale-keyed objects:
+`LocalizationsDictionary` encodes as locale-keyed objects:
 
 ```json
 {
-  "title": { "en-US": "My Study Title" },
-  "explanationText": { "en-US": "Study description here" }
+  "details": {
+    "en-US": {
+      "title": "My Study Title",
+      "shortTitle": "MST",
+      "explanationText": "Study description here",
+      "shortExplanationText": "Short desc"
+    }
+  }
 }
 ```
 
@@ -306,14 +337,18 @@ swiftlint
 Tests/SpeziStudyServerTests/
 ├── Integration/                    # HTTP endpoint tests
 │   ├── AuthIntegrationTests.swift
+│   ├── GroupIntegrationTests.swift
 │   ├── StudyIntegrationTests.swift
 │   ├── ComponentIntegrationTests.swift
+│   ├── ComponentScheduleIntegrationTests.swift
 │   ├── HealthDataComponentIntegrationTests.swift
 │   ├── QuestionnaireComponentIntegrationTests.swift
 │   └── InformationalComponentIntegrationTests.swift
 ├── Unit/
 │   ├── AuthContextTests.swift                    # GroupRole & groupMemberships parsing
-│   └── ParticipationCriterionMapperTests.swift   # Schema ↔ domain round-trip
+│   ├── ParticipationCriterionMapperTests.swift   # Schema ↔ domain round-trip
+│   ├── ComponentScheduleMapperTests.swift        # Schedule mapping tests
+│   └── SchedulePatternMapperTests.swift          # Schedule pattern mapping tests
 └── Support/
     ├── TestApp.swift               # App lifecycle, JWT signing with HMAC
     ├── Request+JSON.swift          # bearerAuth() + encodeJSONBody() helpers
@@ -348,14 +383,15 @@ API requests are defined in `tools/bruno/`. Bruno is an open-source API client (
 
 ```
 tools/bruno/
+├── collection.bru               # Root collection config
 ├── environments/SpeziStudy.bru  # Environment variables
 ├── Health Check.bru             # Health check endpoint
 ├── Seed.bru                     # Database seeding script
 ├── Auth/                        # Login + Refresh Token
-├── Group/                       # Group listing requests
-├── Study/                       # Study CRUD requests
-├── Components/                  # Component requests by type
-└── ComponentSchedules/          # Schedule requests
+├── Group/                       # Get Groups, Get Group
+├── Study/                       # Post, Get, Put, Delete, Download, Get Studies In Group
+├── Components/                  # CRUD per type (Informational, Questionnaire, HealthData) + List, Delete
+└── ComponentSchedules/          # Get, Post (Once/Daily/Weekly), Put, Delete
 ```
 
 ### Database Seeding

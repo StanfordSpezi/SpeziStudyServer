@@ -63,7 +63,7 @@ enum ComponentFixtures {
         let componentId = try component.requireId()
         let questionnaire = QuestionnaireComponent(
             componentId: componentId,
-            data: LocalizationsDictionary([.enUS: QuestionnaireContent(questionnaire: "{}")])
+            data: .init([.enUS: QuestionnaireContent(questionnaire: "{}")])
         )
         try await questionnaire.save(on: database)
 
@@ -86,7 +86,7 @@ enum ComponentFixtures {
         let componentId = try component.requireId()
         let informational = InformationalComponent(
             componentId: componentId,
-            data: LocalizationsDictionary([.enUS: InformationalContent(title: "Test", lede: nil, content: "Content")])
+            data: .init([.enUS: InformationalContent(title: "Test", lede: nil, content: "Content")])
         )
         try await informational.save(on: database)
 

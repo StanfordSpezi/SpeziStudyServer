@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  package_tests:
+  macos_tests:
     name: Build and Test Swift Package ${{ matrix.platform.name }} (${{ matrix.config }})
     uses: StanfordBDHG/.github/.github/workflows/xcodebuild-or-fastlane.yml@v2
     strategy:
@@ -37,11 +37,21 @@ jobs:
       buildConfig: ${{ matrix.config }}
       resultBundle: ${{ format('SpeziStudyServer-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
       artifactname: ${{ format('SpeziStudyServer-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
+  linux_tests:
+    name: Build and Test Swift Package Linux (${{ matrix.config }})
+    uses: StanfordBDHG/.github/.github/workflows/swift-test.yml@v2
+    strategy:
+      matrix:
+        config: [Debug, Release]
+      fail-fast: false
+    with:
+      artifact_name: ${{ format('SpeziStudyServer-Package-Linux-{0}.lcov', matrix.config) }}
   uploadcoveragereport:
     name: Upload Coverage Report
-    needs: [package_tests]
+    needs: [macos_tests, linux_tests]
     uses: StanfordBDHG/.github/.github/workflows/create-and-upload-coverage-report.yml@v2
     with:
       coveragereports: SpeziStudyServer-*.xcresult
+      coveragereports_lcov: SpeziStudyServer-Package-Linux-*.lcov
     secrets:
       token: ${{ secrets.CODECOV_TOKEN }}

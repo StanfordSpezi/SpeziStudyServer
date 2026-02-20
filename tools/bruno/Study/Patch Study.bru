@@ -1,0 +1,60 @@
+meta {
+  name: Patch Study
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{baseUrl}}/studies/{{studyId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "details": {
+      "en-US": {
+        "title": "Study Title",
+        "shortTitle": "UST",
+        "explanationText": "Updated explanation text for the study",
+        "shortExplanationText": "Updated short explanation"
+      }
+    },
+    "participationCriterion": {
+      "type": "all",
+      "criteria": [
+        {
+          "type": "ageAtLeast",
+          "age": 18
+        },
+        {
+          "type": "any",
+          "criteria": [
+            {
+              "type": "isFromRegion",
+              "region": "US"
+            },
+            {
+              "type": "isFromRegion",
+              "region": "DE"
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "criterion": {
+            "type": "ageAtLeast",
+            "age": 65
+          }
+        }
+      ]
+    },
+    "consent": {
+      "en-US": "# Informed Consent\n\nBy participating in this study, you agree to..."
+    }
+  }
+}

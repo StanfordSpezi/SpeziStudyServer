@@ -364,6 +364,8 @@ only_rules:
   - xctfail_message
   # The variable should be placed on the left, the constant on the right of a comparison operator.
   - yoda_condition
+  # Custom rules defined in the custom_rules section
+  - custom_rules
 
 attributes:
   attributes_with_arguments_always_on_line_above: false
@@ -448,3 +450,34 @@ unused_optional_binding:
 
 vertical_whitespace: # Limit vertical whitespace to a single empty line.
   max_empty_lines: 2 # warning - default: 1
+
+custom_rules:
+  no_blank_line_before_imports:
+    name: "Missing Blank Line Before Imports"
+    message: "There must be exactly 1 blank line between the license header and the first import."
+    regex: "//\nimport "
+    severity: warning
+
+  too_many_blank_lines_before_imports:
+    name: "Too Many Blank Lines Before Imports"
+    message: "There must be exactly 1 blank line between the license header and the first import (found 2+)."
+    regex: "//\n\\s*\n\\s*\n\\s*\nimport "
+    severity: warning
+
+  no_blank_lines_after_imports:
+    name: "Missing Blank Lines After Imports"
+    message: "There must be exactly 2 blank lines between the last import and the next declaration."
+    regex: "(import \\w+\n(?!import |@\\w+ import |@\\w+\\(.+\\) import )\\S)"
+    severity: warning
+
+  one_blank_line_after_imports:
+    name: "Only One Blank Line After Imports"
+    message: "There must be exactly 2 blank lines (not 1) between the last import and the next declaration."
+    regex: "(import \\w+\n\n(?!import |@\\w+ import |@\\w+\\(.+\\) import )\\S)"
+    severity: warning
+
+  too_many_blank_lines_after_imports:
+    name: "Too Many Blank Lines After Imports"
+    message: "There must be exactly 2 blank lines (not 3+) between the last import and the next declaration."
+    regex: "(import \\w+\n\n\n\n+(?!import |@\\w+ import |@\\w+\\(.+\\) import )\\S)"
+    severity: warning

@@ -10,4 +10,13 @@ enum ComponentType: String, Codable, Sendable {
     case informational
     case questionnaire
     case healthDataCollection
+
+    var supportsSchedules: Bool {
+        switch self {
+        case .informational, .questionnaire:
+            true
+        case .healthDataCollection:
+            false
+        }
+    }
 }

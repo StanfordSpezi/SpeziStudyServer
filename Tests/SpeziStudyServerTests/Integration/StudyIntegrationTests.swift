@@ -31,6 +31,7 @@ struct StudyIntegrationTests {
                 #expect(study.details[.enUS]?.title == "New Study")
                 #expect(study.locales == ["en-US"])
                 #expect(study.icon == "heart")
+                #expect(study.consent.isEmpty)
             }
         }
     }
@@ -67,6 +68,7 @@ struct StudyIntegrationTests {
                 #expect(responseStudy.details[.enUS]?.title == "Test Study")
                 #expect(responseStudy.locales == ["en-US"])
                 #expect(responseStudy.icon == "heart")
+                #expect(responseStudy.consent.isEmpty)
             }
         }
     }
@@ -140,6 +142,42 @@ struct StudyIntegrationTests {
                 #expect(responseStudy.details[.enUS]?.shortTitle == "TS")
                 #expect(responseStudy.details[.enUS]?.explanationText == "A test study explanation")
                 #expect(responseStudy.details[.enUS]?.shortExplanationText.isEmpty == true)
+            }
+        }
+    }
+
+    @Test
+    func patchStudyConsent() async throws {
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId, title: "Consent Study")
+            let studyId = try study.requireId()
+
+            let patchBody: [String: Any] = [
+                "consent": [
+                    "en-US": "# Informed Consent\n\nBy participating in this study, you agree to..."
+                ] as [String: Any]
+            ]
+
+            try await app.test(.PATCH, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+                try req.encodeJSONBody(patchBody)
+            }) { response in
+                #expect(response.status == .ok)
+
+                let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
+                #expect(responseStudy.consent[.enUS] == "# Informed Consent\n\nBy participating in this study, you agree to...")
+            }
+
+            // Verify consent persists on GET
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
+                #expect(response.status == .ok)
+
+                let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
+                #expect(responseStudy.consent[.enUS] == "# Informed Consent\n\nBy participating in this study, you agree to...")
             }
         }
     }

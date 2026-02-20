@@ -1124,6 +1124,8 @@ components:
           $ref: '#/components/schemas/StudyDetailData'
         participationCriterion:
           $ref: '#/components/schemas/ParticipationCriterion'
+        consent:
+          $ref: '#/components/schemas/LocalizedString'
 
     StudyResponse:
       type: object
@@ -1134,6 +1136,7 @@ components:
         - icon
         - details
         - participationCriterion
+        - consent
       properties:
         id:
           type: string
@@ -1152,6 +1155,8 @@ components:
           $ref: '#/components/schemas/StudyDetailData'
         participationCriterion:
           $ref: '#/components/schemas/ParticipationCriterion'
+        consent:
+          $ref: '#/components/schemas/LocalizedString'
 
     # ── Components — Shared ───────────────────────────────────────────────
 

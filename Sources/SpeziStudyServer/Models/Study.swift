@@ -41,6 +41,7 @@ struct StudyPatch: Sendable {
     var icon: String?
     var details: LocalizationsDictionary<StudyDetailContent>?
     var participationCriterion: StudyDefinition.ParticipationCriterion?
+    var consent: LocalizationsDictionary<String>?
 }
 
 
@@ -59,6 +60,8 @@ final class Study: Model, @unchecked Sendable {
 
     @Field(key: "participation_criterion") var participationCriterion: StudyDefinition.ParticipationCriterion
 
+    @Field(key: "consent") var consent: LocalizationsDictionary<String>
+
     @Children(for: \.$study) var components: [Component]
 
     init() {}
@@ -69,6 +72,7 @@ final class Study: Model, @unchecked Sendable {
         icon: String,
         details: LocalizationsDictionary<StudyDetailContent> = .init(),
         participationCriterion: StudyDefinition.ParticipationCriterion = .all([]),
+        consent: LocalizationsDictionary<String> = .init(),
         id: UUID? = nil
     ) {
         self.id = id
@@ -77,6 +81,7 @@ final class Study: Model, @unchecked Sendable {
         self.icon = icon
         self.details = details
         self.participationCriterion = participationCriterion
+        self.consent = consent
     }
 
     func apply(_ patch: StudyPatch) {
@@ -84,5 +89,6 @@ final class Study: Model, @unchecked Sendable {
         if let icon = patch.icon { self.icon = icon }
         if let details = patch.details { self.details = details }
         if let participationCriterion = patch.participationCriterion { self.participationCriterion = participationCriterion }
+        if let consent = patch.consent { self.consent = consent }
     }
 }

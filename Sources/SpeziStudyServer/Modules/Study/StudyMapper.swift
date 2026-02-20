@@ -29,7 +29,8 @@ extension StudyPatch {
             locales: schema.locales,
             icon: schema.icon,
             details: schema.details,
-            participationCriterion: schema.participationCriterion.map { .init($0) }
+            participationCriterion: schema.participationCriterion.map { .init($0) },
+            consent: schema.consent
         )
     }
 }
@@ -51,7 +52,8 @@ extension Components.Schemas.StudyResponse {
             locales: model.locales,
             icon: model.icon,
             details: model.details,
-            participationCriterion: .init(model.participationCriterion)
+            participationCriterion: .init(model.participationCriterion),
+            consent: model.consent
         )
     }
 }

@@ -36,37 +36,22 @@ The server integrates with [SpeziStudy](https://github.com/StanfordSpezi/SpeziSt
 
 ## Local Development Setup
 
-### 1. Start Infrastructure
-
-The project uses PostgreSQL for the application database and [Keycloak](https://www.keycloak.org) for authentication. Both run via Docker Compose:
+The project uses PostgreSQL and [Keycloak](https://www.keycloak.org) for authentication, both running via Docker Compose.
 
 ```bash
-docker compose up -d db keycloak-db keycloak
+cp .env.example .env                          # configure environment (defaults work out of the box)
+docker compose up -d db keycloak-db keycloak  # start PostgreSQL and Keycloak
+swift run SpeziStudyServer migrate --yes      # create / update database tables
+swift run                                     # start the server
 ```
 
-This starts:
-- **PostgreSQL** on `localhost:5432` — application database
-- **Keycloak** on `localhost:8180` — identity provider with a pre-configured realm imported from `docker/keycloak/realm-export.json`
+The server connects to PostgreSQL, fetches JWKS from Keycloak, and syncs groups on startup.
 
-### 2. Configure Environment
+To revert migrations, run `swift run SpeziStudyServer migrate --revert`. When using Docker Compose for the app itself, use `docker compose run migrate` and `docker compose run revert` instead.
 
-Copy the example environment file:
+See `.env.example` for all available environment options.
 
-```bash
-cp .env.example .env
-```
-
-The defaults work out of the box with the Docker Compose setup. See `.env.example` for all available options.
-
-### 3. Run the Server
-
-```bash
-swift run
-```
-
-On startup the server connects to PostgreSQL, runs migrations, fetches JWKS from Keycloak, and syncs groups.
-
-### 4. Run Tests
+### Run Tests
 
 ```bash
 swift test
@@ -92,7 +77,9 @@ The API is defined using OpenAPI. See [`Sources/SpeziStudyServer/openapi.yaml`](
 
 ### API Testing with Bruno
 
-API requests for manual testing are available in `tools/bruno/`. [Bruno](https://www.usebruno.com) is an open-source API client.
+API requests for manual testing are available in `tools/bruno/`. [Bruno](https://www.usebruno.com) is an open-source API client. Select the **SpeziStudy** environment in Bruno to load the required variables.
+
+Run the **Seed** request to bootstrap a working dataset — it logs in via Keycloak, fetches groups, creates a study, and adds sample components in sequence. Requests use post-response scripts to pass IDs (e.g. `groupId`, `studyId`) to subsequent requests automatically, so you can explore the API without manually copying values.
 
 
 ## Architecture

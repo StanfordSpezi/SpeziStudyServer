@@ -83,6 +83,11 @@ services:
       POSTGRES_USER: &kc_db_username ${KEYCLOAK_DB_USERNAME:-keycloak}
       POSTGRES_PASSWORD: &kc_db_password ${KEYCLOAK_DB_PASSWORD:-keycloak}
       POSTGRES_DB: &kc_db_name ${KEYCLOAK_DB_NAME:-keycloak}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     command: start-dev --import-realm --health-enabled=true
@@ -96,7 +101,8 @@ services:
     volumes:
       - ./docker/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     depends_on:
-      - keycloak-db
+      keycloak-db:
+        condition: service_healthy
     ports:
       - '8180:8080'
     healthcheck:

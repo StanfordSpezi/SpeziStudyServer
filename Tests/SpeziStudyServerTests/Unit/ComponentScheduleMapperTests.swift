@@ -128,5 +128,4 @@ struct ComponentScheduleMapperTests {
         let back = StudyLifecycleEvent(schema)
         #expect(back == .completedTask(componentId: componentId))
     }
-
 }

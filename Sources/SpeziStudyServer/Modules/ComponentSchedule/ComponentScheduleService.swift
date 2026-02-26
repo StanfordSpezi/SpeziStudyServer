@@ -17,13 +17,13 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
     @Dependency(ComponentScheduleRepository.self) var repository: ComponentScheduleRepository
 
     func listSchedules(studyId: UUID, componentId: UUID) async throws -> [ComponentSchedule] {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
         try await requireSchedulableComponent(id: componentId, studyId: studyId)
         return try await repository.findAll(componentId: componentId)
     }
 
     func getSchedule(studyId: UUID, componentId: UUID, scheduleId: UUID) async throws -> ComponentSchedule {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
         try await requireSchedulableComponent(id: componentId, studyId: studyId)
 
         guard let schedule = try await repository.find(id: scheduleId) else {
@@ -38,7 +38,7 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
         componentId: UUID,
         data: StudyDefinition.ComponentSchedule
     ) async throws -> ComponentSchedule {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
         try await requireSchedulableComponent(id: componentId, studyId: studyId)
 
         let schedule = ComponentSchedule(componentId: componentId, scheduleData: data)
@@ -51,7 +51,7 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
         scheduleId: UUID,
         data: StudyDefinition.ComponentSchedule
     ) async throws -> ComponentSchedule {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
         try await requireSchedulableComponent(id: componentId, studyId: studyId)
 
         guard let schedule = try await repository.find(id: scheduleId) else {
@@ -64,7 +64,7 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
     }
 
     func deleteSchedule(studyId: UUID, componentId: UUID, scheduleId: UUID) async throws {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
         try await requireSchedulableComponent(id: componentId, studyId: studyId)
 
         let deleted = try await repository.delete(id: scheduleId)

@@ -26,16 +26,16 @@ final class GroupService: Module, @unchecked Sendable {
             throw ServerError.notFound(resource: "Group", identifier: id.uuidString)
         }
 
-        try AuthContext.requireCurrent().requireGroupAccess(groupName: group.name)
+        try AuthContext.requireCurrent().checkHasAccess(groupName: group.name, role: .researcher)
         return group
     }
 
-    func requireGroupAccess(id: UUID, role: AuthContext.GroupRole = .researcher) async throws {
+    func checkHasAccess(to id: UUID, role: AuthContext.GroupRole) async throws {
         guard let group = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Group", identifier: id.uuidString)
         }
 
-        try AuthContext.requireCurrent().requireGroupAccess(groupName: group.name, role: role)
+        try AuthContext.requireCurrent().checkHasAccess(groupName: group.name, role: role)
     }
 
     /// Creates local groups for any Keycloak top-level groups not yet in the database.

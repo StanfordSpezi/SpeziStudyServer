@@ -17,7 +17,7 @@ final class InformationalComponentService: Module, @unchecked Sendable {
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> InformationalComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
@@ -39,7 +39,7 @@ final class InformationalComponentService: Module, @unchecked Sendable {
         name: String,
         content: LocalizationsDictionary<InformationalContent>
     ) async throws -> InformationalComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         let registry = try await componentRepository.create(
             studyId: studyId,
@@ -56,7 +56,7 @@ final class InformationalComponentService: Module, @unchecked Sendable {
         name: String,
         content: LocalizationsDictionary<InformationalContent>
     ) async throws -> InformationalComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)

@@ -17,7 +17,7 @@ final class HealthDataComponentService: Module, @unchecked Sendable {
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> HealthDataComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         guard try await componentRepository.find(id: id, studyId: studyId) != nil else {
             throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
@@ -35,7 +35,7 @@ final class HealthDataComponentService: Module, @unchecked Sendable {
         name: String,
         data: StudyDefinition.HealthDataCollectionComponent
     ) async throws -> HealthDataComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         let component = try await componentRepository.create(
             studyId: studyId,
@@ -52,7 +52,7 @@ final class HealthDataComponentService: Module, @unchecked Sendable {
         name: String,
         data: StudyDefinition.HealthDataCollectionComponent
     ) async throws -> HealthDataComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)

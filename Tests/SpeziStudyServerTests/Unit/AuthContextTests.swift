@@ -76,7 +76,7 @@ struct AuthContextTests {
     @Test
     func requireGroupAccessSucceedsForMember() throws {
         let context = AuthContext(roles: [], groups: ["/MyGroup/researcher"])
-        try context.requireGroupAccess(groupName: "MyGroup")
+        try context.checkHasAccess(groupName: "MyGroup", role: .researcher)
     }
 
     @Test
@@ -84,7 +84,7 @@ struct AuthContextTests {
         let context = AuthContext(roles: [], groups: ["/MyGroup/admin"])
 
         #expect(throws: ServerError.self) {
-            try context.requireGroupAccess(groupName: "OtherGroup")
+            try context.checkHasAccess(groupName: "OtherGroup", role: .researcher)
         }
     }
 
@@ -93,20 +93,20 @@ struct AuthContextTests {
         let context = AuthContext(roles: [], groups: ["/MyGroup/researcher"])
 
         #expect(throws: ServerError.self) {
-            try context.requireGroupAccess(groupName: "MyGroup", role: .admin)
+            try context.checkHasAccess(groupName: "MyGroup", role: .admin)
         }
     }
 
     @Test
     func requireGroupAccessSucceedsWhenAdminMeetsResearcherRequirement() throws {
         let context = AuthContext(roles: [], groups: ["/MyGroup/admin"])
-        try context.requireGroupAccess(groupName: "MyGroup", role: .researcher)
+        try context.checkHasAccess(groupName: "MyGroup", role: .researcher)
     }
 
     @Test
     func requireGroupAccessSucceedsForExactRole() throws {
         let context = AuthContext(roles: [], groups: ["/MyGroup/admin"])
-        try context.requireGroupAccess(groupName: "MyGroup", role: .admin)
+        try context.checkHasAccess(groupName: "MyGroup", role: .admin)
     }
 
     @Test
@@ -114,7 +114,7 @@ struct AuthContextTests {
         let context = AuthContext(roles: [], groups: [])
 
         #expect(throws: ServerError.self) {
-            try context.requireGroupAccess(groupName: "AnyGroup")
+            try context.checkHasAccess(groupName: "AnyGroup", role: .researcher)
         }
     }
 }

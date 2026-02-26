@@ -15,12 +15,12 @@ final class ComponentService: Module, @unchecked Sendable {
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func listComponents(studyId: UUID) async throws -> [Component] {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
         return try await componentRepository.findAll(studyId: studyId)
     }
 
     func getComponentName(studyId: UUID, componentId: UUID) async throws -> String {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         guard let component = try await componentRepository.find(id: componentId, studyId: studyId) else {
             throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
@@ -35,7 +35,7 @@ final class ComponentService: Module, @unchecked Sendable {
     }
 
     func deleteComponent(studyId: UUID, componentId: UUID) async throws {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         // Cascade delete will handle specialized table cleanup
         let deleted = try await componentRepository.delete(id: componentId, studyId: studyId)

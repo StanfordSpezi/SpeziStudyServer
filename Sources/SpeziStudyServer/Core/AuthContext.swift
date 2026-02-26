@@ -53,7 +53,7 @@ struct AuthContext: Sendable {
         return context
     }
 
-    func requireGroupAccess(groupName: String, role: GroupRole = .researcher) throws {
+    func checkHasAccess(groupName: String, role: GroupRole) throws {
         guard let memberRole = groupMemberships[groupName], memberRole >= role else {
             throw ServerError.forbidden
         }

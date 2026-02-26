@@ -17,7 +17,7 @@ final class QuestionnaireComponentService: Module, @unchecked Sendable {
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> QuestionnaireComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)
@@ -39,7 +39,7 @@ final class QuestionnaireComponentService: Module, @unchecked Sendable {
         name: String,
         content: LocalizationsDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         // Create registry entry first
         let registry = try await componentRepository.create(
@@ -58,7 +58,7 @@ final class QuestionnaireComponentService: Module, @unchecked Sendable {
         name: String,
         content: LocalizationsDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
-        try await studyService.requireStudyAccess(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "QuestionnaireComponent", identifier: id.uuidString)

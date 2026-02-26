@@ -17,16 +17,16 @@ final class StudyService: Module, @unchecked Sendable {
 
     init() {}
 
-    func requireStudyAccess(id: UUID, role: AuthContext.GroupRole = .researcher) async throws {
+    func checkHasAccess(to id: UUID, role: AuthContext.GroupRole) async throws {
         guard let groupName = try await repository.findGroupName(forStudyId: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        try AuthContext.requireCurrent().requireGroupAccess(groupName: groupName, role: role)
+        try AuthContext.requireCurrent().checkHasAccess(groupName: groupName, role: role)
     }
 
     func getStudy(id: UUID) async throws -> Study {
-        try await requireStudyAccess(id: id)
+        try await checkHasAccess(to: id, role: .researcher)
 
         guard let study = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
@@ -36,17 +36,17 @@ final class StudyService: Module, @unchecked Sendable {
     }
 
     func createStudy(groupId: UUID, study: Study) async throws -> Study {
-        try await groupService.requireGroupAccess(id: groupId, role: .admin)
+        try await groupService.checkHasAccess(to: groupId, role: .admin)
         return try await repository.create(study)
     }
 
     func listStudies(groupId: UUID) async throws -> [Study] {
-        try await groupService.requireGroupAccess(id: groupId)
+        try await groupService.checkHasAccess(to: groupId, role: .researcher)
         return try await repository.listAll(groupId: groupId)
     }
 
     func patchStudy(id: UUID, patch: StudyPatch) async throws -> Study {
-        try await requireStudyAccess(id: id)
+        try await checkHasAccess(to: id, role: .researcher)
 
         guard let study = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
@@ -57,7 +57,7 @@ final class StudyService: Module, @unchecked Sendable {
     }
 
     func deleteStudy(id: UUID) async throws {
-        try await requireStudyAccess(id: id, role: .admin)
+        try await checkHasAccess(to: id, role: .admin)
 
         let deleted = try await repository.delete(id: id)
         if !deleted {

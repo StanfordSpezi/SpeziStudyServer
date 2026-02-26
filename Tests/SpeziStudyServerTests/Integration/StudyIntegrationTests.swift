@@ -111,6 +111,8 @@ struct StudyIntegrationTests {
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
                 #expect(responseStudy.details[.enUS]?.title == "Updated Title")
                 #expect(responseStudy.locales == ["en-US"])
+                #expect(responseStudy.icon == "heart")
+                #expect(responseStudy.consent.isEmpty)
             }
         }
     }
@@ -142,6 +144,9 @@ struct StudyIntegrationTests {
                 #expect(responseStudy.details[.enUS]?.shortTitle == "TS")
                 #expect(responseStudy.details[.enUS]?.explanationText == "A test study explanation")
                 #expect(responseStudy.details[.enUS]?.shortExplanationText.isEmpty == true)
+                #expect(responseStudy.locales == ["en-US"])
+                #expect(responseStudy.icon == "heart")
+                #expect(responseStudy.consent.isEmpty)
             }
         }
     }
@@ -168,6 +173,9 @@ struct StudyIntegrationTests {
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
                 #expect(responseStudy.consent[.enUS] == "# Informed Consent\n\nBy participating in this study, you agree to...")
+                #expect(responseStudy.details[.enUS]?.title == "Consent Study")
+                #expect(responseStudy.locales == ["en-US"])
+                #expect(responseStudy.icon == "heart")
             }
 
             // Verify consent persists on GET

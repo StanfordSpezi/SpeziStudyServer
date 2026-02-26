@@ -8,7 +8,6 @@
 
 import Foundation
 import JWTKit
-import Spezi
 import Vapor
 
 
@@ -32,7 +31,7 @@ enum KeycloakError: Error, CustomStringConvertible {
     }
 }
 
-final class KeycloakService: Module, @unchecked Sendable {
+struct KeycloakClient {
     private struct TokenResponse: Decodable {
         let access_token: String // swiftlint:disable:this identifier_name
     }

@@ -67,7 +67,7 @@ Sources/SpeziStudyServer/
     ├── Keycloak/
     │   ├── KeycloakConfiguration.swift  # Environment-based config struct
     │   ├── KeycloakJWTPayload.swift     # JWT payload with roles/groups
-    │   └── KeycloakService.swift        # Group fetching & access token
+    │   └── KeycloakClient.swift        # Group fetching & access token
     └── Middleware/
         ├── AuthMiddleware.swift          # JWT validation + AuthContext
         └── ErrorMiddleware.swift

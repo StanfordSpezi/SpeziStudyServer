@@ -44,14 +44,14 @@ struct AuthMiddleware: ServerMiddleware {
             throw ServerError.Defaults.invalidToken
         }
 
-        let roles = payload.roles ?? []
+        let roles = payload.roles
         guard roles.contains(requiredRole) else {
             throw ServerError.Defaults.forbidden
         }
 
         let authContext = AuthContext(
             roles: roles,
-            groups: payload.groups ?? []
+            groups: payload.groups
         )
 
         return try await AuthContext.$current.withValue(authContext) {

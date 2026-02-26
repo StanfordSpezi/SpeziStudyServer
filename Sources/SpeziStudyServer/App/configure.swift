@@ -30,28 +30,26 @@ public func configure(_ app: Application) async throws {
     }
 
     let keycloakConfig = KeycloakConfiguration.default
-    await configureServices(for: app, client: app.client, keycloakConfig: keycloakConfig)
+    let keycloak = KeycloakClient(client: app.client, config: keycloakConfig)
+    await configureServices(for: app)
 
-    var middlewares: [any ServerMiddleware] = [ErrorMiddleware(logger: app.logger)]
-
-    let keycloakService = app.spezi[KeycloakService.self]
-    let groups = try await keycloakService.fetchGroups()
+    let groups = try await keycloak.fetchGroups()
     let groupService = app.spezi[GroupService.self]
     try await groupService.syncGroups(from: groups)
 
-    let jwks = try await keycloakService.fetchJWKS()
+    let jwks = try await keycloak.fetchJWKS()
     let keyCollection = JWTKeyCollection()
     try await keyCollection.add(jwks: jwks)
 
-    middlewares.append(AuthMiddleware(keyCollection: keyCollection, requiredRole: keycloakConfig.requiredRole, logger: app.logger))
-
-    try configureRoutes(for: app, middlewares: middlewares)
+    try configureRoutes(for: app, middlewares: [
+        ErrorMiddleware(logger: app.logger),
+        AuthMiddleware(keyCollection: keyCollection, requiredRole: keycloakConfig.requiredRole, logger: app.logger)
+    ])
 }
 
 /// Configures services and repositories.
-public func configureServices(for app: Application, client: any Client, keycloakConfig: KeycloakConfiguration) async {
+public func configureServices(for app: Application) async {
     await app.spezi.configure {
-        KeycloakService(client: client, config: keycloakConfig)
         GroupService()
         StudyService()
         InformationalComponentService()

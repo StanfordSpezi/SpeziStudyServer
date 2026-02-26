@@ -45,7 +45,7 @@ enum TestApp {
         try DatabaseConfiguration.inMemory.configure(for: app)
         configureMigrations(for: app)
         try await app.autoMigrate()
-        await configureServices(for: app, client: app.client, keycloakConfig: .default)
+        await configureServices(for: app)
 
         let keys = JWTKeyCollection()
         await keys.add(hmac: HMACKey(from: testSecret), digestAlgorithm: .sha256)

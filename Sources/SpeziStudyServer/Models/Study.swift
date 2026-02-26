@@ -85,10 +85,16 @@ final class Study: Model, @unchecked Sendable {
     }
 
     func apply(_ patch: StudyPatch) {
-        if let locales = patch.locales { self.locales = locales }
-        if let icon = patch.icon { self.icon = icon }
-        if let details = patch.details { self.details = details }
-        if let participationCriterion = patch.participationCriterion { self.participationCriterion = participationCriterion }
-        if let consent = patch.consent { self.consent = consent }
+        func apply<T>(_ otherKeyPath: KeyPath<StudyPatch, T?>, to selfKeyPath: ReferenceWritableKeyPath<Study, T>) {
+            if let value = patch[keyPath: otherKeyPath] {
+                self[keyPath: selfKeyPath] = value
+            }
+        }
+        
+        apply(\.locales, to: \.locales)
+        apply(\.icon, to: \.icon)
+        apply(\.details, to: \.details)
+        apply(\.participationCriterion, to: \.participationCriterion)
+        apply(\.consent, to: \.consent)
     }
 }

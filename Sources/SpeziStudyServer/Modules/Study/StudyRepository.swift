@@ -22,7 +22,7 @@ final class StudyRepository: Module, Sendable {
         try await study.save(on: database)
 
         guard let createdStudy = try await Study.find(try study.requireId(), on: database) else {
-            throw ServerError.Defaults.failedToRetrieveCreatedObject
+            throw ServerError.failedToRetrieveCreatedObject
         }
 
         return createdStudy

@@ -28,7 +28,7 @@ extension Controller {
         let componentId = try input.path.componentId.requireId()
 
         guard case .json(let schema) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+            throw ServerError.jsonBodyRequired
         }
 
         let data = StudyDefinition.ComponentSchedule(componentId: componentId, schema)
@@ -57,7 +57,7 @@ extension Controller {
         let scheduleId = try input.path.scheduleId.requireId()
 
         guard case .json(let schema) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+            throw ServerError.jsonBodyRequired
         }
 
         var data = StudyDefinition.ComponentSchedule(componentId: componentId, schema)

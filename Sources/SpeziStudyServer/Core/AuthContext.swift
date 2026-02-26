@@ -48,14 +48,14 @@ struct AuthContext: Sendable {
 
     static func requireCurrent() throws -> AuthContext {
         guard let context = current else {
-            throw ServerError.Defaults.missingToken
+            throw ServerError.missingToken
         }
         return context
     }
 
     func requireGroupAccess(groupName: String, role: GroupRole = .researcher) throws {
         guard let memberRole = groupMemberships[groupName], memberRole >= role else {
-            throw ServerError.Defaults.forbidden
+            throw ServerError.forbidden
         }
     }
 }

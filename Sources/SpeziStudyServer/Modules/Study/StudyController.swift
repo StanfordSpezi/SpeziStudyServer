@@ -20,7 +20,7 @@ extension Controller {
         _ input: Operations.PostGroupsGroupIdStudies.Input
     ) async throws -> Operations.PostGroupsGroupIdStudies.Output {
         guard case .json(let schema) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+            throw ServerError.jsonBodyRequired
         }
 
         let groupId = try input.path.groupId.requireId()
@@ -38,7 +38,7 @@ extension Controller {
 
     func patchStudiesStudyId(_ input: Operations.PatchStudiesStudyId.Input) async throws -> Operations.PatchStudiesStudyId.Output {
         guard case .json(let schema) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+            throw ServerError.jsonBodyRequired
         }
 
         let studyId = try input.path.studyId.requireId()

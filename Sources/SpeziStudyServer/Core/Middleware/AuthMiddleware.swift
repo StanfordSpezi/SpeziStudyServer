@@ -26,12 +26,12 @@ struct AuthMiddleware: ServerMiddleware {
         next: (HTTPRequest, HTTPBody?, ServerRequestMetadata) async throws -> (HTTPResponse, HTTPBody?)
     ) async throws -> (HTTPResponse, HTTPBody?) {
         guard let authHeader = request.headerFields[.authorization] else {
-            throw ServerError.Defaults.missingToken
+            throw ServerError.missingToken
         }
 
         guard authHeader.lowercased().hasPrefix("bearer "),
               authHeader.count > 7 else {
-            throw ServerError.Defaults.invalidToken
+            throw ServerError.invalidToken
         }
 
         let token = String(authHeader.dropFirst(7))
@@ -41,12 +41,12 @@ struct AuthMiddleware: ServerMiddleware {
             payload = try await keyCollection.verify(token, as: KeycloakJWTPayload.self)
         } catch {
             logger.info("JWT verification failed: \(error)")
-            throw ServerError.Defaults.invalidToken
+            throw ServerError.invalidToken
         }
 
         let roles = payload.roles
         guard roles.contains(requiredRole) else {
-            throw ServerError.Defaults.forbidden
+            throw ServerError.forbidden
         }
 
         let authContext = AuthContext(

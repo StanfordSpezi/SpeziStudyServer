@@ -15,7 +15,7 @@ extension Controller {
     ) async throws -> Operations.PostStudiesStudyIdComponentsQuestionnaire.Output {
         let studyId = try input.path.studyId.requireId()
         guard case .json(let schema) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+            throw ServerError.jsonBodyRequired
         }
 
         let component = try await questionnaireComponentService.createComponent(
@@ -50,7 +50,7 @@ extension Controller {
         let componentId = try input.path.componentId.requireId()
 
         guard case .json(let schema) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+            throw ServerError.jsonBodyRequired
         }
 
         let component = try await questionnaireComponentService.updateComponent(

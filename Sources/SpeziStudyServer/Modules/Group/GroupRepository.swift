@@ -34,7 +34,7 @@ final class GroupRepository: Module, Sendable {
         try await group.save(on: database)
 
         guard let created = try await Group.find(try group.requireId(), on: database) else {
-            throw ServerError.Defaults.failedToRetrieveCreatedObject
+            throw ServerError.failedToRetrieveCreatedObject
         }
 
         return created

@@ -11,88 +11,54 @@ import HTTPTypes
 import OpenAPIRuntime
 
 
-enum ServerError: Error, Sendable {
-    case invalidUUID(String)
-    case validation(message: String)
-    case conflict(message: String)
-    case notFound(resource: String, identifier: String)
-    case unauthorized(message: String)
-    case forbidden(message: String)
-    case internalError(message: String)
+/// An error that directly models an RFC 7807 Problem Details response.
+struct ServerError: Error, Sendable {
+    let status: HTTPResponse.Status
+    let title: String
+    let detail: String
 
-    enum Defaults {
-        static let jsonBodyRequired = ServerError.validation(message: "Request body must be JSON")
-        static let failedToRetrieveCreatedObject = ServerError.internalError(message: "Failed to retrieve created object")
-        static let failedToListResources = ServerError.internalError(message: "Failed to list resources")
-        static let failedToConvertResponse = ServerError.internalError(message: "Failed to convert response")
-        static let unexpectedError = ServerError.internalError(message: "An unexpected error occurred")
-        static let invalidRequestBody = ServerError.validation(message: "Invalid request body format")
-        static let missingToken = ServerError.unauthorized(message: "Missing Authorization header")
-        static let invalidToken = ServerError.unauthorized(message: "Invalid or expired token")
-        static let forbidden = ServerError.forbidden(message: "Insufficient permissions")
-        static let endpointNotImplemented = ServerError.internalError(message: "Endpoint not implemented.")
+    static func badRequest(_ detail: String) -> Self {
+        Self(status: .badRequest, title: "Bad Request", detail: detail)
     }
+
+    static func unauthorized(_ detail: String) -> Self {
+        Self(status: .unauthorized, title: "Unauthorized", detail: detail)
+    }
+
+    static func forbidden(_ detail: String) -> Self {
+        Self(status: .forbidden, title: "Forbidden", detail: detail)
+    }
+
+    static func notFound(_ detail: String) -> Self {
+        Self(status: .notFound, title: "Not Found", detail: detail)
+    }
+
+    static func notFound(resource: String, identifier: String) -> Self {
+        .notFound("\(resource) with identifier '\(identifier)' was not found")
+    }
+
+    static func conflict(_ detail: String) -> Self {
+        Self(status: .conflict, title: "Conflict", detail: detail)
+    }
+
+    static func internalServerError(_ detail: String) -> Self {
+        Self(status: .internalServerError, title: "Internal Server Error", detail: detail)
+    }
+
+    static let jsonBodyRequired = badRequest("Request body must be JSON")
+    static let invalidRequestBody = badRequest("Invalid request body format")
+    static let missingToken = unauthorized("Missing Authorization header")
+    static let invalidToken = unauthorized("Invalid or expired token")
+    static let forbidden = Self(status: .forbidden, title: "Forbidden", detail: "Insufficient permissions")
+    static let failedToRetrieveCreatedObject = internalServerError("Failed to retrieve created object")
+    static let unexpectedError = internalServerError("An unexpected error occurred")
+    static let endpointNotImplemented = internalServerError("Endpoint not implemented")
 }
 
 extension ServerError {
-    var title: String {
-        switch self {
-        case .invalidUUID:
-            return "Invalid UUID"
-        case .validation:
-            return "Validation Error"
-        case .conflict:
-            return "Conflict"
-        case .notFound:
-            return "Not Found"
-        case .unauthorized:
-            return "Unauthorized"
-        case .forbidden:
-            return "Forbidden"
-        case .internalError:
-            return "Internal Server Error"
-        }
-    }
-
-    var status: HTTPResponse.Status {
-        switch self {
-        case .invalidUUID, .validation:
-            return 400
-        case .conflict:
-            return 409
-        case .notFound:
-            return 404
-        case .unauthorized:
-            return 401
-        case .forbidden:
-            return 403
-        case .internalError:
-            return 500
-        }
-    }
-
-    var detail: String {
-        switch self {
-        case let .invalidUUID(value):
-            return "Invalid UUID format: '\(value)'"
-        case let .validation(message):
-            return message
-        case let .conflict(message):
-            return message
-        case let .notFound(resource, identifier):
-            return "\(resource) with identifier '\(identifier)' was not found"
-        case let .unauthorized(message):
-            return message
-        case let .forbidden(message):
-            return message
-        case let .internalError(message):
-            return message
-        }
-    }
-    
     var httpResponse: (HTTPResponse, HTTPBody?) {
         let problemDetails = Components.Schemas.ProblemDetails(title: title, status: status.code, detail: detail)
-        
+
         var headerFields = HTTPFields()
         headerFields[.contentType] = "application/problem+json; charset=utf-8"
 
@@ -103,7 +69,6 @@ extension ServerError {
             body = nil
         }
 
-
-        return (HTTPResponse(status: self.status, headerFields: headerFields), body)
+        return (HTTPResponse(status: status, headerFields: headerFields), body)
     }
 }

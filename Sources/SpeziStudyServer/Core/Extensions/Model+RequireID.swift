@@ -13,7 +13,7 @@ import Foundation
 extension Model where IDValue == UUID {
     func requireId() throws -> UUID {
         guard let id = self.id else {
-            throw ServerError.internalError(message: "\(Self.self) missing ID")
+            throw ServerError.internalServerError("\(Self.self) missing ID")
         }
         return id
     }

@@ -79,7 +79,7 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
             throw ServerError.notFound(resource: "Component", identifier: id.uuidString)
         }
         guard component.type.supportsSchedules else {
-            throw ServerError.conflict(message: "Component type '\(component.type.rawValue)' does not support schedules")
+            throw ServerError.conflict("Component type '\(component.type.rawValue)' does not support schedules")
         }
         return component
     }

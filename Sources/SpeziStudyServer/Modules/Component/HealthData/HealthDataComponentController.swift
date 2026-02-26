@@ -16,7 +16,7 @@ extension Controller {
     ) async throws -> Operations.PostStudiesStudyIdComponentsHealthData.Output {
         let studyId = try input.path.studyId.requireId()
         guard case .json(let schema) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+            throw ServerError.jsonBodyRequired
         }
 
         let data = StudyDefinition.HealthDataCollectionComponent(
@@ -56,7 +56,7 @@ extension Controller {
         let componentId = try input.path.componentId.requireId()
 
         guard case .json(let schema) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+            throw ServerError.jsonBodyRequired
         }
 
         let data = StudyDefinition.HealthDataCollectionComponent(

@@ -33,11 +33,11 @@ let package = Package(
         .package(url: "https://github.com/swift-server/swift-openapi-vapor.git", from: "1.0.0"),
         .package(url: "https://github.com/vapor/jwt-kit.git", from: "5.0.0"),
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0"),
-        .package(url: "https://github.com/StanfordSpezi/Spezi", from: "1.10.1"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziVapor", .upToNextMajor(from: "0.1.0")),
-        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation", from: "2.7.3"),
-        .package(url: "https://github.com/StanfordSpezi/SpeziStudy", branch: "localized-metadata"), // TODO
-        .package(url: "https://github.com/StanfordSpezi/SpeziHealthKit", branch: "lukas/linux-support") // TODO
+        .package(url: "https://github.com/StanfordSpezi/Spezi.git", from: "1.10.1"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziVapor.git", .upToNextMajor(from: "0.1.0")),
+        .package(url: "https://github.com/StanfordSpezi/SpeziFoundation.git", from: "2.7.3"),
+        .package(url: "https://github.com/StanfordSpezi/SpeziStudy.git", branch: "localized-metadata"), // TODO
+        .package(url: "https://github.com/StanfordSpezi/SpeziHealthKit.git", branch: "lukas/linux-support") // TODO
     ] + swiftLintPackage(),
     targets: [
         .executableTarget(

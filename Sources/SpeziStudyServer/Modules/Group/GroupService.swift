@@ -8,6 +8,7 @@
 
 import Foundation
 import Spezi
+import SpeziFoundation
 
 
 final class GroupService: Module, @unchecked Sendable {
@@ -40,7 +41,7 @@ final class GroupService: Module, @unchecked Sendable {
     /// Creates local groups for any Keycloak top-level groups not yet in the database.
     /// Groups removed from Keycloak are kept locally to preserve associated studies.
     func syncGroups(from keycloakGroups: [KeycloakGroup]) async throws {
-        let existingNames = Set(try await repository.listAll().map(\.name))
+        let existingNames = try await repository.listAll().mapIntoSet(\.name)
 
         for keycloakGroup in keycloakGroups where !existingNames.contains(keycloakGroup.name) {
             _ = try await repository.create(Group(name: keycloakGroup.name, icon: "tree-pine"))

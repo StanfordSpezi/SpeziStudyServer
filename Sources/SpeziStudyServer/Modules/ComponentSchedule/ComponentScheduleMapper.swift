@@ -32,11 +32,11 @@ extension Components.Schemas.ComponentSchedule {
 }
 
 extension StudyDefinition.ComponentSchedule {
-    init(componentId: UUID, _ schema: Components.Schemas.ComponentSchedule) {
+    init(id: UUID, componentId: UUID, _ schema: Components.Schemas.ComponentSchedule) throws {
         self.init(
-            id: schema.id.map { UUID(uuidString: $0) ?? UUID() } ?? UUID(),
+            id: id,
             componentId: componentId,
-            scheduleDefinition: .init(schema.scheduleDefinition),
+            scheduleDefinition: try .init(schema.scheduleDefinition),
             completionPolicy: .init(schema.completionPolicy),
             notifications: schema.notification ? .enabled(thread: .task, time: nil) : .disabled
         )
@@ -58,10 +58,10 @@ extension Components.Schemas.ScheduleDefinition {
 }
 
 extension StudyDefinition.ComponentSchedule.ScheduleDefinition {
-    init(_ schema: Components.Schemas.ScheduleDefinition) {
+    init(_ schema: Components.Schemas.ScheduleDefinition) throws {
         switch schema {
         case .once(let value):
-            self = .once(.init(value.pattern))
+            self = .once(try .init(value.pattern))
         case .repeated(let value):
             self = .repeated(.init(value.pattern), offset: value.offset.map { Foundation.DateComponents($0) } ?? Foundation.DateComponents())
         }
@@ -88,13 +88,13 @@ extension Components.Schemas.OneTimeSchedule {
 }
 
 extension StudyDefinition.ComponentSchedule.ScheduleDefinition.OneTimeSchedule {
-    init(_ schema: Components.Schemas.OneTimeSchedule) {
+    init(_ schema: Components.Schemas.OneTimeSchedule) throws {
         switch schema {
         case .date(let value):
             self = .date(Foundation.DateComponents(value.dateComponents))
         case .event(let value):
             self = .event(
-                StudyLifecycleEvent(value.event),
+                try StudyLifecycleEvent(value.event),
                 offsetInDays: value.offsetInDays ?? 0,
                 time: value.time.map { StudyDefinition.ComponentSchedule.Time($0) }
             )
@@ -189,7 +189,7 @@ extension Components.Schemas.StudyLifecycleEvent {
 }
 
 extension StudyLifecycleEvent {
-    init(_ schema: Components.Schemas.StudyLifecycleEvent) {
+    init(_ schema: Components.Schemas.StudyLifecycleEvent) throws {
         switch schema {
         case .enrollment:
             self = .enrollment
@@ -200,7 +200,10 @@ extension StudyLifecycleEvent {
         case .studyEnd:
             self = .studyEnd
         case .completedTask(let value):
-            self = .completedTask(componentId: UUID(uuidString: value.componentId) ?? UUID())
+            guard let id = UUID(uuidString: value.componentId) else {
+                throw ServerError.badRequest("Invalid UUID for completedTask componentId: '\(value.componentId)'")
+            }
+            self = .completedTask(componentId: id)
         }
     }
 }

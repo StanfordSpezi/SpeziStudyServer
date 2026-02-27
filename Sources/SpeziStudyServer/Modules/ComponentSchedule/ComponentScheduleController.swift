@@ -31,7 +31,7 @@ extension Controller {
             throw ServerError.jsonBodyRequired
         }
 
-        let data = StudyDefinition.ComponentSchedule(componentId: componentId, schema)
+        let data = try StudyDefinition.ComponentSchedule(id: UUID(), componentId: componentId, schema)
         let schedule = try await componentScheduleService.createSchedule(studyId: studyId, componentId: componentId, data: data)
 
         return .created(.init(body: .json(try .init(schedule))))
@@ -60,8 +60,7 @@ extension Controller {
             throw ServerError.jsonBodyRequired
         }
 
-        var data = StudyDefinition.ComponentSchedule(componentId: componentId, schema)
-        data.id = scheduleId
+        let data = try StudyDefinition.ComponentSchedule(id: scheduleId, componentId: componentId, schema)
         let schedule = try await componentScheduleService.replaceSchedule(
             studyId: studyId,
             componentId: componentId,

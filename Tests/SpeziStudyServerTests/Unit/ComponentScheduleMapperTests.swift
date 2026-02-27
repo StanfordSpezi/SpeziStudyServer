@@ -85,39 +85,39 @@ struct ComponentScheduleMapperTests {
     // MARK: - StudyLifecycleEvent
 
     @Test
-    func studyLifecycleEventEnrollment() {
+    func studyLifecycleEventEnrollment() throws {
         let schema = Components.Schemas.StudyLifecycleEvent(StudyLifecycleEvent.enrollment)
         if case .enrollment = schema {} else { Issue.record("Expected enrollment") }
-        let back = StudyLifecycleEvent(schema)
+        let back = try StudyLifecycleEvent(schema)
         #expect(back == .enrollment)
     }
 
     @Test
-    func studyLifecycleEventActivation() {
+    func studyLifecycleEventActivation() throws {
         let schema = Components.Schemas.StudyLifecycleEvent(StudyLifecycleEvent.activation)
         if case .activation = schema {} else { Issue.record("Expected activation") }
-        let back = StudyLifecycleEvent(schema)
+        let back = try StudyLifecycleEvent(schema)
         #expect(back == .activation)
     }
 
     @Test
-    func studyLifecycleEventUnenrollment() {
+    func studyLifecycleEventUnenrollment() throws {
         let schema = Components.Schemas.StudyLifecycleEvent(StudyLifecycleEvent.unenrollment)
         if case .unenrollment = schema {} else { Issue.record("Expected unenrollment") }
-        let back = StudyLifecycleEvent(schema)
+        let back = try StudyLifecycleEvent(schema)
         #expect(back == .unenrollment)
     }
 
     @Test
-    func studyLifecycleEventStudyEnd() {
+    func studyLifecycleEventStudyEnd() throws {
         let schema = Components.Schemas.StudyLifecycleEvent(StudyLifecycleEvent.studyEnd)
         if case .studyEnd = schema {} else { Issue.record("Expected studyEnd") }
-        let back = StudyLifecycleEvent(schema)
+        let back = try StudyLifecycleEvent(schema)
         #expect(back == .studyEnd)
     }
 
     @Test
-    func studyLifecycleEventCompletedTask() {
+    func studyLifecycleEventCompletedTask() throws {
         let componentId = UUID()
         let schema = Components.Schemas.StudyLifecycleEvent(.completedTask(componentId: componentId))
         if case .completedTask(let value) = schema {
@@ -125,7 +125,7 @@ struct ComponentScheduleMapperTests {
         } else {
             Issue.record("Expected completedTask")
         }
-        let back = StudyLifecycleEvent(schema)
+        let back = try StudyLifecycleEvent(schema)
         #expect(back == .completedTask(componentId: componentId))
     }
 }

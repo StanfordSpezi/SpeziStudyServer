@@ -17,8 +17,8 @@ struct ParticipationCriterionMapperTests {
     // MARK: - Domain → Schema
 
     @Test
-    func mapsAgeAtLeastToSchema() {
-        let schema = Components.Schemas.ParticipationCriterion(.ageAtLeast(18))
+    func mapsAgeAtLeastToSchema() throws {
+        let schema = try Components.Schemas.ParticipationCriterion(.ageAtLeast(18))
 
         guard case .ageAtLeast(let value) = schema else {
             Issue.record("Expected ageAtLeast, got \(schema)")
@@ -28,8 +28,8 @@ struct ParticipationCriterionMapperTests {
     }
 
     @Test
-    func mapsIsFromRegionToSchema() {
-        let schema = Components.Schemas.ParticipationCriterion(.isFromRegion(Locale.Region("US")))
+    func mapsIsFromRegionToSchema() throws {
+        let schema = try Components.Schemas.ParticipationCriterion(.isFromRegion(Locale.Region("US")))
 
         guard case .isFromRegion(let value) = schema else {
             Issue.record("Expected isFromRegion, got \(schema)")
@@ -39,8 +39,8 @@ struct ParticipationCriterionMapperTests {
     }
 
     @Test
-    func mapsSpeaksLanguageToSchema() {
-        let schema = Components.Schemas.ParticipationCriterion(.speaksLanguage(Locale.Language(identifier: "de")))
+    func mapsSpeaksLanguageToSchema() throws {
+        let schema = try Components.Schemas.ParticipationCriterion(.speaksLanguage(Locale.Language(identifier: "de")))
 
         guard case .speaksLanguage(let value) = schema else {
             Issue.record("Expected speaksLanguage, got \(schema)")
@@ -50,8 +50,8 @@ struct ParticipationCriterionMapperTests {
     }
 
     @Test
-    func mapsNotToSchema() {
-        let schema = Components.Schemas.ParticipationCriterion(.not(.ageAtLeast(65)))
+    func mapsNotToSchema() throws {
+        let schema = try Components.Schemas.ParticipationCriterion(.not(.ageAtLeast(65)))
 
         guard case .not(let value) = schema else {
             Issue.record("Expected not, got \(schema)")
@@ -65,8 +65,8 @@ struct ParticipationCriterionMapperTests {
     }
 
     @Test
-    func mapsAllToSchema() {
-        let schema = Components.Schemas.ParticipationCriterion(.all([.ageAtLeast(18), .isFromRegion(Locale.Region("DE"))]))
+    func mapsAllToSchema() throws {
+        let schema = try Components.Schemas.ParticipationCriterion(.all([.ageAtLeast(18), .isFromRegion(Locale.Region("DE"))]))
 
         guard case .all(let value) = schema else {
             Issue.record("Expected all, got \(schema)")
@@ -76,8 +76,8 @@ struct ParticipationCriterionMapperTests {
     }
 
     @Test
-    func mapsAnyToSchema() {
-        let schema = Components.Schemas.ParticipationCriterion(.any([.isFromRegion(Locale.Region("US")), .isFromRegion(Locale.Region("DE"))]))
+    func mapsAnyToSchema() throws {
+        let schema = try Components.Schemas.ParticipationCriterion(.any([.isFromRegion(Locale.Region("US")), .isFromRegion(Locale.Region("DE"))]))
 
         guard case .any(let value) = schema else {
             Issue.record("Expected any, got \(schema)")
@@ -175,7 +175,7 @@ struct ParticipationCriterionMapperTests {
     // MARK: - Round-Trip
 
     @Test
-    func roundTripComplexCriterion() {
+    func roundTripComplexCriterion() throws {
         let original: StudyDefinition.ParticipationCriterion = .all([
             .ageAtLeast(18),
             .any([
@@ -186,7 +186,7 @@ struct ParticipationCriterionMapperTests {
             .speaksLanguage(Locale.Language(identifier: "en"))
         ])
 
-        let schema = Components.Schemas.ParticipationCriterion(original)
+        let schema = try Components.Schemas.ParticipationCriterion(original)
         let roundTripped = StudyDefinition.ParticipationCriterion(schema)
 
         guard case .all(let criteria) = roundTripped else {
@@ -220,9 +220,9 @@ struct ParticipationCriterionMapperTests {
     }
 
     @Test
-    func roundTripEmptyAll() {
+    func roundTripEmptyAll() throws {
         let original: StudyDefinition.ParticipationCriterion = .all([])
-        let schema = Components.Schemas.ParticipationCriterion(original)
+        let schema = try Components.Schemas.ParticipationCriterion(original)
         let roundTripped = StudyDefinition.ParticipationCriterion(schema)
 
         guard case .all(let criteria) = roundTripped else {

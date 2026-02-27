@@ -52,7 +52,7 @@ extension Components.Schemas.StudyResponse {
             locales: model.locales,
             icon: model.icon,
             details: model.details,
-            participationCriterion: .init(model.participationCriterion),
+            participationCriterion: try .init(model.participationCriterion),
             consent: model.consent
         )
     }
@@ -62,7 +62,7 @@ extension Components.Schemas.StudyResponse {
 // MARK: - ParticipationCriterion Mapping
 
 extension Components.Schemas.ParticipationCriterion {
-    init(_ model: StudyDefinition.ParticipationCriterion) {
+    init(_ model: StudyDefinition.ParticipationCriterion) throws {
         switch model {
         case .ageAtLeast(let age):
             self = .ageAtLeast(.init(_type: .ageAtLeast, age: age))
@@ -71,13 +71,13 @@ extension Components.Schemas.ParticipationCriterion {
         case .speaksLanguage(let language):
             self = .speaksLanguage(.init(_type: .speaksLanguage, language: language.minimalIdentifier))
         case .custom:
-            fatalError("Custom criteria are not supported by the API")
+            throw ServerError.internalServerError("Custom participation criteria are not supported by the API")
         case .not(let criterion):
-            self = .not(.init(_type: .not, criterion: .init(criterion)))
+            self = .not(.init(_type: .not, criterion: try .init(criterion)))
         case .all(let criteria):
-            self = .all(.init(_type: .all, criteria: criteria.map { .init($0) }))
+            self = .all(.init(_type: .all, criteria: try criteria.map { try .init($0) }))
         case .any(let criteria):
-            self = .any(.init(_type: .any, criteria: criteria.map { .init($0) }))
+            self = .any(.init(_type: .any, criteria: try criteria.map { try .init($0) }))
         }
     }
 }

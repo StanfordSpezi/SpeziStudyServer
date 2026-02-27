@@ -111,7 +111,7 @@ struct SchedulePatternMapperTests {
     // MARK: - OneTimeSchedule
 
     @Test
-    func oneTimeScheduleDate() {
+    func oneTimeScheduleDate() throws {
         var components = DateComponents()
         components.year = 2026
         components.month = 6
@@ -126,7 +126,7 @@ struct SchedulePatternMapperTests {
         } else {
             Issue.record("Expected date")
         }
-        let back = OneTime(schema)
+        let back = try OneTime(schema)
         if case .date(let backComponents) = back {
             #expect(backComponents.year == 2026)
             #expect(backComponents.month == 6)
@@ -136,7 +136,7 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func oneTimeScheduleEventWithOffset() {
+    func oneTimeScheduleEventWithOffset() throws {
         let model = OneTime.event(.enrollment, offsetInDays: 7, time: CSTime(hour: 9, minute: 0, second: 0))
         let schema = Components.Schemas.OneTimeSchedule(model)
         if case .event(let value) = schema {
@@ -146,7 +146,7 @@ struct SchedulePatternMapperTests {
         } else {
             Issue.record("Expected event")
         }
-        let back = OneTime(schema)
+        let back = try OneTime(schema)
         if case .event(let event, let offset, let time) = back {
             #expect(event == .enrollment)
             #expect(offset == 7)
@@ -157,7 +157,7 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func oneTimeScheduleEventWithZeroOffset() {
+    func oneTimeScheduleEventWithZeroOffset() throws {
         let model = OneTime.event(.activation, offsetInDays: 0, time: nil)
         let schema = Components.Schemas.OneTimeSchedule(model)
         if case .event(let value) = schema {
@@ -166,7 +166,7 @@ struct SchedulePatternMapperTests {
         } else {
             Issue.record("Expected event")
         }
-        let back = OneTime(schema)
+        let back = try OneTime(schema)
         if case .event(let event, let offset, let time) = back {
             #expect(event == .activation)
             #expect(offset == 0)
@@ -179,7 +179,7 @@ struct SchedulePatternMapperTests {
     // MARK: - ScheduleDefinition
 
     @Test
-    func scheduleDefinitionOnce() {
+    func scheduleDefinitionOnce() throws {
         var components = DateComponents()
         components.year = 2026
         components.month = 3
@@ -191,7 +191,7 @@ struct SchedulePatternMapperTests {
         } else {
             Issue.record("Expected once")
         }
-        let back = ScheduleDef(schema)
+        let back = try ScheduleDef(schema)
         if case .once(.date(let backComponents)) = back {
             #expect(backComponents.year == 2026)
         } else {
@@ -200,7 +200,7 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func scheduleDefinitionRepeated() {
+    func scheduleDefinitionRepeated() throws {
         let model = ScheduleDef.repeated(
             .daily(interval: 1, hour: 8, minute: 0, second: 0),
             offset: DateComponents()
@@ -211,7 +211,7 @@ struct SchedulePatternMapperTests {
         } else {
             Issue.record("Expected repeated")
         }
-        let back = ScheduleDef(schema)
+        let back = try ScheduleDef(schema)
         if case .repeated(let pattern, _) = back {
             if case .daily(let interval, let hour, _, _) = pattern {
                 #expect(interval == 1)
@@ -225,7 +225,7 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func scheduleDefinitionRepeatedWithOffset() {
+    func scheduleDefinitionRepeatedWithOffset() throws {
         var offset = DateComponents()
         offset.day = 7
 
@@ -239,7 +239,7 @@ struct SchedulePatternMapperTests {
         } else {
             Issue.record("Expected repeated")
         }
-        let back = ScheduleDef(schema)
+        let back = try ScheduleDef(schema)
         if case .repeated(_, let backOffset) = back {
             #expect(backOffset.day == 7)
         } else {

@@ -38,7 +38,7 @@ final class StudyRepository: Module, Sendable {
             .join(Group.self, on: \Study.$group.$id == \Group.$id)
             .field(Group.self, \.$name)
             .first()
-            .flatMap { try? $0.joined(Group.self).name }
+            .map { try $0.joined(Group.self).name }
     }
 
     func findWithComponents(id: UUID) async throws -> Study? {

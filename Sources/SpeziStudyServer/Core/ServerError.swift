@@ -13,6 +13,15 @@ import OpenAPIRuntime
 
 /// An error that directly models an RFC 7807 Problem Details response.
 struct ServerError: Error, Sendable {
+    static let jsonBodyRequired = badRequest("Request body must be JSON")
+    static let invalidRequestBody = badRequest("Invalid request body format")
+    static let missingToken = unauthorized("Missing Authorization header")
+    static let invalidToken = unauthorized("Invalid or expired token")
+    static let forbidden = Self(status: .forbidden, title: "Forbidden", detail: "Insufficient permissions")
+    static let failedToRetrieveCreatedObject = internalServerError("Failed to retrieve created object")
+    static let unexpectedError = internalServerError("An unexpected error occurred")
+    static let endpointNotImplemented = internalServerError("Endpoint not implemented")
+
     let status: HTTPResponse.Status
     let title: String
     let detail: String
@@ -44,15 +53,6 @@ struct ServerError: Error, Sendable {
     static func internalServerError(_ detail: String) -> Self {
         Self(status: .internalServerError, title: "Internal Server Error", detail: detail)
     }
-
-    static let jsonBodyRequired = badRequest("Request body must be JSON")
-    static let invalidRequestBody = badRequest("Invalid request body format")
-    static let missingToken = unauthorized("Missing Authorization header")
-    static let invalidToken = unauthorized("Invalid or expired token")
-    static let forbidden = Self(status: .forbidden, title: "Forbidden", detail: "Insufficient permissions")
-    static let failedToRetrieveCreatedObject = internalServerError("Failed to retrieve created object")
-    static let unexpectedError = internalServerError("An unexpected error occurred")
-    static let endpointNotImplemented = internalServerError("Endpoint not implemented")
 }
 
 extension ServerError {

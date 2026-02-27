@@ -15,21 +15,20 @@ import SpeziVapor
 import Vapor
 
 
-/// Configures the application: database, migrations, services, and routes.
 private var isServing: Bool {
     !CommandLine.arguments.dropFirst().contains(where: { $0 == "migrate" || $0 == "revert" })
 }
 
 /// Configures the application: database, migrations, and (when serving) services and routes.
 public func configure(_ app: Application) async throws {
-    try DatabaseConfiguration.production.configure(for: app)
+    try DatabaseConfiguration.postgres.configure(for: app)
     configureMigrations(for: app)
 
     guard isServing else {
         return
     }
 
-    let keycloakConfig = KeycloakConfiguration.default
+    let keycloakConfig = try KeycloakConfiguration()
     let keycloak = KeycloakClient(client: app.client, config: keycloakConfig)
     await configureServices(for: app)
 

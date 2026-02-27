@@ -16,9 +16,9 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: &db_username ${DATABASE_USERNAME:-vapor_username}
-      POSTGRES_PASSWORD: &db_password ${DATABASE_PASSWORD:-vapor_password}
-      POSTGRES_DB: &db_name ${DATABASE_NAME:-vapor_database}
+      POSTGRES_USER: &db_username ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: &db_password ${DATABASE_PASSWORD}
+      POSTGRES_DB: &db_name ${DATABASE_NAME}
     ports:
       - '5432:5432'
     healthcheck:
@@ -31,12 +31,16 @@ services:
     build:
       context: .
     environment:
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      LOG_LEVEL: ${LOG_LEVEL}
       DATABASE_HOST: db
       DATABASE_NAME: *db_name
       DATABASE_USERNAME: *db_username
       DATABASE_PASSWORD: *db_password
       KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_REQUIRED_ROLE: ${KEYCLOAK_REQUIRED_ROLE}
     depends_on:
       db:
         condition: service_healthy
@@ -80,9 +84,9 @@ services:
     volumes:
       - keycloak_db_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: &kc_db_username ${KEYCLOAK_DB_USERNAME:-keycloak}
-      POSTGRES_PASSWORD: &kc_db_password ${KEYCLOAK_DB_PASSWORD:-keycloak}
-      POSTGRES_DB: &kc_db_name ${KEYCLOAK_DB_NAME:-keycloak}
+      POSTGRES_USER: &kc_db_username ${KEYCLOAK_DB_USERNAME}
+      POSTGRES_PASSWORD: &kc_db_password ${KEYCLOAK_DB_PASSWORD}
+      POSTGRES_DB: &kc_db_name ${KEYCLOAK_DB_NAME}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
@@ -92,10 +96,10 @@ services:
     image: quay.io/keycloak/keycloak:26.0
     command: start-dev --import-realm --health-enabled=true
     environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB_NAME:-keycloak}
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB_NAME}
       KC_DB_USERNAME: *kc_db_username
       KC_DB_PASSWORD: *kc_db_password
     volumes:

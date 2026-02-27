@@ -16,8 +16,10 @@ additionalImports:
 typeOverrides:
   schemas:
     InformationalContent: SpeziStudyServer.InformationalContent
-    InformationalComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.InformationalContent>
+    InformationalComponentData: SpeziLocalization.LocalizationsDictionary<SpeziStudyServer.InformationalContent>
     QuestionnaireContent: SpeziStudyServer.QuestionnaireContent
-    QuestionnaireComponentData: SpeziLocalization.LocalizedDictionary<SpeziStudyServer.QuestionnaireContent>
-    DateComponents: Foundation.DateComponents
+    QuestionnaireComponentData: SpeziLocalization.LocalizationsDictionary<SpeziStudyServer.QuestionnaireContent>
+    LocalizedString: "SpeziLocalization.LocalizationsDictionary<Swift.String>"
+    StudyDetailContent: SpeziStudyServer.StudyDetailContent
+    StudyDetailData: "SpeziLocalization.LocalizationsDictionary<SpeziStudyServer.StudyDetailContent>"
     SampleTypesCollection: "[SpeziHealthKit.SampleTypeProxy]"

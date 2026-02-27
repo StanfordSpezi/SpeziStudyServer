@@ -7,35 +7,79 @@
 //
 
 import Foundation
+import SpeziStudyDefinition
+
 
 extension Controller {
-    func getStudiesIdComponentsComponentIdSchedules(
-        _ input: Operations.GetStudiesIdComponentsComponentIdSchedules.Input
-    ) async throws -> Operations.GetStudiesIdComponentsComponentIdSchedules.Output {
-        throw ServerError.Defaults.endpointNotImplemented
+    func getStudiesStudyIdComponentsComponentIdSchedules(
+        _ input: Operations.GetStudiesStudyIdComponentsComponentIdSchedules.Input
+    ) async throws -> Operations.GetStudiesStudyIdComponentsComponentIdSchedules.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
+
+        let schedules = try await componentScheduleService.listSchedules(studyId: studyId, componentId: componentId)
+        return .ok(.init(body: .json(try schedules.map { try .init($0) })))
     }
 
-    func postStudiesIdComponentsComponentIdSchedules(
-        _ input: Operations.PostStudiesIdComponentsComponentIdSchedules.Input
-    ) async throws -> Operations.PostStudiesIdComponentsComponentIdSchedules.Output {
-        throw ServerError.Defaults.endpointNotImplemented
+    func postStudiesStudyIdComponentsComponentIdSchedules(
+        _ input: Operations.PostStudiesStudyIdComponentsComponentIdSchedules.Input
+    ) async throws -> Operations.PostStudiesStudyIdComponentsComponentIdSchedules.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
+
+        guard case .json(let schema) = input.body else {
+            throw ServerError.jsonBodyRequired
+        }
+
+        let data = try StudyDefinition.ComponentSchedule(id: UUID(), componentId: componentId, schema)
+        let schedule = try await componentScheduleService.createSchedule(studyId: studyId, componentId: componentId, data: data)
+
+        return .created(.init(body: .json(try .init(schedule))))
     }
 
-    func getStudiesIdComponentsComponentIdSchedulesScheduleId(
-        _ input: Operations.GetStudiesIdComponentsComponentIdSchedulesScheduleId.Input
-    ) async throws -> Operations.GetStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
-        throw ServerError.Defaults.endpointNotImplemented
+    func getStudiesStudyIdComponentsComponentIdSchedulesScheduleId(
+        _ input: Operations.GetStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Input
+    ) async throws -> Operations.GetStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
+        let scheduleId = try input.path.scheduleId.requireId()
+
+        let schedule = try await componentScheduleService.getSchedule(studyId: studyId, componentId: componentId, scheduleId: scheduleId)
+
+        return .ok(.init(body: .json(try .init(schedule))))
     }
 
-    func putStudiesIdComponentsComponentIdSchedulesScheduleId(
-        _ input: Operations.PutStudiesIdComponentsComponentIdSchedulesScheduleId.Input
-    ) async throws -> Operations.PutStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
-        throw ServerError.Defaults.endpointNotImplemented
+    func putStudiesStudyIdComponentsComponentIdSchedulesScheduleId(
+        _ input: Operations.PutStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Input
+    ) async throws -> Operations.PutStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
+        let scheduleId = try input.path.scheduleId.requireId()
+
+        guard case .json(let schema) = input.body else {
+            throw ServerError.jsonBodyRequired
+        }
+
+        let data = try StudyDefinition.ComponentSchedule(id: scheduleId, componentId: componentId, schema)
+        let schedule = try await componentScheduleService.replaceSchedule(
+            studyId: studyId,
+            componentId: componentId,
+            scheduleId: scheduleId,
+            data: data
+        )
+
+        return .ok(.init(body: .json(try .init(schedule))))
     }
 
-    func deleteStudiesIdComponentsComponentIdSchedulesScheduleId(
-        _ input: Operations.DeleteStudiesIdComponentsComponentIdSchedulesScheduleId.Input
-    ) async throws -> Operations.DeleteStudiesIdComponentsComponentIdSchedulesScheduleId.Output {
-        throw ServerError.Defaults.endpointNotImplemented
+    func deleteStudiesStudyIdComponentsComponentIdSchedulesScheduleId(
+        _ input: Operations.DeleteStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Input
+    ) async throws -> Operations.DeleteStudiesStudyIdComponentsComponentIdSchedulesScheduleId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
+        let scheduleId = try input.path.scheduleId.requireId()
+
+        try await componentScheduleService.deleteSchedule(studyId: studyId, componentId: componentId, scheduleId: scheduleId)
+
+        return .noContent(.init())
     }
 }

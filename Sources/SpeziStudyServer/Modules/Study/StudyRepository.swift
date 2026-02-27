@@ -5,11 +5,13 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
-import SpeziStudyDefinition
+import Spezi
 
-class StudyRepository: VaporModule, @unchecked Sendable {
+
+final class StudyRepository: Module, Sendable {
     let database: any Database
 
     init(database: any Database) {
@@ -19,8 +21,8 @@ class StudyRepository: VaporModule, @unchecked Sendable {
     func create(_ study: Study) async throws -> Study {
         try await study.save(on: database)
 
-        guard let createdStudy = try await Study.find(try study.requireID(), on: database) else {
-            throw ServerError.Defaults.failedToRetrieveCreatedObject
+        guard let createdStudy = try await Study.find(try study.requireId(), on: database) else {
+            throw ServerError.failedToRetrieveCreatedObject
         }
 
         return createdStudy
@@ -28,6 +30,15 @@ class StudyRepository: VaporModule, @unchecked Sendable {
 
     func find(id: UUID) async throws -> Study? {
         try await Study.find(id, on: database)
+    }
+
+    func findGroupName(forStudyId id: UUID) async throws -> String? {
+        try await Study.query(on: database)
+            .filter(\.$id == id)
+            .join(Group.self, on: \Study.$group.$id == \Group.$id)
+            .field(Group.self, \.$name)
+            .first()
+            .map { try $0.joined(Group.self).name }
     }
 
     func findWithComponents(id: UUID) async throws -> Study? {
@@ -56,16 +67,13 @@ class StudyRepository: VaporModule, @unchecked Sendable {
         try await Study.query(on: database).all(\.$id)
     }
 
-    func listAll() async throws -> [Study] {
-        try await Study.query(on: database).all()
+    func listAll(groupId: UUID) async throws -> [Study] {
+        try await Study.query(on: database)
+            .filter(\.$group.$id == groupId)
+            .all()
     }
 
-    func update(id: UUID, metadata: StudyDefinition.Metadata) async throws -> Study? {
-        guard let study = try await Study.find(id, on: database) else {
-            return nil
-        }
-
-        study.metadata = metadata
+    func update(_ study: Study) async throws -> Study {
         try await study.save(on: database)
         return study
     }

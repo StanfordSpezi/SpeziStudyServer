@@ -5,52 +5,62 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import Logging
 import Spezi
 
-final class StudyService: @unchecked Sendable, Module {
+
+final class StudyService: Module, @unchecked Sendable {
     @Dependency(StudyRepository.self) var repository: StudyRepository
-        
+    @Dependency(GroupService.self) var groupService: GroupService
+
     init() {}
 
-    func createStudy(_ dto: Components.Schemas.StudyInput) async throws -> Components.Schemas.StudyResponse {
-        let study = try StudyMapper.toModel(dto)
-        let createdStudy = try await repository.create(study)
-        return try StudyMapper.toDTO(createdStudy)
+    func checkHasAccess(to id: UUID, role: AuthContext.GroupRole) async throws {
+        guard let groupName = try await repository.findGroupName(forStudyId: id) else {
+            throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
+        }
+
+        try AuthContext.requireCurrent().checkHasAccess(groupName: groupName, role: role)
     }
 
-    func listStudies() async throws -> [Components.Schemas.StudyResponse] {
-        let studies = try await repository.listAll()
-        return try studies.map { try StudyMapper.toDTO($0) }
-    }
+    func getStudy(id: UUID) async throws -> Study {
+        try await checkHasAccess(to: id, role: .researcher)
 
-    func getStudy(id: UUID) async throws -> Components.Schemas.StudyResponse {
         guard let study = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        return try StudyMapper.toDTO(study)
+        return study
     }
 
-    func updateStudy(id: UUID, dto: Components.Schemas.StudyInput) async throws -> Components.Schemas.StudyResponse {
-        let metadata = try StudyMapper.toMetadata(dto)
-        guard let updatedStudy = try await repository.update(id: id, metadata: metadata) else {
+    func createStudy(groupId: UUID, study: Study) async throws -> Study {
+        try await groupService.checkHasAccess(to: groupId, role: .admin)
+        return try await repository.create(study)
+    }
+
+    func listStudies(groupId: UUID) async throws -> [Study] {
+        try await groupService.checkHasAccess(to: groupId, role: .researcher)
+        return try await repository.listAll(groupId: groupId)
+    }
+
+    func patchStudy(id: UUID, patch: StudyPatch) async throws -> Study {
+        try await checkHasAccess(to: id, role: .researcher)
+
+        guard let study = try await repository.find(id: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        return try StudyMapper.toDTO(updatedStudy)
+        study.apply(patch)
+        return try await repository.update(study)
     }
 
     func deleteStudy(id: UUID) async throws {
+        try await checkHasAccess(to: id, role: .admin)
+
         let deleted = try await repository.delete(id: id)
         if !deleted {
-            throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
-        }
-    }
-
-    func validateExists(id: UUID) async throws {
-        if try await repository.find(id: id) == nil {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
     }

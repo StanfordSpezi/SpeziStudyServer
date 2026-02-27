@@ -5,9 +5,11 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziStudyDefinition
+
 
 final class ComponentSchedule: Model, @unchecked Sendable {
     static let schema = "component_schedules"

@@ -5,91 +5,208 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 @testable import SpeziStudyServer
 import Testing
 import VaporTesting
 
+
 @Suite(.serialized)
 struct StudyIntegrationTests {
     @Test
-    func listStudiesEmpty() async throws {
-        try await TestApp.withApp { app in
-            try await app.test(.GET, "studies") { response in
-                #expect(response.status == .ok)
-
-                let studies = try response.content.decode([Components.Schemas.StudyResponse].self)
-                #expect(studies.isEmpty)
-            }
-        }
-    }
-
-    @Test
     func createStudy() async throws {
-        try await TestApp.withApp { app in
-            try await app.test(.POST, "studies", beforeRequest: { req in
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+
+            try await app.test(.POST, "\(apiBasePath)/groups/\(groupId)/studies", beforeRequest: { req in
+                req.bearerAuth(token)
                 try req.encodeJSONBody(createStudyRequestBody(title: "New Study"))
             }) { response in
                 #expect(response.status == .created)
 
                 let study = try response.content.decode(Components.Schemas.StudyResponse.self)
                 #expect(study.id.isEmpty == false)
+                #expect(study.details[.enUS]?.title == "New Study")
+                #expect(study.locales == ["en-US"])
+                #expect(study.icon == "heart")
+                #expect(study.consent.isEmpty)
             }
         }
     }
 
     @Test
-    func getStudy() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db, title: "Test Study")
-            let studyId = try study.requireID()
-
-            try await app.test(.GET, "studies/\(studyId)") { response in
-                #expect(response.status == .ok)
-
-                let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
-                #expect(responseStudy.id == studyId.uuidString)
-            }
-        }
-    }
-
-    @Test
-    func getStudyNotFound() async throws {
-        try await TestApp.withApp { app in
+    func createStudyGroupNotFound() async throws {
+        try await TestApp.withApp { app, token in
             let nonExistentId = UUID()
 
-            try await app.test(.GET, "studies/\(nonExistentId)") { response in
+            try await app.test(.POST, "\(apiBasePath)/groups/\(nonExistentId)/studies", beforeRequest: { req in
+                req.bearerAuth(token)
+                try req.encodeJSONBody(createStudyRequestBody(title: "New Study"))
+            }) { response in
                 #expect(response.status == .notFound)
             }
         }
     }
 
     @Test
-    func updateStudy() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db, title: "Original Title")
-            let studyId = try study.requireID()
+    func getStudy() async throws {
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId, title: "Test Study")
+            let studyId = try study.requireId()
 
-            try await app.test(.PUT, "studies/\(studyId)", beforeRequest: { req in
-                try req.encodeJSONBody(createStudyRequestBody(title: "Updated Title", id: studyId))
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
             }) { response in
                 #expect(response.status == .ok)
+
+                let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
+                #expect(responseStudy.id == studyId.uuidString)
+                #expect(responseStudy.details[.enUS]?.title == "Test Study")
+                #expect(responseStudy.locales == ["en-US"])
+                #expect(responseStudy.icon == "heart")
+                #expect(responseStudy.consent.isEmpty)
+            }
+        }
+    }
+
+    @Test
+    func getStudyNotFound() async throws {
+        try await TestApp.withApp { app, token in
+            let nonExistentId = UUID()
+
+            try await app.test(.GET, "\(apiBasePath)/studies/\(nonExistentId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
+                #expect(response.status == .notFound)
+            }
+        }
+    }
+
+    @Test
+    func patchStudyTitle() async throws {
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId, title: "Original Title")
+            let studyId = try study.requireId()
+
+            let patchBody: [String: Any] = [
+                "details": [
+                    "en-US": [
+                        "title": "Updated Title"
+                    ] as [String: Any]
+                ] as [String: Any]
+            ]
+
+            try await app.test(.PATCH, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+                try req.encodeJSONBody(patchBody)
+            }) { response in
+                #expect(response.status == .ok)
+
+                let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
+                #expect(responseStudy.details[.enUS]?.title == "Updated Title")
+                #expect(responseStudy.locales == ["en-US"])
+                #expect(responseStudy.icon == "heart")
+                #expect(responseStudy.consent.isEmpty)
+            }
+        }
+    }
+
+    @Test
+    func patchStudyDetails() async throws {
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId, title: "Test Study")
+            let studyId = try study.requireId()
+
+            let patchBody: [String: Any] = [
+                "details": [
+                    "en-US": [
+                        "shortTitle": "TS",
+                        "explanationText": "A test study explanation"
+                    ] as [String: Any]
+                ] as [String: Any]
+            ]
+
+            try await app.test(.PATCH, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+                try req.encodeJSONBody(patchBody)
+            }) { response in
+                #expect(response.status == .ok)
+
+                let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
+                #expect(responseStudy.details[.enUS]?.shortTitle == "TS")
+                #expect(responseStudy.details[.enUS]?.explanationText == "A test study explanation")
+                #expect(responseStudy.details[.enUS]?.shortExplanationText.isEmpty == true)
+                #expect(responseStudy.locales == ["en-US"])
+                #expect(responseStudy.icon == "heart")
+                #expect(responseStudy.consent.isEmpty)
+            }
+        }
+    }
+
+    @Test
+    func patchStudyConsent() async throws {
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId, title: "Consent Study")
+            let studyId = try study.requireId()
+
+            let patchBody: [String: Any] = [
+                "consent": [
+                    "en-US": "# Informed Consent\n\nBy participating in this study, you agree to..."
+                ] as [String: Any]
+            ]
+
+            try await app.test(.PATCH, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+                try req.encodeJSONBody(patchBody)
+            }) { response in
+                #expect(response.status == .ok)
+
+                let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
+                #expect(responseStudy.consent[.enUS] == "# Informed Consent\n\nBy participating in this study, you agree to...")
+                #expect(responseStudy.details[.enUS]?.title == "Consent Study")
+                #expect(responseStudy.locales == ["en-US"])
+                #expect(responseStudy.icon == "heart")
+            }
+
+            // Verify consent persists on GET
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
+                #expect(response.status == .ok)
+
+                let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
+                #expect(responseStudy.consent[.enUS] == "# Informed Consent\n\nBy participating in this study, you agree to...")
             }
         }
     }
 
     @Test
     func deleteStudy() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let groupId = try group.requireId()
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
+            let studyId = try study.requireId()
 
-            try await app.test(.DELETE, "studies/\(studyId)") { response in
+            try await app.test(.DELETE, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .noContent)
             }
 
-            // Verify deletion
-            try await app.test(.GET, "studies/\(studyId)") { response in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .notFound)
             }
         }
@@ -97,48 +214,53 @@ struct StudyIntegrationTests {
 
     @Test
     func deleteStudyNotFound() async throws {
-        try await TestApp.withApp { app in
+        try await TestApp.withApp { app, token in
             let nonExistentId = UUID()
 
-            try await app.test(.DELETE, "studies/\(nonExistentId)") { response in
+            try await app.test(.DELETE, "\(apiBasePath)/studies/\(nonExistentId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .notFound)
             }
         }
     }
 
     @Test
-    func listStudiesWithData() async throws {
-        try await TestApp.withApp { app in
-            try await StudyFixtures.createStudy(on: app.db, title: "Study 1")
-            try await StudyFixtures.createStudy(on: app.db, title: "Study 2")
+    func listStudiesInGroup() async throws {
+        try await TestApp.withApp(groups: ["/Group 1/admin", "/Group 2/admin"]) { app, token in
+            let group1 = try await GroupFixtures.createGroup(on: app.db, name: "Group 1")
+            let group1Id = try group1.requireId()
+            let group2 = try await GroupFixtures.createGroup(on: app.db, name: "Group 2")
+            let group2Id = try group2.requireId()
 
-            try await app.test(.GET, "studies") { response in
+            try await StudyFixtures.createStudy(on: app.db, groupId: group1Id, title: "Study A")
+            try await StudyFixtures.createStudy(on: app.db, groupId: group1Id, title: "Study B")
+            try await StudyFixtures.createStudy(on: app.db, groupId: group2Id, title: "Study C")
+
+            try await app.test(.GET, "\(apiBasePath)/groups/\(group1Id)/studies", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .ok)
 
-                let studies = try response.content.decode([Components.Schemas.StudyResponse].self)
+                let studies = try response.content.decode([Components.Schemas.StudyListItem].self)
                 #expect(studies.count == 2)
+            }
+
+            try await app.test(.GET, "\(apiBasePath)/groups/\(group2Id)/studies", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
+                #expect(response.status == .ok)
+
+                let studies = try response.content.decode([Components.Schemas.StudyListItem].self)
+                #expect(studies.count == 1)
             }
         }
     }
 
-    // MARK: - Helpers
-
-    private func createStudyRequestBody(title: String, id: UUID? = nil) -> [String: Any] {
-        var metadata: [String: Any] = [
-            "title": ["en-US": title],
-            "shortTitle": ["en-US": "Test"],
-            "explanationText": ["en-US": "Explanation text"],
-            "shortExplanationText": ["en-US": "Short explanation"],
-            "participationCriterion": [
-                "all": ["_0": [[String: Any]]()]
-            ],
-            "enrollmentConditions": [
-                "none": [String: Any]()
-            ]
-        ]
-        if let id {
-            metadata["id"] = id.uuidString
-        }
-        return ["metadata": metadata]
+    private func createStudyRequestBody(title: String) -> [String: Any] {
+        [
+            "title": title,
+            "icon": "heart"
+        ] as [String: Any]
     }
 }

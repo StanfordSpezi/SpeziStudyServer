@@ -5,74 +5,61 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 
+
 extension Controller {
-    func postStudiesIdComponentsQuestionnaire(
-        _ input: Operations.PostStudiesIdComponentsQuestionnaire.Input
-    ) async throws -> Operations.PostStudiesIdComponentsQuestionnaire.Output {
-        let studyId = try input.path.id.requireID()
-        guard case .json(let content) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+    func postStudiesStudyIdComponentsQuestionnaire(
+        _ input: Operations.PostStudiesStudyIdComponentsQuestionnaire.Input
+    ) async throws -> Operations.PostStudiesStudyIdComponentsQuestionnaire.Output {
+        let studyId = try input.path.studyId.requireId()
+        guard case .json(let schema) = input.body else {
+            throw ServerError.jsonBodyRequired
         }
 
-        let created = try await questionnaireComponentService.createComponent(
+        let component = try await questionnaireComponentService.createComponent(
             studyId: studyId,
-            name: content.name,
-            content: content.data
+            name: schema.name,
+            content: schema.data
         )
 
-        let response = Components.Schemas.QuestionnaireComponentResponse(
-            id: try created.requireID().uuidString,
-            name: content.name,
-            data: created.data
-        )
-        return .created(.init(body: .json(response)))
+        return .created(.init(body: .json(try .init(component, name: schema.name))))
     }
 
-    func getStudiesIdComponentsQuestionnaireComponentId(
-        _ input: Operations.GetStudiesIdComponentsQuestionnaireComponentId.Input
-    ) async throws -> Operations.GetStudiesIdComponentsQuestionnaireComponentId.Output {
-        let studyId = try input.path.id.requireID()
-        let componentId = try input.path.componentId.requireID()
+    func getStudiesStudyIdComponentsQuestionnaireComponentId(
+        _ input: Operations.GetStudiesStudyIdComponentsQuestionnaireComponentId.Input
+    ) async throws -> Operations.GetStudiesStudyIdComponentsQuestionnaireComponentId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
 
         let component = try await questionnaireComponentService.getComponent(
             studyId: studyId,
             id: componentId
         )
 
-        let name = try await questionnaireComponentService.getName(studyId: studyId, id: componentId) ?? ""
+        let name = try await componentService.getComponentName(studyId: studyId, componentId: componentId)
 
-        let response = Components.Schemas.QuestionnaireComponentResponse(
-            id: try component.requireID().uuidString,
-            name: name,
-            data: component.data
-        )
-        return .ok(.init(body: .json(response)))
+        return .ok(.init(body: .json(try .init(component, name: name))))
     }
 
-    func putStudiesIdComponentsQuestionnaireComponentId(
-        _ input: Operations.PutStudiesIdComponentsQuestionnaireComponentId.Input
-    ) async throws -> Operations.PutStudiesIdComponentsQuestionnaireComponentId.Output {
-        let studyId = try input.path.id.requireID()
-        let componentId = try input.path.componentId.requireID()
+    func putStudiesStudyIdComponentsQuestionnaireComponentId(
+        _ input: Operations.PutStudiesStudyIdComponentsQuestionnaireComponentId.Input
+    ) async throws -> Operations.PutStudiesStudyIdComponentsQuestionnaireComponentId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
 
-        guard case .json(let content) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+        guard case .json(let schema) = input.body else {
+            throw ServerError.jsonBodyRequired
         }
 
-        let updated = try await questionnaireComponentService.updateComponent(
+        let component = try await questionnaireComponentService.updateComponent(
             studyId: studyId,
             id: componentId,
-            name: content.name,
-            content: content.data
+            name: schema.name,
+            content: schema.data
         )
 
-        let response = Components.Schemas.QuestionnaireComponentResponse(
-            id: try updated.requireID().uuidString,
-            name: content.name,
-            data: updated.data
-        )
-        return .ok(.init(body: .json(response)))
+        return .ok(.init(body: .json(try .init(component, name: schema.name))))
     }
 }

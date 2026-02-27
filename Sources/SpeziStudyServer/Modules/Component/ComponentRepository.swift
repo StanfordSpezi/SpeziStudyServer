@@ -5,10 +5,13 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
+import Spezi
 
-class ComponentRepository: VaporModule, @unchecked Sendable {
+
+final class ComponentRepository: Module, Sendable {
     let database: any Database
 
     init(database: any Database) {

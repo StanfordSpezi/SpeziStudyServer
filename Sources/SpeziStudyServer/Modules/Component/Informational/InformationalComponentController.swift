@@ -8,72 +8,58 @@
 
 import Foundation
 
+
 extension Controller {
-    func postStudiesIdComponentsInformational(
-        _ input: Operations.PostStudiesIdComponentsInformational.Input
-    ) async throws -> Operations.PostStudiesIdComponentsInformational.Output {
-        let studyId = try input.path.id.requireID()
-        guard case .json(let content) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+    func postStudiesStudyIdComponentsInformational(
+        _ input: Operations.PostStudiesStudyIdComponentsInformational.Input
+    ) async throws -> Operations.PostStudiesStudyIdComponentsInformational.Output {
+        let studyId = try input.path.studyId.requireId()
+        guard case .json(let schema) = input.body else {
+            throw ServerError.jsonBodyRequired
         }
 
-        let created = try await informationalComponentService.createComponent(
+        let component = try await informationalComponentService.createComponent(
             studyId: studyId,
-            name: content.name,
-            content: content.data
+            name: schema.name,
+            content: schema.data
         )
 
-        let response = Components.Schemas.InformationalComponentResponse(
-            id: try created.requireID().uuidString,
-            name: content.name,
-            data: created.data
-        )
-        return .created(.init(body: .json(response)))
+        return .created(.init(body: .json(try .init(component, name: schema.name))))
     }
 
-    func getStudiesIdComponentsInformationalComponentId(
-        _ input: Operations.GetStudiesIdComponentsInformationalComponentId.Input
-    ) async throws -> Operations.GetStudiesIdComponentsInformationalComponentId.Output {
-        let studyId = try input.path.id.requireID()
-        let componentId = try input.path.componentId.requireID()
+    func getStudiesStudyIdComponentsInformationalComponentId(
+        _ input: Operations.GetStudiesStudyIdComponentsInformationalComponentId.Input
+    ) async throws -> Operations.GetStudiesStudyIdComponentsInformationalComponentId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
 
         let component = try await informationalComponentService.getComponent(
             studyId: studyId,
             id: componentId
         )
 
-        let name = try await informationalComponentService.getName(studyId: studyId, id: componentId) ?? ""
+        let name = try await componentService.getComponentName(studyId: studyId, componentId: componentId)
 
-        let response = Components.Schemas.InformationalComponentResponse(
-            id: try component.requireID().uuidString,
-            name: name,
-            data: component.data
-        )
-        return .ok(.init(body: .json(response)))
+        return .ok(.init(body: .json(try .init(component, name: name))))
     }
 
-    func putStudiesIdComponentsInformationalComponentId(
-        _ input: Operations.PutStudiesIdComponentsInformationalComponentId.Input
-    ) async throws -> Operations.PutStudiesIdComponentsInformationalComponentId.Output {
-        let studyId = try input.path.id.requireID()
-        let componentId = try input.path.componentId.requireID()
+    func putStudiesStudyIdComponentsInformationalComponentId(
+        _ input: Operations.PutStudiesStudyIdComponentsInformationalComponentId.Input
+    ) async throws -> Operations.PutStudiesStudyIdComponentsInformationalComponentId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
 
-        guard case .json(let content) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+        guard case .json(let schema) = input.body else {
+            throw ServerError.jsonBodyRequired
         }
 
-        let updated = try await informationalComponentService.updateComponent(
+        let component = try await informationalComponentService.updateComponent(
             studyId: studyId,
             id: componentId,
-            name: content.name,
-            content: content.data
+            name: schema.name,
+            content: schema.data
         )
 
-        let response = Components.Schemas.InformationalComponentResponse(
-            id: try updated.requireID().uuidString,
-            name: content.name,
-            data: updated.data
-        )
-        return .ok(.init(body: .json(response)))
+        return .ok(.init(body: .json(try .init(component, name: schema.name))))
     }
 }

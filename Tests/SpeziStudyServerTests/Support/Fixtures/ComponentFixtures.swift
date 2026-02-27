@@ -5,16 +5,17 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziHealthKit
 import SpeziLocalization
+import SpeziScheduler
 import SpeziStudyDefinition
 @testable import SpeziStudyServer
 
-/// Test fixtures for Component entities.
+
 enum ComponentFixtures {
-    /// Creates and persists a health data component.
     @discardableResult
     static func createHealthDataComponent(
         on database: any Database,
@@ -28,7 +29,7 @@ enum ComponentFixtures {
         )
         try await component.save(on: database)
 
-        let componentId = try component.requireID()
+        let componentId = try component.requireId()
         let healthData = HealthDataComponent(
             componentId: componentId,
             data: .init(
@@ -46,7 +47,6 @@ enum ComponentFixtures {
         return (component, healthData)
     }
 
-    /// Creates and persists a questionnaire component.
     @discardableResult
     static func createQuestionnaireComponent(
         on database: any Database,
@@ -60,17 +60,16 @@ enum ComponentFixtures {
         )
         try await component.save(on: database)
 
-        let componentId = try component.requireID()
+        let componentId = try component.requireId()
         let questionnaire = QuestionnaireComponent(
             componentId: componentId,
-            data: LocalizedDictionary([.enUS: QuestionnaireContent(questionnaire: "{}")])
+            data: .init([.enUS: QuestionnaireContent(questionnaire: "{}")])
         )
         try await questionnaire.save(on: database)
 
         return (component, questionnaire)
     }
 
-    /// Creates and persists an informational component.
     @discardableResult
     static func createInformationalComponent(
         on database: any Database,
@@ -84,13 +83,36 @@ enum ComponentFixtures {
         )
         try await component.save(on: database)
 
-        let componentId = try component.requireID()
+        let componentId = try component.requireId()
         let informational = InformationalComponent(
             componentId: componentId,
-            data: LocalizedDictionary([.enUS: InformationalContent(title: "Test", lede: nil, content: "Content")])
+            data: .init([.enUS: InformationalContent(title: "Test", lede: nil, content: "Content")])
         )
         try await informational.save(on: database)
 
         return (component, informational)
+    }
+
+    @discardableResult
+    static func createSchedule(
+        on database: any Database,
+        componentId: UUID,
+        scheduleDefinition: StudyDefinition.ComponentSchedule.ScheduleDefinition = .repeated(
+            .daily(interval: 1, hour: 9, minute: 0, second: 0),
+            offset: DateComponents()
+        ),
+        completionPolicy: AllowedCompletionPolicy = .anytime,
+        notifications: StudyDefinition.ComponentSchedule.NotificationsConfig = .disabled
+    ) async throws -> ComponentSchedule {
+        let data = StudyDefinition.ComponentSchedule(
+            id: UUID(),
+            componentId: componentId,
+            scheduleDefinition: scheduleDefinition,
+            completionPolicy: completionPolicy,
+            notifications: notifications
+        )
+        let schedule = ComponentSchedule(componentId: componentId, scheduleData: data)
+        try await schedule.save(on: database)
+        return schedule
     }
 }

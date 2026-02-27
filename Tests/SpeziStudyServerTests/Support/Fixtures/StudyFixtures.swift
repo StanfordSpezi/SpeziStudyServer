@@ -5,31 +5,28 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziLocalization
-import SpeziStudyDefinition
 @testable import SpeziStudyServer
 
-/// Test fixtures for Study entities.
+
 enum StudyFixtures {
-    /// Creates and persists a test study.
     @discardableResult
     static func createStudy(
         on database: any Database,
+        groupId: UUID,
         id: UUID = UUID(),
         title: String = "Test Study"
     ) async throws -> Study {
-        let metadata = StudyDefinition.Metadata(
-            id: id,
-            title: LocalizedDictionary([.enUS: title]),
-            explanationText: LocalizedDictionary([.enUS: "Test explanation"]),
-            shortExplanationText: LocalizedDictionary([.enUS: "Test short explanation"]),
-            participationCriterion: true,
-            enrollmentConditions: .none
+        let study = Study(
+            groupId: groupId,
+            locales: ["en-US"],
+            icon: "heart",
+            details: .init([.enUS: StudyDetailContent(title: title)]),
+            id: id
         )
-
-        let study = Study(metadata: metadata, id: id)
         try await study.save(on: database)
         return study
     }

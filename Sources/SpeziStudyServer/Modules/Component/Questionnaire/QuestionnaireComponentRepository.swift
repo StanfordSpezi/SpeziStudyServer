@@ -5,11 +5,14 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
+import Spezi
 import SpeziLocalization
 
-class QuestionnaireComponentRepository: VaporModule, @unchecked Sendable {
+
+final class QuestionnaireComponentRepository: Module, Sendable {
     let database: any Database
 
     init(database: any Database) {
@@ -22,7 +25,7 @@ class QuestionnaireComponentRepository: VaporModule, @unchecked Sendable {
 
     func create(
         componentId: UUID,
-        data: LocalizedDictionary<QuestionnaireContent>
+        data: LocalizationsDictionary<QuestionnaireContent>
     ) async throws -> QuestionnaireComponent {
         let component = QuestionnaireComponent(componentId: componentId, data: data)
         try await component.save(on: database)

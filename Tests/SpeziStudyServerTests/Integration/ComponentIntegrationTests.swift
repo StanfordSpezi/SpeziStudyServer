@@ -5,20 +5,25 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 @testable import SpeziStudyServer
 import Testing
 import VaporTesting
 
+
 @Suite(.serialized)
 struct ComponentIntegrationTests {
     @Test
     func listComponentsEmpty() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
+            let studyId = try study.requireId()
 
-            try await app.test(.GET, "studies/\(studyId)/components") { response in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)/components", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .ok)
 
                 let components = try response.content.decode([Components.Schemas.Component].self)
@@ -29,15 +34,18 @@ struct ComponentIntegrationTests {
 
     @Test
     func listComponentsWithData() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
+            let studyId = try study.requireId()
 
             try await ComponentFixtures.createHealthDataComponent(on: app.db, studyId: studyId)
             try await ComponentFixtures.createQuestionnaireComponent(on: app.db, studyId: studyId)
             try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
 
-            try await app.test(.GET, "studies/\(studyId)/components") { response in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)/components", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .ok)
 
                 let components = try response.content.decode([Components.Schemas.Component].self)
@@ -48,10 +56,12 @@ struct ComponentIntegrationTests {
 
     @Test
     func listComponentsStudyNotFound() async throws {
-        try await TestApp.withApp { app in
+        try await TestApp.withApp { app, token in
             let nonExistentId = UUID()
 
-            try await app.test(.GET, "studies/\(nonExistentId)/components") { response in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(nonExistentId)/components", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .notFound)
             }
         }
@@ -59,22 +69,26 @@ struct ComponentIntegrationTests {
 
     @Test
     func deleteComponent() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
+            let studyId = try study.requireId()
 
             let (component, _) = try await ComponentFixtures.createHealthDataComponent(
                 on: app.db,
                 studyId: studyId
             )
-            let componentId = try component.requireID()
+            let componentId = try component.requireId()
 
-            try await app.test(.DELETE, "studies/\(studyId)/components/\(componentId)") { response in
+            try await app.test(.DELETE, "\(apiBasePath)/studies/\(studyId)/components/\(componentId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .noContent)
             }
 
-            // Verify deletion
-            try await app.test(.GET, "studies/\(studyId)/components") { response in
+            try await app.test(.GET, "\(apiBasePath)/studies/\(studyId)/components", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 let components = try response.content.decode([Components.Schemas.Component].self)
                 #expect(components.isEmpty)
             }
@@ -83,12 +97,15 @@ struct ComponentIntegrationTests {
 
     @Test
     func deleteComponentNotFound() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
+            let studyId = try study.requireId()
             let nonExistentId = UUID()
 
-            try await app.test(.DELETE, "studies/\(studyId)/components/\(nonExistentId)") { response in
+            try await app.test(.DELETE, "\(apiBasePath)/studies/\(studyId)/components/\(nonExistentId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .notFound)
             }
         }
@@ -96,18 +113,19 @@ struct ComponentIntegrationTests {
 
     @Test
     func deleteStudyCascadesComponents() async throws {
-        try await TestApp.withApp { app in
-            let study = try await StudyFixtures.createStudy(on: app.db)
-            let studyId = try study.requireID()
+        try await TestApp.withApp { app, token in
+            let group = try await GroupFixtures.createGroup(on: app.db)
+            let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
+            let studyId = try study.requireId()
 
             try await ComponentFixtures.createHealthDataComponent(on: app.db, studyId: studyId)
 
-            // Delete the study
-            try await app.test(.DELETE, "studies/\(studyId)") { response in
+            try await app.test(.DELETE, "\(apiBasePath)/studies/\(studyId)", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
                 #expect(response.status == .noContent)
             }
 
-            // Components should be gone (cascade delete)
             let remainingComponents = try await Component.query(on: app.db).all()
             #expect(remainingComponents.isEmpty)
         }

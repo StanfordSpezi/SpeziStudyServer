@@ -1,11 +1,3 @@
-docs {
-  This source file is part of the SpeziStudyServer open source project
-
-  SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
-
-  SPDX-License-Identifier: MIT
-}
-
 meta {
   name: Put Schedule
   type: http
@@ -25,22 +17,15 @@ headers {
 body:json {
   {
     "scheduleDefinition": {
-      "repeated": {
-        "_0": {
-          "daily": {
-            "hour": 14,
-            "minute": 0,
-            "second": 0
-          }
-        },
-        "_1": {}
+      "type": "repeated",
+      "pattern": {
+        "type": "daily",
+        "hour": 14,
+        "minute": 0,
+        "second": 0
       }
     },
-    "completionPolicy": {
-      "anytime": {}
-    },
-    "notifications": {
-      "disabled": {}
-    }
+    "completionPolicy": "anytime",
+    "notification": false
   }
 }

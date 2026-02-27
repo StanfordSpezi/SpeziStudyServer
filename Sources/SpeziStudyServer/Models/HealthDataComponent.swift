@@ -5,11 +5,12 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziStudyDefinition
 
-/// Database model for health data component.
+
 final class HealthDataComponent: Model, @unchecked Sendable {
     static let schema = "health_data_components"
 

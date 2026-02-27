@@ -5,42 +5,50 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 
+
 extension Controller {
-    func postStudies(_ input: Operations.PostStudies.Input) async throws -> Operations.PostStudies.Output {
-        guard case .json(let studyDTO) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+    func getStudiesStudyId(_ input: Operations.GetStudiesStudyId.Input) async throws -> Operations.GetStudiesStudyId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let study = try await studyService.getStudy(id: studyId)
+        return .ok(.init(body: .json(try .init(study))))
+    }
+
+    func postGroupsGroupIdStudies(
+        _ input: Operations.PostGroupsGroupIdStudies.Input
+    ) async throws -> Operations.PostGroupsGroupIdStudies.Output {
+        guard case .json(let schema) = input.body else {
+            throw ServerError.jsonBodyRequired
         }
 
-        let responseDTO = try await studyService.createStudy(studyDTO)
-        return .created(.init(body: .json(responseDTO)))
+        let groupId = try input.path.groupId.requireId()
+        let study = try await studyService.createStudy(groupId: groupId, study: Study(schema, groupId: groupId))
+        return .created(.init(body: .json(try .init(study))))
     }
 
-    func getStudies(_ input: Operations.GetStudies.Input) async throws -> Operations.GetStudies.Output {
-        let studies = try await studyService.listStudies()
-        return .ok(.init(body: .json(studies)))
+    func getGroupsGroupIdStudies(
+        _ input: Operations.GetGroupsGroupIdStudies.Input
+    ) async throws -> Operations.GetGroupsGroupIdStudies.Output {
+        let groupId = try input.path.groupId.requireId()
+        let studies = try await studyService.listStudies(groupId: groupId)
+        return .ok(.init(body: .json(try studies.map { try .init($0) })))
     }
 
-    func getStudiesId(_ input: Operations.GetStudiesId.Input) async throws -> Operations.GetStudiesId.Output {
-        let uuid = try input.path.id.requireID()
-        let dto = try await studyService.getStudy(id: uuid)
-        return .ok(.init(body: .json(dto)))
-    }
-
-    func putStudiesId(_ input: Operations.PutStudiesId.Input) async throws -> Operations.PutStudiesId.Output {
-        guard case .json(let studyDTO) = input.body else {
-            throw ServerError.Defaults.jsonBodyRequired
+    func patchStudiesStudyId(_ input: Operations.PatchStudiesStudyId.Input) async throws -> Operations.PatchStudiesStudyId.Output {
+        guard case .json(let schema) = input.body else {
+            throw ServerError.jsonBodyRequired
         }
 
-        let uuid = try input.path.id.requireID()
-        let responseDTO = try await studyService.updateStudy(id: uuid, dto: studyDTO)
-        return .ok(.init(body: .json(responseDTO)))
+        let studyId = try input.path.studyId.requireId()
+        let study = try await studyService.patchStudy(id: studyId, patch: StudyPatch(schema))
+        return .ok(.init(body: .json(try .init(study))))
     }
 
-    func deleteStudiesId(_ input: Operations.DeleteStudiesId.Input) async throws -> Operations.DeleteStudiesId.Output {
-        let uuid = try input.path.id.requireID()
-        try await studyService.deleteStudy(id: uuid)
+    func deleteStudiesStudyId(_ input: Operations.DeleteStudiesStudyId.Input) async throws -> Operations.DeleteStudiesStudyId.Output {
+        let studyId = try input.path.studyId.requireId()
+        try await studyService.deleteStudy(id: studyId)
         return .noContent(.init())
     }
 }

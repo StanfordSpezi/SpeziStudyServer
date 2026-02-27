@@ -5,16 +5,28 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import Vapor
 import VaporTesting
 
-/// Helper for encoding arbitrary JSON in test requests.
+
 extension TestingHTTPRequest {
-    /// Encodes a dictionary as JSON request body.
+    mutating func bearerAuth(_ token: String?) {
+        if let token {
+            headers.bearerAuthorization = .init(token: token)
+        }
+    }
+
     mutating func encodeJSONBody(_ dictionary: [String: Any]) throws {
         self.headers.contentType = .json
         let data = try JSONSerialization.data(withJSONObject: dictionary)
+        self.body = .init(data: data)
+    }
+
+    mutating func encodeJSONBody(_ value: some Encodable) throws {
+        self.headers.contentType = .json
+        let data = try JSONEncoder().encode(value)
         self.body = .init(data: data)
     }
 }

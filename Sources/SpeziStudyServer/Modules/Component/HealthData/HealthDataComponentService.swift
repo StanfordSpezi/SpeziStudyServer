@@ -5,16 +5,20 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
+import Spezi
 import SpeziStudyDefinition
 
-final class HealthDataComponentService: VaporModule, @unchecked Sendable {
+
+final class HealthDataComponentService: Module, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
     @Dependency(HealthDataComponentRepository.self) var repository: HealthDataComponentRepository
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> HealthDataComponent {
-        // check if correct study id
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
+
         guard try await componentRepository.find(id: id, studyId: studyId) != nil else {
             throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
         }
@@ -26,19 +30,12 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
         return component
     }
 
-    func getName(studyId: UUID, id: UUID) async throws -> String? {
-        guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
-            throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
-        }
-        return component.name
-    }
-
     func createComponent(
         studyId: UUID,
         name: String,
         data: StudyDefinition.HealthDataCollectionComponent
     ) async throws -> HealthDataComponent {
-        try await studyService.validateExists(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         let component = try await componentRepository.create(
             studyId: studyId,
@@ -46,7 +43,7 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
             name: name
         )
 
-        return try await repository.create(componentId: try component.requireID(), data: data)
+        return try await repository.create(componentId: try component.requireId(), data: data)
     }
 
     func updateComponent(
@@ -55,6 +52,8 @@ final class HealthDataComponentService: VaporModule, @unchecked Sendable {
         name: String,
         data: StudyDefinition.HealthDataCollectionComponent
     ) async throws -> HealthDataComponent {
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
+
         guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "HealthDataComponent", identifier: id.uuidString)
         }

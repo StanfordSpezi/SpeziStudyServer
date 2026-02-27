@@ -5,11 +5,22 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
-import HealthKit
 import SpeziHealthKit
 import SpeziHealthKitBulkExport
 import SpeziStudyDefinition
+
+
+extension Components.Schemas.HealthDataComponentResponse {
+    init(_ model: HealthDataComponent, name: String) throws {
+        self.init(
+            id: try model.requireId().uuidString,
+            name: name,
+            data: .init(model.data)
+        )
+    }
+}
 
 
 // MARK: - Model to Schema
@@ -40,7 +51,7 @@ extension Components.Schemas.ExportSessionStartDate {
         case .oldestSample:
             self = .oldestSample(.init(_type: .oldestSample))
         case .last(let components):
-            self = .last(.init(_type: .last, components: components))
+            self = .last(.init(_type: .last, components: .init(components)))
         case .absolute(let date):
             self = .absolute(.init(_type: .absolute, date: date))
         }
@@ -78,7 +89,7 @@ extension ExportSessionStartDate {
         case .oldestSample:
             self = .oldestSample
         case .last(let relative):
-            self = .last(relative.components)
+            self = .last(Foundation.DateComponents(relative.components))
         case .absolute(let absolute):
             self = .absolute(absolute.date)
         }

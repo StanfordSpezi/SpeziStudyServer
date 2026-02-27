@@ -14,7 +14,7 @@ services:
   db:
     image: postgres:18-alpine
     volumes:
-      - db_data:/var/lib/postgresql
+      - db_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: &db_username ${DATABASE_USERNAME:-vapor_username}
       POSTGRES_PASSWORD: &db_password ${DATABASE_PASSWORD:-vapor_password}

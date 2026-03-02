@@ -9,6 +9,13 @@
 import Vapor
 
 
+struct ConfigurationError: Error, CustomStringConvertible {
+    let message: String
+
+    var description: String { message }
+}
+
+
 extension Environment {
     /// Returns the value of the environment variable with the given key, or throws if it is not set.
     static func require(_ key: String) throws -> String {
@@ -17,11 +24,4 @@ extension Environment {
         }
         return value
     }
-}
-
-
-struct ConfigurationError: Error, CustomStringConvertible {
-    let message: String
-
-    var description: String { message }
 }

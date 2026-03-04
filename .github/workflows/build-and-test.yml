@@ -39,13 +39,14 @@ jobs:
       artifactname: ${{ format('SpeziStudyServer-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
   linux_tests:
     name: Build and Test Swift Package Linux (${{ matrix.config }})
-    uses: StanfordBDHG/.github/.github/workflows/swift-test.yml@v2
+    uses: StanfordBDHG/.github/.github/workflows/swift-test.yml@test-flag-for-swift-test
     strategy:
       matrix:
         config: [Debug, Release]
       fail-fast: false
     with:
       build_configuration: ${{ matrix.config }}
+      test_flags: '--no-parallel'
       artifact_name: ${{ format('SpeziStudyServer-Package-Linux-{0}.lcov', matrix.config) }}
   uploadcoveragereport:
     name: Upload Coverage Report

@@ -5,8 +5,10 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
+
 
 final class Component: Model, @unchecked Sendable {
     static let schema = "components"

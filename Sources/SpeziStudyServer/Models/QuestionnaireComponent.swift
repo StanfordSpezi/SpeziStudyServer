@@ -5,27 +5,27 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
 import Foundation
 import SpeziLocalization
 
-/// Domain model for questionnaire content.
+
 /// Note: This type is mapped from Components.Schemas.QuestionnaireContent via typeOverrides in openapi-generator-config.yaml
 struct QuestionnaireContent: Hashable, Codable, Sendable {
     let questionnaire: String
 }
 
-/// Database model for questionnaire component
 final class QuestionnaireComponent: Model, @unchecked Sendable {
     static let schema = "questionnaire_components"
 
     @ID(custom: "component_id") var id: UUID?
 
-    @Field(key: "data") var data: LocalizedDictionary<QuestionnaireContent>
+    @Field(key: "data") var data: LocalizationsDictionary<QuestionnaireContent>
 
     init() {}
 
-    init(componentId: UUID, data: LocalizedDictionary<QuestionnaireContent>) {
+    init(componentId: UUID, data: LocalizationsDictionary<QuestionnaireContent>) {
         self.id = componentId
         self.data = data
     }

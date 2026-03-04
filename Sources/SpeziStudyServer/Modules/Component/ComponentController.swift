@@ -5,22 +5,24 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 
+
 extension Controller {
-    func getStudiesIdComponents(
-        _ input: Operations.GetStudiesIdComponents.Input
-    ) async throws -> Operations.GetStudiesIdComponents.Output {
-        let studyId = try input.path.id.requireID()
+    func getStudiesStudyIdComponents(
+        _ input: Operations.GetStudiesStudyIdComponents.Input
+    ) async throws -> Operations.GetStudiesStudyIdComponents.Output {
+        let studyId = try input.path.studyId.requireId()
         let components = try await componentService.listComponents(studyId: studyId)
-        return .ok(.init(body: .json(components)))
+        return .ok(.init(body: .json(try components.map { try Components.Schemas.Component($0) })))
     }
 
-    func deleteStudiesIdComponentsComponentId(
-        _ input: Operations.DeleteStudiesIdComponentsComponentId.Input
-    ) async throws -> Operations.DeleteStudiesIdComponentsComponentId.Output {
-        let studyId = try input.path.id.requireID()
-        let componentId = try input.path.componentId.requireID()
+    func deleteStudiesStudyIdComponentsComponentId(
+        _ input: Operations.DeleteStudiesStudyIdComponentsComponentId.Input
+    ) async throws -> Operations.DeleteStudiesStudyIdComponentsComponentId.Output {
+        let studyId = try input.path.studyId.requireId()
+        let componentId = try input.path.componentId.requireId()
         try await componentService.deleteComponent(studyId: studyId, componentId: componentId)
         return .noContent(.init())
     }

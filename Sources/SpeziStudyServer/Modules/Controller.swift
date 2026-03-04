@@ -11,6 +11,7 @@ import OpenAPIVapor
 import SpeziVapor
 import Vapor
 
+
 struct Controller: APIProtocol {
     private var spezi: SpeziVapor
 
@@ -18,8 +19,8 @@ struct Controller: APIProtocol {
         self.spezi = spezi
     }
 
-    func getStudiesIdBundle(_ input: Operations.GetStudiesIdBundle.Input) async throws -> Operations.GetStudiesIdBundle.Output {
-        throw ServerError.Defaults.endpointNotImplemented
+    func getStudiesStudyIdBundle(_ input: Operations.GetStudiesStudyIdBundle.Input) async throws -> Operations.GetStudiesStudyIdBundle.Output {
+        throw ServerError.endpointNotImplemented
     }
 }
 
@@ -43,5 +44,13 @@ extension Controller {
 
     var componentService: ComponentService {
         spezi[ComponentService.self]
+    }
+
+    var componentScheduleService: ComponentScheduleService {
+        spezi[ComponentScheduleService.self]
+    }
+
+    var groupService: GroupService {
+        spezi[GroupService.self]
     }
 }

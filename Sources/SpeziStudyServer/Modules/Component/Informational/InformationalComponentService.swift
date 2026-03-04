@@ -5,15 +5,20 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
+import Spezi
 import SpeziLocalization
 
-final class InformationalComponentService: VaporModule, @unchecked Sendable {
+
+final class InformationalComponentService: Module, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService: StudyService
     @Dependency(InformationalComponentRepository.self) var repository: InformationalComponentRepository
     @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
 
     func getComponent(studyId: UUID, id: UUID) async throws -> InformationalComponent {
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
+
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }
@@ -29,19 +34,12 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
         return data
     }
 
-    func getName(studyId: UUID, id: UUID) async throws -> String? {
-        guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
-            return nil
-        }
-        return component.name
-    }
-
     func createComponent(
         studyId: UUID,
         name: String,
-        content: LocalizedDictionary<InformationalContent>
+        content: LocalizationsDictionary<InformationalContent>
     ) async throws -> InformationalComponent {
-        try await studyService.validateExists(id: studyId)
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
         let registry = try await componentRepository.create(
             studyId: studyId,
@@ -49,16 +47,17 @@ final class InformationalComponentService: VaporModule, @unchecked Sendable {
             name: name
         )
 
-        return try await repository.create(componentId: try registry.requireID(), data: content)
+        return try await repository.create(componentId: try registry.requireId(), data: content)
     }
 
     func updateComponent(
         studyId: UUID,
         id: UUID,
         name: String,
-        content: LocalizedDictionary<InformationalContent>
+        content: LocalizationsDictionary<InformationalContent>
     ) async throws -> InformationalComponent {
-        // Validate component belongs to study
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
+
         guard let registry = try await componentRepository.find(id: id, studyId: studyId) else {
             throw ServerError.notFound(resource: "InformationalComponent", identifier: id.uuidString)
         }

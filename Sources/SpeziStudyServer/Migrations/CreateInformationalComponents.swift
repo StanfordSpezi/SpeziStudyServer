@@ -5,7 +5,9 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Fluent
+
 
 struct CreateInformationalComponents: AsyncMigration {
     func prepare(on database: any Database) async throws {

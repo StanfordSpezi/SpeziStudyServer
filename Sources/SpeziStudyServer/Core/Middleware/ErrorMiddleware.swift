@@ -5,10 +5,12 @@
 //
 // SPDX-License-Identifier: MIT
 //
+
 import Foundation
 import HTTPTypes
 import Logging
 import OpenAPIRuntime
+
 
 struct ErrorMiddleware: ServerMiddleware {
     let logger: Logger
@@ -31,7 +33,7 @@ struct ErrorMiddleware: ServerMiddleware {
             
             if underlying is DecodingError {
                 logger.info("\(String(reflecting: underlying))")
-                return ServerError.Defaults.invalidRequestBody.httpResponse
+                return ServerError.invalidRequestBody.httpResponse
             }
 
             logger.critical(
@@ -44,7 +46,7 @@ struct ErrorMiddleware: ServerMiddleware {
             )
 
             
-            return ServerError.Defaults.unexpectedError.httpResponse
+            return ServerError.unexpectedError.httpResponse
         }
     }
 }

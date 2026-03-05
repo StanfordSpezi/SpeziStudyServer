@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import OpenAPIRuntime
 
 
 extension Controller {
@@ -50,5 +51,16 @@ extension Controller {
         let studyId = try input.path.studyId.requireId()
         try await studyService.deleteStudy(id: studyId)
         return .noContent(.init())
+    }
+
+    func getStudiesStudyIdBundle(
+        _ input: Operations.GetStudiesStudyIdBundle.Input
+    ) async throws -> Operations.GetStudiesStudyIdBundle.Output {
+        let studyId = try input.path.studyId.requireId()
+        let studyBundle = try await studyBundleService.buildBundle(studyId: studyId)
+        return .ok(.init(
+            headers: .init(contentDisposition: "attachment; filename=\"\(studyId)-spezistudybundle.zip\""),
+            body: .applicationZip(HTTPBody(studyBundle))
+        ))
     }
 }

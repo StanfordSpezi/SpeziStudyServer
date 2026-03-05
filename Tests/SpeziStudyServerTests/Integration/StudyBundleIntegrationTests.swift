@@ -201,7 +201,9 @@ struct StudyBundleIntegrationTests {
 
         // Informational component
         let informationalDef = try #require(definition.components.first(where: {
-            if case .informational = $0 { return true }
+            if case .informational = $0 {
+                return true
+            }
             return false
         }))
         #expect(bundle.displayTitle(for: informationalDef, in: enUS) == "Welcome")
@@ -209,14 +211,18 @@ struct StudyBundleIntegrationTests {
 
         // Questionnaire component
         let questionnaireDef = try #require(definition.components.first(where: {
-            if case .questionnaire = $0 { return true }
+            if case .questionnaire = $0 {
+                return true
+            }
             return false
         }))
         #expect(bundle.displayTitle(for: questionnaireDef, in: enUS) == "Daily Survey")
 
         // Health data component
         let healthData = try #require(definition.components.lazy.compactMap {
-            if case .healthDataCollection(let data) = $0 { return data }
+            if case .healthDataCollection(let data) = $0 {
+                return data
+            }
             return nil
         }.first)
         #expect(healthData.sampleTypes.contains(.quantity(.heartRate)))

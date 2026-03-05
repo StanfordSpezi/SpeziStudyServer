@@ -14,7 +14,7 @@ import VaporTesting
 
 
 @Suite(.serialized)
-struct StudyIntegrationTests {
+struct StudyIntegrationTests { // swiftlint:disable:this type_body_length
     @Test
     func createStudy() async throws {
         try await TestApp.withApp { app, token in

@@ -18,7 +18,6 @@ struct Controller: APIProtocol {
     init(spezi: SpeziVapor) {
         self.spezi = spezi
     }
-
 }
 
 

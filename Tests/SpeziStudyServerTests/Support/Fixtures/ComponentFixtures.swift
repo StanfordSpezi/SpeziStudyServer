@@ -61,9 +61,20 @@ enum ComponentFixtures {
         try await component.save(on: database)
 
         let componentId = try component.requireId()
+        // Valid FHIR R4 Questionnaire — StudyBundle validation requires id, status, language, title, and item
+        let questionnaireJSON = """
+            {
+              "resourceType": "Questionnaire",
+              "id": "\(componentId.uuidString)",
+              "status": "active",
+              "language": "en-US",
+              "title": "\(name)",
+              "item": [{"linkId": "q1", "text": "How are you?", "type": "string"}]
+            }
+            """
         let questionnaire = QuestionnaireComponent(
             componentId: componentId,
-            data: .init([.enUS: QuestionnaireContent(questionnaire: "{}")])
+            data: .init([.enUS: QuestionnaireContent(questionnaire: questionnaireJSON)])
         )
         try await questionnaire.save(on: database)
 

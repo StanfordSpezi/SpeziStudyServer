@@ -32,6 +32,7 @@ Sources/SpeziStudyServer/
 │   ├── Study/                    # Study management
 │   │   ├── StudyController.swift
 │   │   ├── StudyService.swift
+│   │   ├── StudyBundleService.swift  # Study bundle ZIP export
 │   │   ├── StudyRepository.swift
 │   │   └── StudyMapper.swift
 │   ├── Component/                # Component operations
@@ -256,6 +257,18 @@ Sample types encode as `Type;Identifier` strings:
 }
 ```
 
+## Study Bundle Export
+
+The `StudyBundleService` builds a `.spezistudybundle` ZIP archive for a given study. It:
+
+1. Loads the study with all components and schedules via `StudyRepository.findWithComponentsAndSchedules`
+2. Builds `StudyDefinition.Metadata` from the study's localized details and consent
+3. Builds `StudyDefinition.Component` entries for each component type (informational → markdown files, questionnaire → JSON files, health data → inline data)
+4. Writes the bundle to disk via `StudyBundle.writeToDisk` and ZIPs it using ZIPFoundation
+5. Returns the ZIP data, which the controller sends as `application/zip` with a `Content-Disposition: attachment` header
+
+The endpoint is `GET /studies/{studyId}/bundle`. The controller delegates directly to `StudyBundleService.buildBundle(studyId:)`.
+
 ## Conventions
 
 ### Swift API Design Guidelines
@@ -287,8 +300,8 @@ Use `ServerError` for all errors:
 
 ```swift
 throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
-throw ServerError.validation(message: "Invalid input")
-throw ServerError.internalError(message: "Unexpected error")
+throw ServerError.badRequest("Invalid input")
+throw ServerError.internalServerError("Unexpected error")
 ```
 
 Use `requireID()` instead of force unwrapping:

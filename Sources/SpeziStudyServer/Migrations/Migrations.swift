@@ -16,7 +16,9 @@ public func configureMigrations(for app: Application) {
     app.migrations.add(CreateStudy())
     app.migrations.add(CreateComponents())
     app.migrations.add(CreateComponentSchedules())
-    app.migrations.add(CreateInformationalComponents())
-    app.migrations.add(CreateQuestionnaireComponents())
-    app.migrations.add(CreateHealthDataComponents())
+    app.migrations.add(CreatePublishedStudies())
+    app.migrations.add(CreateParticipants())
+    app.migrations.add(CreateEnrollments())
+    app.migrations.add(CreateConsentRecords())
+    app.migrations.add(CreateInvitationCodes())
 }

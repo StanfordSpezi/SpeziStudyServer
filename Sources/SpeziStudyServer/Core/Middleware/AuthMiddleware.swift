@@ -15,7 +15,8 @@ import OpenAPIRuntime
 
 struct AuthMiddleware: ServerMiddleware {
     let keyCollection: JWTKeyCollection
-    let requiredRole: String
+    let researcherRole: String
+    let participantRole: String
     let logger: Logger
 
     func intercept(
@@ -44,14 +45,12 @@ struct AuthMiddleware: ServerMiddleware {
             throw ServerError.invalidToken
         }
 
-        let roles = payload.roles
-        guard roles.contains(requiredRole) else {
-            throw ServerError.forbidden
-        }
-
         let authContext = AuthContext(
-            roles: roles,
-            groups: payload.groups
+            subject: payload.sub.value,
+            roles: payload.roles,
+            groups: payload.groups ?? [],
+            researcherRole: researcherRole,
+            participantRole: participantRole
         )
 
         return try await AuthContext.$current.withValue(authContext) {

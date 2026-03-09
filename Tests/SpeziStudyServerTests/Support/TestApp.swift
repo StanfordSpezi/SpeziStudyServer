@@ -16,7 +16,8 @@ import VaporTesting
 
 enum TestApp {
     private static let testSecret = "test-hmac-secret-for-jwt-signing"
-    private static let requiredRole = "spezistudyplatform-authorized-users"
+    private static let researcherRole = "spezistudyplatform-researcher"
+    private static let participantRole = "spezistudyplatform-participant"
 
     static func withApp( // swiftlint:disable:next discouraged_optional_collection
         groups: [String]? = ["/Test Group/admin"],
@@ -27,10 +28,29 @@ enum TestApp {
         do {
             let keys = try await configureTesting(app)
             let token: String? = if let groups {
-                try await signToken(keys: keys, roles: [requiredRole], groups: groups)
+                try await signToken(keys: keys, subject: "researcher-test-user", roles: [researcherRole], groups: groups)
             } else {
                 nil
             }
+            try await test(app, token)
+            try await cleanup(on: app.db)
+            try await app.asyncShutdown()
+        } catch {
+            try? await cleanup(on: app.db)
+            try? await app.asyncShutdown()
+            throw error
+        }
+    }
+
+    static func withApp(
+        participantSubject: String,
+        _ test: @escaping @Sendable (Application, String) async throws -> Void
+    ) async throws {
+        let app = try await Application.make(.testing)
+
+        do {
+            let keys = try await configureTesting(app)
+            let token = try await signToken(keys: keys, subject: participantSubject, roles: [participantRole], groups: [])
             try await test(app, token)
             try await cleanup(on: app.db)
             try await app.asyncShutdown()
@@ -52,7 +72,12 @@ enum TestApp {
 
         let middlewares: [any ServerMiddleware] = [
             ErrorMiddleware(logger: app.logger),
-            AuthMiddleware(keyCollection: keys, requiredRole: requiredRole, logger: app.logger)
+            AuthMiddleware(
+                keyCollection: keys,
+                researcherRole: researcherRole,
+                participantRole: participantRole,
+                logger: app.logger
+            )
         ]
 
         try configureRoutes(for: app, middlewares: middlewares)
@@ -62,10 +87,12 @@ enum TestApp {
 
     static func signToken(
         keys: JWTKeyCollection,
+        subject: String = "test-user", // swiftlint:disable:this function_default_parameter_at_end
         roles: [String],
         groups: [String]
     ) async throws -> String {
         let payload = KeycloakJWTPayload(
+            sub: .init(value: subject),
             exp: .init(value: Date().addingTimeInterval(3600)),
             roles: roles,
             groups: groups
@@ -74,6 +101,7 @@ enum TestApp {
     }
 
     private static func cleanup(on database: any Database) async throws {
+        try await Participant.query(on: database).delete()
         try await Group.query(on: database).delete()
     }
 }

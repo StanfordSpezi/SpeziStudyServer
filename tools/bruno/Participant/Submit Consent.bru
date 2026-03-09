@@ -1,0 +1,18 @@
+meta {
+  name: Submit Consent
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/participant/enrollments/{{enrollmentId}}/consents
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "consentType": "study",
+    "accepted": true
+  }
+}

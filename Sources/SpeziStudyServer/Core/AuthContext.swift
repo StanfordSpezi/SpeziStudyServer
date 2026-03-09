@@ -28,11 +28,20 @@ struct AuthContext: Sendable {
 
     @TaskLocal static var current: AuthContext?
 
+    let subject: String
     let roles: [String]
-    let groups: [String]
+    let researcherRole: String
+    let participantRole: String
 
-    /// Parses JWT group paths (e.g., "/Stanford Biodesign Digital Health/admin") into a membership map.
-    var groupMemberships: [String: GroupRole] {
+    /// Parsed JWT group paths (e.g., "/Stanford Biodesign Digital Health/admin") as a membership map.
+    let groupMemberships: [String: GroupRole]
+
+    init(subject: String, roles: [String], groups: [String], researcherRole: String, participantRole: String) {
+        self.subject = subject
+        self.roles = roles
+        self.researcherRole = researcherRole
+        self.participantRole = participantRole
+
         var memberships: [String: GroupRole] = [:]
         for path in groups {
             guard path.hasPrefix("/") else { continue }
@@ -43,7 +52,7 @@ struct AuthContext: Sendable {
             }
             memberships[String(parts[0])] = role
         }
-        return memberships
+        self.groupMemberships = memberships
     }
 
     static func requireCurrent() throws -> AuthContext {
@@ -54,7 +63,20 @@ struct AuthContext: Sendable {
     }
 
     func checkHasAccess(groupName: String, role: GroupRole) throws {
+        try requireResearcher()
         guard let memberRole = groupMemberships[groupName], memberRole >= role else {
+            throw ServerError.forbidden
+        }
+    }
+
+    func requireResearcher() throws {
+        guard roles.contains(researcherRole) else {
+            throw ServerError.forbidden
+        }
+    }
+
+    func requireParticipant() throws {
+        guard roles.contains(participantRole) else {
             throw ServerError.forbidden
         }
     }

@@ -1,0 +1,11 @@
+meta {
+  name: List Consents
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/participant/enrollments/{{enrollmentId}}/consents
+  body: none
+  auth: inherit
+}

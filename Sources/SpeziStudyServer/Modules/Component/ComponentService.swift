@@ -8,6 +8,8 @@
 
 import Foundation
 import Spezi
+import SpeziLocalization
+import SpeziStudyDefinition
 
 
 final class ComponentService: Module, @unchecked Sendable {
@@ -37,10 +39,95 @@ final class ComponentService: Module, @unchecked Sendable {
     func deleteComponent(studyId: UUID, componentId: UUID) async throws {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
-        // Cascade delete will handle specialized table cleanup
         let deleted = try await componentRepository.delete(id: componentId, studyId: studyId)
         if !deleted {
             throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
         }
+    }
+
+    // MARK: - Get Component
+
+    func getComponent(studyId: UUID, id: UUID, expectedType: ComponentType) async throws -> Component {
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
+
+        guard let component = try await componentRepository.find(id: id, studyId: studyId) else {
+            throw ServerError.notFound(resource: "Component", identifier: id.uuidString)
+        }
+
+        guard component.type == expectedType else {
+            throw ServerError.notFound(resource: "Component", identifier: id.uuidString)
+        }
+
+        return component
+    }
+
+    // MARK: - Create Component
+
+    func createInformationalComponent(
+        studyId: UUID,
+        name: String,
+        content: LocalizationsDictionary<InformationalContent>
+    ) async throws -> Component {
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
+        return try await componentRepository.create(studyId: studyId, data: .informational(content), name: name)
+    }
+
+    func createQuestionnaireComponent(
+        studyId: UUID,
+        name: String,
+        content: LocalizationsDictionary<QuestionnaireContent>
+    ) async throws -> Component {
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
+        return try await componentRepository.create(studyId: studyId, data: .questionnaire(content), name: name)
+    }
+
+    func createHealthDataComponent(
+        studyId: UUID,
+        name: String,
+        data: StudyDefinition.HealthDataCollectionComponent
+    ) async throws -> Component {
+        try await studyService.checkHasAccess(to: studyId, role: .researcher)
+        return try await componentRepository.create(studyId: studyId, data: .healthDataCollection(data), name: name)
+    }
+
+    // MARK: - Update Component
+
+    func updateInformationalComponent(
+        studyId: UUID,
+        id: UUID,
+        name: String,
+        content: LocalizationsDictionary<InformationalContent>
+    ) async throws -> Component {
+        let component = try await getComponent(studyId: studyId, id: id, expectedType: .informational)
+        component.name = name
+        component.data = .informational(content)
+        try await componentRepository.update(component)
+        return component
+    }
+
+    func updateQuestionnaireComponent(
+        studyId: UUID,
+        id: UUID,
+        name: String,
+        content: LocalizationsDictionary<QuestionnaireContent>
+    ) async throws -> Component {
+        let component = try await getComponent(studyId: studyId, id: id, expectedType: .questionnaire)
+        component.name = name
+        component.data = .questionnaire(content)
+        try await componentRepository.update(component)
+        return component
+    }
+
+    func updateHealthDataComponent(
+        studyId: UUID,
+        id: UUID,
+        name: String,
+        data: StudyDefinition.HealthDataCollectionComponent
+    ) async throws -> Component {
+        let component = try await getComponent(studyId: studyId, id: id, expectedType: .healthDataCollection)
+        component.name = name
+        component.data = .healthDataCollection(data)
+        try await componentRepository.update(component)
+        return component
     }
 }

@@ -42,6 +42,7 @@ struct StudyPatch: Sendable {
     var details: LocalizationsDictionary<StudyDetailContent>?
     var participationCriterion: StudyDefinition.ParticipationCriterion?
     var consent: LocalizationsDictionary<String>?
+    var enrollmentConditions: StudyDefinition.EnrollmentConditions?
 }
 
 
@@ -62,7 +63,17 @@ final class Study: Model, @unchecked Sendable {
 
     @Field(key: "consent") var consent: LocalizationsDictionary<String>
 
+    @Field(key: "enrollment_conditions") var enrollmentConditions: StudyDefinition.EnrollmentConditions
+
+    @Timestamp(key: "created_at", on: .create) var createdAt: Date?
+
+    @Timestamp(key: "updated_at", on: .update) var updatedAt: Date?
+
     @Children(for: \.$study) var components: [Component]
+
+    @Children(for: \.$study) var publishedStudies: [PublishedStudy]
+
+    @Children(for: \.$study) var enrollments: [Enrollment]
 
     init() {}
 
@@ -73,6 +84,7 @@ final class Study: Model, @unchecked Sendable {
         details: LocalizationsDictionary<StudyDetailContent> = .init(),
         participationCriterion: StudyDefinition.ParticipationCriterion = .all([]),
         consent: LocalizationsDictionary<String> = .init(),
+        enrollmentConditions: StudyDefinition.EnrollmentConditions = .none,
         id: UUID? = nil
     ) {
         self.id = id
@@ -82,6 +94,7 @@ final class Study: Model, @unchecked Sendable {
         self.details = details
         self.participationCriterion = participationCriterion
         self.consent = consent
+        self.enrollmentConditions = enrollmentConditions
     }
 
     func apply(_ patch: StudyPatch) {
@@ -90,11 +103,12 @@ final class Study: Model, @unchecked Sendable {
                 self[keyPath: selfKeyPath] = value
             }
         }
-        
+
         apply(\.locales, to: \.locales)
         apply(\.icon, to: \.icon)
         apply(\.details, to: \.details)
         apply(\.participationCriterion, to: \.participationCriterion)
         apply(\.consent, to: \.consent)
+        apply(\.enrollmentConditions, to: \.enrollmentConditions)
     }
 }

@@ -34,11 +34,11 @@ final class ComponentRepository: Module, Sendable {
 
     func create(
         studyId: UUID,
-        type: ComponentType,
+        data: ComponentData,
         name: String,
         id: UUID? = nil
     ) async throws -> Component {
-        let component = Component(studyId: studyId, type: type, name: name, id: id)
+        let component = Component(studyId: studyId, data: data, name: name, id: id)
         try await component.save(on: database)
         return component
     }

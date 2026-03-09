@@ -20,6 +20,10 @@ final class ComponentSchedule: Model, @unchecked Sendable {
 
     @Field(key: "schedule_data") var scheduleData: StudyDefinition.ComponentSchedule
 
+    @Timestamp(key: "created_at", on: .create) var createdAt: Date?
+
+    @Timestamp(key: "updated_at", on: .update) var updatedAt: Date?
+
     init() {}
 
     init(

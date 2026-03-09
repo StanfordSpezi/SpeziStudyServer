@@ -32,8 +32,14 @@
   "roles": {
     "realm": [
       {
-        "name": "spezistudyplatform-authorized-users",
-        "description": "Users authorized to access the Spezi Study Platform",
+        "name": "spezistudyplatform-researcher",
+        "description": "Researchers authorized to manage studies on the Spezi Study Platform",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "spezistudyplatform-participant",
+        "description": "Participants in Spezi studies via mobile app",
         "composite": false,
         "clientRole": false
       }
@@ -50,9 +56,9 @@
       "webOrigins": ["*"],
       "publicClient": false,
       "protocol": "openid-connect",
-      "directAccessGrantsEnabled": true,
+      "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "standardFlowEnabled": true,
+      "standardFlowEnabled": false,
       "defaultClientScopes": [
         "web-origins",
         "acr",
@@ -128,6 +134,31 @@
             "claim.name": "roles",
             "userinfo.token.claim": "true"
           }
+        },
+        {
+          "name": "subject",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String",
+            "userinfo.token.claim": "true"
+          }
         }
       ]
     }
@@ -159,7 +190,7 @@
         }
       ],
       "realmRoles": [
-        "spezistudyplatform-authorized-users"
+        "spezistudyplatform-researcher"
       ],
       "groups": [
         "/Stanford Biodesign Digital Health/admin"
@@ -180,10 +211,28 @@
         }
       ],
       "realmRoles": [
-        "spezistudyplatform-authorized-users"
+        "spezistudyplatform-researcher"
       ],
       "groups": [
         "/Stanford Biodesign Digital Health/researcher"
+      ]
+    },
+    {
+      "username": "alice",
+      "email": "alice@example.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Alice",
+      "lastName": "Participant",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "spezistudyplatform-participant"
       ]
     }
   ]

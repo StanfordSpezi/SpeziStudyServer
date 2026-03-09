@@ -42,7 +42,12 @@ public func configure(_ app: Application) async throws {
 
     try configureRoutes(for: app, middlewares: [
         ErrorMiddleware(logger: app.logger),
-        AuthMiddleware(keyCollection: keyCollection, requiredRole: keycloakConfig.requiredRole, logger: app.logger)
+        AuthMiddleware(
+            keyCollection: keyCollection,
+            researcherRole: keycloakConfig.researcherRole,
+            participantRole: keycloakConfig.participantRole,
+            logger: app.logger
+        )
     ])
 }
 
@@ -51,30 +56,18 @@ public func configureServices(for app: Application) async {
     await app.spezi.configure {
         GroupService()
         StudyService()
-        InformationalComponentService()
-        QuestionnaireComponentService()
-        HealthDataComponentService()
         ComponentScheduleService()
         ComponentService()
         StudyBundleService()
         GroupRepository(database: app.db)
         StudyRepository(database: app.db)
         ComponentRepository(database: app.db)
-        InformationalComponentRepository(database: app.db)
-        QuestionnaireComponentRepository(database: app.db)
-        HealthDataComponentRepository(database: app.db)
         ComponentScheduleRepository(database: app.db)
     }
 }
 
-/// The API route prefix component.
-let apiPrefix = "api"
-
-/// The API version component.
-let apiVersion = "v0"
-
-/// The base path prefix for all API routes.
-public let apiBasePath = "\(apiPrefix)/\(apiVersion)"
+/// The base path prefix for all API routes, derived from the OpenAPI spec.
+public let apiBasePath = try! String(Servers.Server1.url().path.dropFirst()) // swiftlint:disable:this force_try
 
 /// Registers OpenAPI routes and the health endpoint.
 public func configureRoutes(for app: Application, middlewares: [any ServerMiddleware]) throws {
@@ -83,11 +76,12 @@ public func configureRoutes(for app: Application, middlewares: [any ServerMiddle
     let transport = VaporTransport(routesBuilder: app)
     try controller.registerHandlers(
         on: transport,
-        serverURL: URL(string: "/\(apiBasePath)")!,
+        serverURL: try Servers.Server1.url(),
         middlewares: middlewares
     )
 
-    app.get("\(apiPrefix)", "\(apiVersion)", "health") { _ async in
+    let components = apiBasePath.split(separator: "/")
+    app.get(components.map { PathComponent(stringLiteral: String($0)) } + ["health"]) { _ async in
         ["status": "ok"]
     }
 }

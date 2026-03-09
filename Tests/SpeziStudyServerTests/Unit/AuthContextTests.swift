@@ -12,6 +12,13 @@ import Testing
 
 @Suite
 struct AuthContextTests {
+    private static let researcherRole = "spezistudyplatform-researcher"
+    private static let participantRole = "spezistudyplatform-participant"
+
+    private func makeContext(roles: [String] = [researcherRole], groups: [String] = []) -> AuthContext {
+        AuthContext(subject: "test", roles: roles, groups: groups, researcherRole: Self.researcherRole, participantRole: Self.participantRole)
+    }
+
     // MARK: - GroupRole Hierarchy
 
     @Test
@@ -34,7 +41,7 @@ struct AuthContextTests {
 
     @Test
     func parsesValidGroupPaths() {
-        let context = AuthContext(roles: [], groups: ["/MyGroup/admin", "/OtherGroup/researcher"])
+        let context = makeContext(groups: ["/MyGroup/admin", "/OtherGroup/researcher"])
         let memberships = context.groupMemberships
 
         #expect(memberships["MyGroup"] == .admin)
@@ -50,13 +57,13 @@ struct AuthContextTests {
         "/"                         // slash only
     ])
     func ignoresInvalidGroupPath(path: String) {
-        let context = AuthContext(roles: [], groups: [path])
+        let context = makeContext(groups: [path])
         #expect(context.groupMemberships.isEmpty, "Expected no memberships for path: \(path)")
     }
 
     @Test
     func parsesGroupNameWithSpaces() {
-        let context = AuthContext(roles: [], groups: ["/Stanford Biodesign Digital Health/admin"])
+        let context = makeContext(groups: ["/Stanford Biodesign Digital Health/admin"])
         let memberships = context.groupMemberships
 
         #expect(memberships["Stanford Biodesign Digital Health"] == .admin)
@@ -71,17 +78,63 @@ struct AuthContextTests {
         }
     }
 
+    // MARK: - requireResearcher / requireParticipant
+
+    @Test
+    func requireResearcherSucceedsWithResearcherRole() throws {
+        let context = makeContext(roles: [Self.researcherRole])
+        try context.requireResearcher()
+    }
+
+    @Test
+    func requireResearcherFailsWithParticipantRole() {
+        let context = makeContext(roles: [Self.participantRole])
+        #expect(throws: ServerError.self) {
+            try context.requireResearcher()
+        }
+    }
+
+    @Test
+    func requireResearcherFailsWithNoRoles() {
+        let context = makeContext(roles: [])
+        #expect(throws: ServerError.self) {
+            try context.requireResearcher()
+        }
+    }
+
+    @Test
+    func requireParticipantSucceedsWithParticipantRole() throws {
+        let context = makeContext(roles: [Self.participantRole])
+        try context.requireParticipant()
+    }
+
+    @Test
+    func requireParticipantFailsWithResearcherRole() {
+        let context = makeContext(roles: [Self.researcherRole])
+        #expect(throws: ServerError.self) {
+            try context.requireParticipant()
+        }
+    }
+
+    @Test
+    func requireParticipantFailsWithNoRoles() {
+        let context = makeContext(roles: [])
+        #expect(throws: ServerError.self) {
+            try context.requireParticipant()
+        }
+    }
+
     // MARK: - requireGroupAccess
 
     @Test
     func requireGroupAccessSucceedsForMember() throws {
-        let context = AuthContext(roles: [], groups: ["/MyGroup/researcher"])
+        let context = makeContext(groups: ["/MyGroup/researcher"])
         try context.checkHasAccess(groupName: "MyGroup", role: .researcher)
     }
 
     @Test
     func requireGroupAccessFailsForNonMember() {
-        let context = AuthContext(roles: [], groups: ["/MyGroup/admin"])
+        let context = makeContext(groups: ["/MyGroup/admin"])
 
         #expect(throws: ServerError.self) {
             try context.checkHasAccess(groupName: "OtherGroup", role: .researcher)
@@ -90,7 +143,7 @@ struct AuthContextTests {
 
     @Test
     func requireGroupAccessFailsWhenRoleInsufficient() {
-        let context = AuthContext(roles: [], groups: ["/MyGroup/researcher"])
+        let context = makeContext(groups: ["/MyGroup/researcher"])
 
         #expect(throws: ServerError.self) {
             try context.checkHasAccess(groupName: "MyGroup", role: .admin)
@@ -99,19 +152,19 @@ struct AuthContextTests {
 
     @Test
     func requireGroupAccessSucceedsWhenAdminMeetsResearcherRequirement() throws {
-        let context = AuthContext(roles: [], groups: ["/MyGroup/admin"])
+        let context = makeContext(groups: ["/MyGroup/admin"])
         try context.checkHasAccess(groupName: "MyGroup", role: .researcher)
     }
 
     @Test
     func requireGroupAccessSucceedsForExactRole() throws {
-        let context = AuthContext(roles: [], groups: ["/MyGroup/admin"])
+        let context = makeContext(groups: ["/MyGroup/admin"])
         try context.checkHasAccess(groupName: "MyGroup", role: .admin)
     }
 
     @Test
     func emptyGroupsAlwaysDenied() {
-        let context = AuthContext(roles: [], groups: [])
+        let context = makeContext()
 
         #expect(throws: ServerError.self) {
             try context.checkHasAccess(groupName: "AnyGroup", role: .researcher)

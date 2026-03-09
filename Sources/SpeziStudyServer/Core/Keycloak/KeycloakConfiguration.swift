@@ -14,7 +14,8 @@ public struct KeycloakConfiguration: Sendable {
     public var realm: String
     public var clientId: String
     public var clientSecret: String
-    public var requiredRole: String
+    public var researcherRole: String
+    public var participantRole: String
 
     public var jwksURL: String {
         "\(url)/realms/\(realm)/protocol/openid-connect/certs"
@@ -25,6 +26,7 @@ public struct KeycloakConfiguration: Sendable {
         self.realm = try Environment.require("KEYCLOAK_REALM")
         self.clientId = try Environment.require("KEYCLOAK_CLIENT_ID")
         self.clientSecret = try Environment.require("KEYCLOAK_CLIENT_SECRET")
-        self.requiredRole = try Environment.require("KEYCLOAK_REQUIRED_ROLE")
+        self.researcherRole = try Environment.require("KEYCLOAK_RESEARCHER_ROLE")
+        self.participantRole = try Environment.require("KEYCLOAK_PARTICIPANT_ROLE")
     }
 }

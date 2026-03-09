@@ -1,0 +1,21 @@
+meta {
+  name: Create Profile
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/participant/profile
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "dateOfBirth": "1995-06-15",
+    "region": "US-CA",
+    "languages": ["en"]
+  }
+}

@@ -32,7 +32,7 @@ extension Components.Schemas.ComponentSchedule {
 }
 
 extension StudyDefinition.ComponentSchedule {
-    init(id: UUID, componentId: UUID, _ schema: Components.Schemas.ComponentSchedule) throws {
+    init(id: UUID, componentId: UUID, _ schema: Components.Schemas.ComponentScheduleInput) throws {
         self.init(
             id: id,
             componentId: componentId,

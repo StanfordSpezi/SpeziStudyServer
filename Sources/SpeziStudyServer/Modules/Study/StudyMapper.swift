@@ -30,7 +30,8 @@ extension StudyPatch {
             icon: schema.icon,
             details: schema.details,
             participationCriterion: schema.participationCriterion.map { .init($0) },
-            consent: schema.consent
+            consent: schema.consent,
+            enrollmentConditions: schema.enrollmentConditions.map { .init($0) }
         )
     }
 }
@@ -53,7 +54,21 @@ extension Components.Schemas.StudyResponse {
             icon: model.icon,
             details: model.details,
             participationCriterion: try .init(model.participationCriterion),
-            consent: model.consent
+            consent: model.consent,
+            enrollmentConditions: .init(model.enrollmentConditions)
+        )
+    }
+}
+
+extension Components.Schemas.PublishedStudyResponse {
+    init(_ model: PublishedStudy) throws {
+        self.init(
+            id: try model.requireId().uuidString,
+            studyId: model.$study.id.uuidString,
+            revision: model.revision,
+            visibility: .init(rawValue: model.visibility.rawValue)!,
+            bundleURL: model.bundleURL.absoluteString,
+            publishedAt: model.publishedAt ?? Date()
         )
     }
 }
@@ -97,6 +112,31 @@ extension StudyDefinition.ParticipationCriterion {
             self = .all(value.criteria.map { .init($0) })
         case .any(let value):
             self = .any(value.criteria.map { .init($0) })
+        }
+    }
+}
+
+
+// MARK: - EnrollmentConditions Mapping
+
+extension Components.Schemas.EnrollmentConditions {
+    init(_ model: StudyDefinition.EnrollmentConditions) {
+        switch model {
+        case .none:
+            self = .none
+        case .requiresInvitation:
+            self = .requiresInvitationCode
+        }
+    }
+}
+
+extension StudyDefinition.EnrollmentConditions {
+    init(_ schema: Components.Schemas.EnrollmentConditions) {
+        switch schema {
+        case .none:
+            self = .none
+        case .requiresInvitationCode:
+            self = .requiresInvitation(verificationEndpoint: URL(string: "https://placeholder.invalid")!)  // swiftlint:disable:this force_unwrapping
         }
     }
 }

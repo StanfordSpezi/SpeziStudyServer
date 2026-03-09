@@ -74,7 +74,7 @@ struct ComponentIntegrationTests {
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
-            let (component, _) = try await ComponentFixtures.createHealthDataComponent(
+            let component = try await ComponentFixtures.createHealthDataComponent(
                 on: app.db,
                 studyId: studyId
             )

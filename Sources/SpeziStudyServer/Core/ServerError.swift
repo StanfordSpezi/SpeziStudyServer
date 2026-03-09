@@ -20,7 +20,7 @@ struct ServerError: Error, Sendable {
     static let forbidden = Self(status: .forbidden, title: "Forbidden", detail: "Insufficient permissions")
     static let failedToRetrieveCreatedObject = internalServerError("Failed to retrieve created object")
     static let unexpectedError = internalServerError("An unexpected error occurred")
-    static let endpointNotImplemented = internalServerError("Endpoint not implemented")
+    static let endpointNotImplemented = Self(status: .notImplemented, title: "Not Implemented", detail: "Endpoint not implemented")
 
     let status: HTTPResponse.Status
     let title: String

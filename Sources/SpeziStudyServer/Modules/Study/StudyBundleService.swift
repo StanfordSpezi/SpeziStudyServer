@@ -16,9 +16,6 @@ import ZIPFoundation
 final class StudyBundleService: Module, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService
     @Dependency(StudyRepository.self) var studyRepository
-    @Dependency(InformationalComponentRepository.self) var informationalRepository
-    @Dependency(QuestionnaireComponentRepository.self) var questionnaireRepository
-    @Dependency(HealthDataComponentRepository.self) var healthDataRepository
 
     init() {}
 
@@ -27,7 +24,7 @@ final class StudyBundleService: Module, @unchecked Sendable {
         let study = try await studyRepository.findWithComponentsAndSchedules(id: studyId)
 
         let (metadata, consentFiles) = try buildMetadata(from: study)
-        let (components, componentFiles) = try await buildComponents(from: study.components)
+        let (components, componentFiles) = try buildComponents(from: study.components)
         let schedules = study.components.flatMap { $0.schedules.map(\.scheduleData) }
 
         let definition = StudyDefinition(
@@ -67,7 +64,7 @@ final class StudyBundleService: Module, @unchecked Sendable {
             explanationText: explanationTexts,
             shortExplanationText: shortExplanationTexts,
             participationCriterion: study.participationCriterion,
-            enrollmentConditions: .none,
+            enrollmentConditions: study.enrollmentConditions,
             consentFileRef: consentRef
         )
 
@@ -92,28 +89,34 @@ final class StudyBundleService: Module, @unchecked Sendable {
 
     private func buildComponents(
         from components: [Component]
-    ) async throws -> ([StudyDefinition.Component], [StudyBundle.FileResourceInput]) {
+    ) throws -> ([StudyDefinition.Component], [StudyBundle.FileResourceInput]) {
         var definitions: [StudyDefinition.Component] = []
         var files: [StudyBundle.FileResourceInput] = []
 
         for component in components {
             let componentId = try component.requireId()
 
-            switch component.type {
-            case .informational:
-                let (definition, componentFiles) = try await buildInformational(id: componentId, name: component.name)
+            switch component.data {
+            case .informational(let content):
+                let (definition, componentFiles) = try buildInformational(
+                    id: componentId,
+                    name: component.name,
+                    content: content
+                )
                 definitions.append(definition)
                 files += componentFiles
 
-            case .questionnaire:
-                let (definition, componentFiles) = try await buildQuestionnaire(id: componentId, name: component.name)
+            case .questionnaire(let content):
+                let (definition, componentFiles) = try buildQuestionnaire(
+                    id: componentId,
+                    name: component.name,
+                    content: content
+                )
                 definitions.append(definition)
                 files += componentFiles
 
-            case .healthDataCollection:
-                if let healthData = try await healthDataRepository.find(id: componentId) {
-                    definitions.append(.healthDataCollection(healthData.data))
-                }
+            case .healthDataCollection(let data):
+                definitions.append(.healthDataCollection(data))
             }
         }
 
@@ -122,21 +125,18 @@ final class StudyBundleService: Module, @unchecked Sendable {
 
     private func buildInformational(
         id: UUID,
-        name: String
-    ) async throws -> (StudyDefinition.Component, [StudyBundle.FileResourceInput]) {
+        name: String,
+        content: LocalizationsDictionary<InformationalContent>
+    ) throws -> (StudyDefinition.Component, [StudyBundle.FileResourceInput]) {
         let fileRef = StudyBundle.FileReference(category: .informationalArticle, filename: name, fileExtension: "md")
         let definition = StudyDefinition.Component.informational(.init(id: id, fileRef: fileRef))
 
-        guard let informational = try await informationalRepository.find(id: id) else {
-            return (definition, [])
-        }
-
-        let files = try informational.data.map { locale, content in
-            var markdown = "---\nid: \(id.uuidString)\ntitle: \(content.title)\n"
-            if let lede = content.lede {
+        let files = try content.map { locale, item in
+            var markdown = "---\nid: \(id.uuidString)\ntitle: \(item.title)\n"
+            if let lede = item.lede {
                 markdown += "lede: \(lede)\n"
             }
-            markdown += "---\n\(content.content)"
+            markdown += "---\n\(item.content)"
             return try StudyBundle.FileResourceInput(fileRef: fileRef, localization: locale, contents: markdown)
         }
 
@@ -145,17 +145,14 @@ final class StudyBundleService: Module, @unchecked Sendable {
 
     private func buildQuestionnaire(
         id: UUID,
-        name: String
-    ) async throws -> (StudyDefinition.Component, [StudyBundle.FileResourceInput]) {
+        name: String,
+        content: LocalizationsDictionary<QuestionnaireContent>
+    ) throws -> (StudyDefinition.Component, [StudyBundle.FileResourceInput]) {
         let fileRef = StudyBundle.FileReference(category: .questionnaire, filename: name, fileExtension: "json")
         let definition = StudyDefinition.Component.questionnaire(.init(id: id, fileRef: fileRef))
 
-        guard let questionnaire = try await questionnaireRepository.find(id: id) else {
-            return (definition, [])
-        }
-
-        let files = questionnaire.data.map { locale, content in
-            StudyBundle.FileResourceInput(fileRef: fileRef, localization: locale, contents: Data(content.questionnaire.utf8))
+        let files = content.map { locale, item in
+            StudyBundle.FileResourceInput(fileRef: fileRef, localization: locale, contents: Data(item.questionnaire.utf8))
         }
 
         return (definition, files)

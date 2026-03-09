@@ -28,7 +28,7 @@ struct ComponentScheduleIntegrationTests {
         let groupId = try group.requireId()
         let study = try await StudyFixtures.createStudy(on: database, groupId: groupId)
         let studyId = try study.requireId()
-        let (component, _) = try await ComponentFixtures.createInformationalComponent(on: database, studyId: studyId)
+        let component = try await ComponentFixtures.createInformationalComponent(on: database, studyId: studyId)
         let componentId = try component.requireId()
         return (studyId, componentId)
     }
@@ -70,7 +70,7 @@ struct ComponentScheduleIntegrationTests {
             let groupId = try group.requireId()
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
             let studyId = try study.requireId()
-            let (component, _) = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
+            let component = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
             let componentId = try component.requireId()
 
             try await app.test(.POST, basePath(studyId: studyId, componentId: componentId), beforeRequest: { req in
@@ -80,7 +80,7 @@ struct ComponentScheduleIntegrationTests {
                 #expect(response.status == .created)
 
                 let schedule = try response.content.decode(Components.Schemas.ComponentSchedule.self)
-                #expect(schedule.id?.isEmpty == false)
+                #expect(schedule.id.isEmpty == false)
                 #expect(schedule.completionPolicy == .anytime)
                 if case .repeated(let value) = schedule.scheduleDefinition {
                     if case .daily(let daily) = value.pattern {
@@ -102,7 +102,7 @@ struct ComponentScheduleIntegrationTests {
             let groupId = try group.requireId()
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
             let studyId = try study.requireId()
-            let (component, _) = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
+            let component = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
             let componentId = try component.requireId()
 
             try await ComponentFixtures.createSchedule(on: app.db, componentId: componentId)
@@ -126,7 +126,7 @@ struct ComponentScheduleIntegrationTests {
             let groupId = try group.requireId()
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
             let studyId = try study.requireId()
-            let (component, _) = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
+            let component = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
             let componentId = try component.requireId()
 
             let schedule = try await ComponentFixtures.createSchedule(on: app.db, componentId: componentId)
@@ -151,7 +151,7 @@ struct ComponentScheduleIntegrationTests {
             let groupId = try group.requireId()
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
             let studyId = try study.requireId()
-            let (component, _) = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
+            let component = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
             let componentId = try component.requireId()
 
             let nonExistentId = UUID()
@@ -203,7 +203,7 @@ struct ComponentScheduleIntegrationTests {
             let groupId = try group.requireId()
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
             let studyId = try study.requireId()
-            let (component, _) = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
+            let component = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
             let componentId = try component.requireId()
 
             let schedule = try await ComponentFixtures.createSchedule(on: app.db, componentId: componentId)
@@ -230,7 +230,7 @@ struct ComponentScheduleIntegrationTests {
             let groupId = try group.requireId()
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
             let studyId = try study.requireId()
-            let (component, _) = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
+            let component = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
             let componentId = try component.requireId()
 
             let nonExistentId = UUID()

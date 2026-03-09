@@ -47,7 +47,7 @@ struct QuestionnaireComponentIntegrationTests {
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
-            let (component, _) = try await ComponentFixtures.createQuestionnaireComponent(
+            let component = try await ComponentFixtures.createQuestionnaireComponent(
                 on: app.db,
                 studyId: studyId,
                 name: "Test Questionnaire"
@@ -99,7 +99,7 @@ struct QuestionnaireComponentIntegrationTests {
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
-            let (component, _) = try await ComponentFixtures.createQuestionnaireComponent(
+            let component = try await ComponentFixtures.createQuestionnaireComponent(
                 on: app.db,
                 studyId: studyId,
                 name: "Original Name"

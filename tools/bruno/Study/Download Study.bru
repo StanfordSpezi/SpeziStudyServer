@@ -1,11 +1,15 @@
 meta {
-  name: Download Study
+  name: Download Study Bundle
   type: http
-  seq: 12
+  seq: 13
 }
 
 get {
-  url: {{baseUrl}}/download/{{studyId}}
+  url: {{baseUrl}}/studies/{{studyId}}/bundle
   body: none
   auth: inherit
+}
+
+params:path {
+  studyId: {{studyId}}
 }

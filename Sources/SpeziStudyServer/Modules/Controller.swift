@@ -18,10 +18,6 @@ struct Controller: APIProtocol {
     init(spezi: SpeziVapor) {
         self.spezi = spezi
     }
-
-    func getStudiesStudyIdBundle(_ input: Operations.GetStudiesStudyIdBundle.Input) async throws -> Operations.GetStudiesStudyIdBundle.Output {
-        throw ServerError.endpointNotImplemented
-    }
 }
 
 
@@ -52,5 +48,9 @@ extension Controller {
 
     var groupService: GroupService {
         spezi[GroupService.self]
+    }
+
+    var studyBundleService: StudyBundleService {
+        spezi[StudyBundleService.self]
     }
 }

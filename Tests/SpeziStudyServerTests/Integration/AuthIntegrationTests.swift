@@ -55,6 +55,7 @@ struct AuthIntegrationTests {
             .init(method: .GET, path: "\(apiBasePath)/groups/\(groupId)", minRole: .researcher, successStatus: .ok),
 
             // Studies
+            .init(method: .GET, path: "\(apiBasePath)/studies/\(studyId)/bundle", minRole: .researcher, successStatus: .ok),
             .init(method: .GET, path: "\(apiBasePath)/studies/\(studyId)", minRole: .researcher, successStatus: .ok),
             .init(method: .GET, path: "\(apiBasePath)/groups/\(groupId)/studies", minRole: .researcher, successStatus: .ok),
             .init(method: .PATCH, path: "\(apiBasePath)/studies/\(studyId)", body: jsonData(patchBody()), minRole: .researcher, successStatus: .ok),

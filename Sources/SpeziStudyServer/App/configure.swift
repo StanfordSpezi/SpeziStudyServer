@@ -56,6 +56,7 @@ public func configureServices(for app: Application) async {
         HealthDataComponentService()
         ComponentScheduleService()
         ComponentService()
+        StudyBundleService()
         GroupRepository(database: app.db)
         StudyRepository(database: app.db)
         ComponentRepository(database: app.db)

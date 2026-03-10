@@ -35,13 +35,23 @@ struct StudyDetailContent: Codable, Sendable, Hashable {
     }
 }
 
+/// Note: This type is mapped from Components.Schemas.ConsentContent via typeOverrides in openapi-generator-config.yaml
+struct ConsentContent: Codable, Sendable, Hashable {
+    var title: String
+    var content: String
+
+    init(title: String = "", content: String = "") {
+        self.title = title
+        self.content = content
+    }
+}
 
 struct StudyPatch: Sendable {
     var locales: Set<LocalizationKey>? // swiftlint:disable:this discouraged_optional_collection
     var icon: String?
     var details: LocalizationsDictionary<StudyDetailContent>?
     var participationCriterion: StudyDefinition.ParticipationCriterion?
-    var consent: LocalizationsDictionary<String>?
+    var consent: LocalizationsDictionary<ConsentContent>?
     var enrollmentConditions: StudyDefinition.EnrollmentConditions?
 }
 
@@ -61,7 +71,7 @@ final class Study: Model, @unchecked Sendable {
 
     @Field(key: "participation_criterion") var participationCriterion: StudyDefinition.ParticipationCriterion
 
-    @Field(key: "consent") var consent: LocalizationsDictionary<String>
+    @Field(key: "consent") var consent: LocalizationsDictionary<ConsentContent>
 
     @Field(key: "enrollment_conditions") var enrollmentConditions: StudyDefinition.EnrollmentConditions
 
@@ -83,7 +93,7 @@ final class Study: Model, @unchecked Sendable {
         icon: String,
         details: LocalizationsDictionary<StudyDetailContent> = .init(),
         participationCriterion: StudyDefinition.ParticipationCriterion = .all([]),
-        consent: LocalizationsDictionary<String> = .init(),
+        consent: LocalizationsDictionary<ConsentContent> = .init(),
         enrollmentConditions: StudyDefinition.EnrollmentConditions = .none,
         id: UUID? = nil
     ) {

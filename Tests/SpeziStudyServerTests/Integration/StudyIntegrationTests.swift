@@ -162,7 +162,10 @@ struct StudyIntegrationTests { // swiftlint:disable:this type_body_length
 
             let patchBody: [String: Any] = [
                 "consent": [
-                    "en-US": "# Informed Consent\n\nBy participating in this study, you agree to..."
+                    "en-US": [
+                        "title": "Informed Consent",
+                        "content": "# Informed Consent\n\nBy participating in this study, you agree to..."
+                    ] as [String: Any]
                 ] as [String: Any]
             ]
 
@@ -173,7 +176,8 @@ struct StudyIntegrationTests { // swiftlint:disable:this type_body_length
                 #expect(response.status == .ok)
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
-                #expect(responseStudy.consent[.enUS] == "# Informed Consent\n\nBy participating in this study, you agree to...")
+                #expect(responseStudy.consent[.enUS]?.content == "# Informed Consent\n\nBy participating in this study, you agree to...")
+
                 #expect(responseStudy.details[.enUS]?.title == "Consent Study")
                 #expect(responseStudy.locales == [.enUS])
                 #expect(responseStudy.icon == "heart")
@@ -186,7 +190,7 @@ struct StudyIntegrationTests { // swiftlint:disable:this type_body_length
                 #expect(response.status == .ok)
 
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
-                #expect(responseStudy.consent[.enUS] == "# Informed Consent\n\nBy participating in this study, you agree to...")
+                #expect(responseStudy.consent[.enUS]?.content == "# Informed Consent\n\nBy participating in this study, you agree to...")
             }
         }
     }

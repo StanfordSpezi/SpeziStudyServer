@@ -48,4 +48,35 @@ final class InvitationCodeRepository: Module, Sendable {
     func delete(_ code: InvitationCode) async throws {
         try await code.delete(on: database)
     }
+
+    func redeemInvitationCode(_ code: String, studyId: UUID) async throws {
+        let invitationCode = try await InvitationCode.query(on: database)
+            .filter(\.$code == code)
+            .filter(\.$study.$id == studyId)
+            .filter(\.$redeemedAt == nil)
+            .group(.or) { group in
+                group.filter(\.$expiresAt == nil)
+                group.filter(\.$expiresAt > Date())
+            }
+            .first()
+
+        guard let invitationCode else {
+            throw ServerError.badRequest("Invalid or expired invitation code")
+        }
+
+        invitationCode.redeemedAt = Date()
+        try await invitationCode.save(on: database)
+    }
+
+    func linkInvitationCode(_ code: String, toEnrollmentId enrollmentId: UUID, studyId: UUID) async throws {
+        guard let invitationCode = try await InvitationCode.query(on: database)
+            .filter(\.$code == code)
+            .filter(\.$study.$id == studyId)
+            .first() else {
+            return
+        }
+
+        invitationCode.$enrollment.id = enrollmentId
+        try await invitationCode.save(on: database)
+    }
 }

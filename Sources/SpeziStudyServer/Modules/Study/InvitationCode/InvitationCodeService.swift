@@ -55,6 +55,14 @@ final class InvitationCodeService: Module, @unchecked Sendable {
         try await repository.delete(code)
     }
 
+    func redeemInvitationCode(_ code: String, studyId: UUID) async throws {
+        try await repository.redeemInvitationCode(code, studyId: studyId)
+    }
+
+    func linkInvitationCode(_ code: String, toEnrollmentId enrollmentId: UUID, studyId: UUID) async throws {
+        try await repository.linkInvitationCode(code, toEnrollmentId: enrollmentId, studyId: studyId)
+    }
+
     private func generateUniqueCode(excluding batchCodes: inout Set<String>) async throws -> String {
         for _ in 0..<10 {
             let code = Self.generateCode()

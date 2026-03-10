@@ -21,17 +21,6 @@ enum StudyVisibility: String, Codable, Sendable {
 }
 
 
-/// Snapshot of study metadata at the time of publishing.
-struct PublishedStudyMetadata: Codable, Sendable {
-    var locales: Set<LocalizationKey>
-    var icon: String
-    var details: LocalizationsDictionary<StudyDetailContent>
-    var participationCriterion: StudyDefinition.ParticipationCriterion
-    var consent: LocalizationsDictionary<String>
-    var enrollmentConditions: StudyDefinition.EnrollmentConditions
-}
-
-
 final class PublishedStudy: Model, @unchecked Sendable {
     static let schema = "published_studies"
 
@@ -45,7 +34,7 @@ final class PublishedStudy: Model, @unchecked Sendable {
 
     @Field(key: "bundle_url") var bundleURL: URL
 
-    @Field(key: "metadata") var metadata: PublishedStudyMetadata
+    @Field(key: "metadata") var metadata: StudyDefinition.Metadata
 
     @Timestamp(key: "published_at", on: .create) var publishedAt: Date?
 
@@ -58,7 +47,7 @@ final class PublishedStudy: Model, @unchecked Sendable {
         revision: Int,
         visibility: StudyVisibility,
         bundleURL: URL,
-        metadata: PublishedStudyMetadata,
+        metadata: StudyDefinition.Metadata,
         id: UUID? = nil
     ) {
         self.id = id

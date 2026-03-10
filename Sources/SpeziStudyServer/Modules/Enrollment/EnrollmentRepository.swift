@@ -18,9 +18,41 @@ final class EnrollmentRepository: Module, Sendable {
         self.database = database
     }
 
+    func find(id: UUID) async throws -> Enrollment? {
+        try await Enrollment.find(id, on: database)
+    }
+
+    func findByParticipantAndStudy(participantId: UUID, studyId: UUID) async throws -> Enrollment? {
+        try await Enrollment.query(on: database)
+            .filter(\.$participant.$id == participantId)
+            .filter(\.$study.$id == studyId)
+            .first()
+    }
+
     func listByStudyId(_ studyId: UUID) async throws -> [Enrollment] {
         try await Enrollment.query(on: database)
             .filter(\.$study.$id == studyId)
             .all()
+    }
+
+    func listByParticipantId(_ participantId: UUID) async throws -> [Enrollment] {
+        try await Enrollment.query(on: database)
+            .filter(\.$participant.$id == participantId)
+            .all()
+    }
+
+    func create(_ enrollment: Enrollment) async throws -> Enrollment {
+        try await enrollment.save(on: database)
+
+        guard let created = try await Enrollment.find(try enrollment.requireId(), on: database) else {
+            throw ServerError.failedToRetrieveCreatedObject
+        }
+
+        return created
+    }
+
+    func update(_ enrollment: Enrollment) async throws -> Enrollment {
+        try await enrollment.save(on: database)
+        return enrollment
     }
 }

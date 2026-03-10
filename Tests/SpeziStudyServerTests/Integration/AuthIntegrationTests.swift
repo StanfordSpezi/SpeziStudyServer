@@ -27,6 +27,7 @@ private struct Endpoint: Sendable {
     let method: HTTPMethod
     let path: String
     let body: Data?
+    let contentType: HTTPMediaType?
     let role: EndpointRole
     let successStatus: HTTPStatus
 
@@ -68,6 +69,7 @@ struct AuthIntegrationTests {
             method: method,
             path: path,
             body: body,
+            contentType: body != nil ? .json : nil,
             role: .researcher(minRole: minRole, requiresGroupAccess: requiresGroupAccess),
             successStatus: successStatus
         )
@@ -77,9 +79,10 @@ struct AuthIntegrationTests {
         _ method: HTTPMethod,
         _ path: String,
         body: Data? = nil, // swiftlint:disable:this function_default_parameter_at_end
+        contentType: HTTPMediaType? = nil,
         successStatus: HTTPStatus
     ) -> Endpoint {
-        Endpoint(method: method, path: path, body: body, role: .participant, successStatus: successStatus)
+        Endpoint(method: method, path: path, body: body, contentType: contentType ?? (body != nil ? .json : nil), role: .participant, successStatus: successStatus)
     }
 
 
@@ -156,15 +159,16 @@ struct AuthIntegrationTests {
             participant(.GET, "\(base)/participant/profile", successStatus: .ok),
             participant(.PUT, "\(base)/participant/profile", body: jsonData(["dateOfBirth": "2000-01-01"]), successStatus: .ok),
             participant(.GET, "\(base)/participant/studies", successStatus: .ok),
-            participant(.POST, "\(base)/participant/enrollments", body: jsonData(["studyId": studyId.uuidString]), successStatus: .notImplemented),
-            participant(.GET, "\(base)/participant/enrollments", successStatus: .notImplemented),
-            participant(.POST, "\(base)/participant/enrollments/\(dummyId)/withdraw", successStatus: .notImplemented),
-            participant(.GET, "\(base)/participant/enrollments/\(dummyId)/consents", successStatus: .notImplemented),
+            participant(.POST, "\(base)/participant/enrollments", body: jsonData(["studyId": studyId.uuidString]), successStatus: .notFound),
+            participant(.GET, "\(base)/participant/enrollments", successStatus: .ok),
+            participant(.POST, "\(base)/participant/enrollments/\(dummyId)/withdraw", successStatus: .notFound),
+            participant(.GET, "\(base)/participant/enrollments/\(dummyId)/consents", successStatus: .notFound),
             participant(
                 .POST,
                 "\(base)/participant/enrollments/\(dummyId)/consents",
-                body: jsonData(["consentURL": "https://example.com", "consentData": [:] as [String: Any]] as [String: Any]),
-                successStatus: .notImplemented
+                body: multipartConsentBody(),
+                contentType: .init(type: "multipart", subType: "form-data", parameters: ["boundary": "AuthTestBoundary"]),
+                successStatus: .notFound
             )
         ]
     }
@@ -330,7 +334,9 @@ struct AuthIntegrationTests {
         try await app.test(endpoint.method, endpoint.path, beforeRequest: { req in
             req.bearerAuth(token)
             if let body = endpoint.body {
-                req.headers.contentType = .json
+                if let contentType = endpoint.contentType {
+                    req.headers.contentType = contentType
+                }
                 req.body = .init(data: body)
             }
         }) { response in
@@ -367,4 +373,30 @@ private func scheduleBody() -> [String: Any] {
         "completionPolicy": "anytime",
         "notification": false
     ] as [String: Any]
+}
+
+private func multipartConsentBody() -> Data? {
+    let boundary = "AuthTestBoundary"
+    let consentData: [String: Any] = [
+        "metadata": ["title": "", "version": ""] as [String: String],
+        "userResponses": [
+            "toggles": [:] as [String: Bool],
+            "selects": [:] as [String: String],
+            "signatures": [:] as [String: Any]
+        ] as [String: Any]
+    ]
+    guard let jsonData = try? JSONSerialization.data(withJSONObject: consentData) else {
+        return nil
+    }
+    var body = Data()
+    body.append(Data("--\(boundary)\r\n".utf8))
+    body.append(Data("Content-Disposition: form-data; name=\"consentData\"\r\n".utf8))
+    body.append(Data("Content-Type: application/json\r\n\r\n".utf8))
+    body.append(jsonData)
+    body.append(Data("\r\n--\(boundary)\r\n".utf8))
+    body.append(Data("Content-Disposition: form-data; name=\"consentPDF\"; filename=\"consent.pdf\"\r\n".utf8))
+    body.append(Data("Content-Type: application/pdf\r\n\r\n".utf8))
+    body.append(Data("%PDF-1.4 test".utf8))
+    body.append(Data("\r\n--\(boundary)--\r\n".utf8))
+    return body
 }

@@ -23,12 +23,13 @@ enum PublishedStudyFixtures {
         title: String = "Test Study",
         icon: String = "heart"
     ) async throws -> PublishedStudy {
-        let metadata = PublishedStudyMetadata(
-            locales: [.enUS],
-            icon: icon,
-            details: .init([.enUS: StudyDetailContent(title: title)]),
+        let metadata = StudyDefinition.Metadata(
+            id: studyId,
+            title: .init([.enUS: title]),
+            icon: .systemSymbol(icon),
+            explanationText: .init([.enUS: ""]),
+            shortExplanationText: .init([.enUS: ""]),
             participationCriterion: .all([]),
-            consent: .init(),
             enrollmentConditions: .none
         )
         let published = PublishedStudy(

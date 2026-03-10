@@ -59,46 +59,14 @@ extension Controller {
     var enrollmentService: EnrollmentService {
         spezi[EnrollmentService.self]
     }
-}
 
-
-// MARK: - Not Yet Implemented
-
-extension Controller {
-    // MARK: - Participant (Not Yet Implemented)
-
-    func postParticipantEnrollments(
-        _ input: Operations.PostParticipantEnrollments.Input
-    ) async throws -> Operations.PostParticipantEnrollments.Output {
-        try AuthContext.checkIsParticipant()
-        throw ServerError.endpointNotImplemented
+    var participantEnrollmentService: ParticipantEnrollmentService {
+        spezi[ParticipantEnrollmentService.self]
     }
 
-    func getParticipantEnrollments(
-        _ input: Operations.GetParticipantEnrollments.Input
-    ) async throws -> Operations.GetParticipantEnrollments.Output {
-        try AuthContext.checkIsParticipant()
-        throw ServerError.endpointNotImplemented
-    }
-
-    func postParticipantEnrollmentsEnrollmentIdWithdraw(
-        _ input: Operations.PostParticipantEnrollmentsEnrollmentIdWithdraw.Input
-    ) async throws -> Operations.PostParticipantEnrollmentsEnrollmentIdWithdraw.Output {
-        try AuthContext.checkIsParticipant()
-        throw ServerError.endpointNotImplemented
-    }
-
-    func getParticipantEnrollmentsEnrollmentIdConsents(
-        _ input: Operations.GetParticipantEnrollmentsEnrollmentIdConsents.Input
-    ) async throws -> Operations.GetParticipantEnrollmentsEnrollmentIdConsents.Output {
-        try AuthContext.checkIsParticipant()
-        throw ServerError.endpointNotImplemented
-    }
-
-    func postParticipantEnrollmentsEnrollmentIdConsents(
-        _ input: Operations.PostParticipantEnrollmentsEnrollmentIdConsents.Input
-    ) async throws -> Operations.PostParticipantEnrollmentsEnrollmentIdConsents.Output {
-        try AuthContext.checkIsParticipant()
-        throw ServerError.endpointNotImplemented
+    var consentService: ConsentService {
+        spezi[ConsentService.self]
     }
 }
+
+

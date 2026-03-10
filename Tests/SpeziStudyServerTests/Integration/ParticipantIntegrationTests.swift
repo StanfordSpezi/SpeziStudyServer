@@ -160,7 +160,7 @@ struct ParticipantIntegrationTests {
 
                 let studies = try response.content.decode([Components.Schemas.PublishedStudyListItem].self)
                 #expect(studies.count == 1)
-                #expect(studies.first?.title == "Public Study")
+                #expect(studies.first?.metadata.title[.enUS] == "Public Study")
             }
         }
     }
@@ -187,7 +187,7 @@ struct ParticipantIntegrationTests {
 
                 let studies = try response.content.decode([Components.Schemas.PublishedStudyListItem].self)
                 #expect(studies.count == 1)
-                #expect(studies.first?.title == "Unlisted Study")
+                #expect(studies.first?.metadata.title[.enUS] == "Unlisted Study")
             }
         }
     }

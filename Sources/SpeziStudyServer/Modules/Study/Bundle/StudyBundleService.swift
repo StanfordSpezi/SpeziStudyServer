@@ -8,6 +8,7 @@
 
 import Foundation
 import Spezi
+import SpeziFoundation
 import SpeziLocalization
 import SpeziStudyDefinition
 import ZIPFoundation
@@ -23,7 +24,7 @@ final class StudyBundleService: Module, @unchecked Sendable {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
         let study = try await studyRepository.findWithComponentsAndSchedules(id: studyId)
 
-        let (metadata, consentFiles) = try buildMetadata(from: study)
+        let (metadata, consentFiles) = try await buildMetadata(from: study)
         let (components, componentFiles) = try buildComponents(from: study.components)
         let schedules = study.components.flatMap { $0.schedules.map(\.scheduleData) }
 
@@ -39,9 +40,11 @@ final class StudyBundleService: Module, @unchecked Sendable {
 
     // MARK: - Metadata
 
-    private func buildMetadata(
+    func buildMetadata(
         from study: Study
-    ) throws -> (StudyDefinition.Metadata, [StudyBundle.FileResourceInput]) {
+    ) async throws -> (StudyDefinition.Metadata, [StudyBundle.FileResourceInput]) {
+        try await studyService.checkHasAccess(to: study.requireId(), role: .researcher)
+        
         var titles = LocalizationsDictionary<String>()
         var shortTitles = LocalizationsDictionary<String>()
         var explanationTexts = LocalizationsDictionary<String>()
@@ -72,15 +75,19 @@ final class StudyBundleService: Module, @unchecked Sendable {
     }
 
     private func buildConsentFiles(
-        from consent: LocalizationsDictionary<String>
+        from consent: LocalizationsDictionary<ConsentContent>
     ) throws -> (StudyBundle.FileReference?, [StudyBundle.FileResourceInput]) {
         guard !consent.isEmpty else {
             return (nil, [])
         }
 
+        // TODO: Update versioning
+        let version = Version(1, 0, 0)
+        
         let ref = StudyBundle.FileReference(category: .consent, filename: "Consent", fileExtension: "md")
-        let files = try consent.map { locale, text in
-            try StudyBundle.FileResourceInput(fileRef: ref, localization: locale, contents: text)
+        let files = try consent.map { locale, definition in
+            let markdown = "---\ntitle: \(definition.title)\nversion: \(version)\n---\n\(definition.content)"
+            return try StudyBundle.FileResourceInput(fileRef: ref, localization: locale, contents: markdown)
         }
         return (ref, files)
     }

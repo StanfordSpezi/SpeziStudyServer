@@ -9,20 +9,20 @@
 import Fluent
 
 
-struct CreateConsentRecords: AsyncMigration {
+struct CreateEnrollmentConsents: AsyncMigration {
     func prepare(on database: any Database) async throws {
-        try await database.schema("consent_records")
+        try await database.schema("enrollment_consents")
             .id()
             .field("enrollment_id", .uuid, .required, .references("enrollments", "id", onDelete: .cascade))
             .field("revision", .int, .required)
+            .field("user_responses", .json, .required)
             .field("consent_url", .string, .required)
-            .field("consent_data", .json, .required)
             .timestamps()
             .unique(on: "enrollment_id", "revision")
             .create()
     }
 
     func revert(on database: any Database) async throws {
-        try await database.schema("consent_records").delete()
+        try await database.schema("enrollment_consents").delete()
     }
 }

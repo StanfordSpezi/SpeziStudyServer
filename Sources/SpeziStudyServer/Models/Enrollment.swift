@@ -35,7 +35,7 @@ final class Enrollment: Model, @unchecked Sendable {
 
     @Field(key: "participation_data") var participationData: ParticipationData
 
-    @Children(for: \.$enrollment) var consentRecords: [ConsentRecord]
+    @Children(for: \.$enrollment) var consents: [EnrollmentConsent]
 
     init() {}
 

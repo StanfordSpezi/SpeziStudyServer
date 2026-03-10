@@ -11,8 +11,9 @@ import Spezi
 
 
 final class PublishedStudyService: Module, @unchecked Sendable {
-    @Dependency(PublishedStudyRepository.self) var repository: PublishedStudyRepository
-    @Dependency(StudyService.self) var studyService: StudyService
+    @Dependency(PublishedStudyRepository.self) var repository
+    @Dependency(StudyService.self) var studyService
+    @Dependency(StudyBundleService.self) var studyBundleService
 
     init() {}
 
@@ -22,18 +23,10 @@ final class PublishedStudyService: Module, @unchecked Sendable {
         let study = try await studyService.getStudy(id: studyId)
         let nextRevision = (try await repository.maxRevision(forStudyId: studyId) ?? 0) + 1
 
-        let metadata = PublishedStudyMetadata(
-            locales: study.locales,
-            icon: study.icon,
-            details: study.details,
-            participationCriterion: study.participationCriterion,
-            consent: study.consent,
-            enrollmentConditions: study.enrollmentConditions
-        )
-
+        let (metadata, _) = try await studyBundleService.buildMetadata(from: study)
+        
         // TODO: Upload bundle and store real URL
         let bundleURL = URL(string: "https://example.com/TODO")! // swiftlint:disable:this force_unwrapping
-
         let published = PublishedStudy(
             studyId: studyId,
             revision: nextRevision,

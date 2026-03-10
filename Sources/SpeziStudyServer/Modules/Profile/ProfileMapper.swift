@@ -68,13 +68,9 @@ extension Components.Schemas.ParticipantProfile {
 
 extension Components.Schemas.PublishedStudyListItem {
     init(_ model: PublishedStudy) throws {
-        let details = model.metadata.details
-        let title = details[.enUS]?.title ?? details.first?.value.title ?? ""
-
         self.init(
             id: model.$study.id.uuidString,
-            title: title,
-            icon: model.metadata.icon
+            metadata: model.metadata
         )
     }
 }

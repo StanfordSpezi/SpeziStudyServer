@@ -976,9 +976,23 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ConsentRecordInput'
+              type: object
+              required:
+                - consentData
+                - consentPDF
+              properties:
+                consentData:
+                  $ref: '#/components/schemas/UserResponses'
+                consentPDF:
+                  type: string
+                  contentEncoding: binary
+            encoding:
+              consentData:
+                contentType: application/json
+              consentPDF:
+                contentType: application/pdf
       responses:
         '201':
           description: Consent record created
@@ -1039,7 +1053,6 @@ components:
       schema:
         type: string
         format: uuid
-
   responses:
     BadRequest:
       description: Bad request
@@ -1389,7 +1402,7 @@ components:
         participationCriterion:
           $ref: '#/components/schemas/ParticipationCriterion'
         consent:
-          $ref: '#/components/schemas/LocalizedString'
+          $ref: '#/components/schemas/LocalizedConsentContent'
         enrollmentConditions:
           $ref: '#/components/schemas/EnrollmentConditions'
 
@@ -1426,7 +1439,7 @@ components:
         participationCriterion:
           $ref: '#/components/schemas/ParticipationCriterion'
         consent:
-          $ref: '#/components/schemas/LocalizedString'
+          $ref: '#/components/schemas/StudyConsent'
         enrollmentConditions:
           $ref: '#/components/schemas/EnrollmentConditions'
 
@@ -2167,15 +2180,218 @@ components:
       description: Summary of a published study for participant browsing
       required:
         - id
-        - title
-        - icon
+        - metadata
       properties:
         id:
           type: string
           format: uuid
-        title:
+          description: The study ID
+        metadata:
+          $ref: '#/components/schemas/StudyMetadataCodable'
+
+    StudyMetadataCodable:
+      description: >
+        Study metadata as SpeziStudyDefinition.StudyDefinition.Metadata.
+        Mapped via typeOverride; the wire format matches Swift's auto-synthesized Codable output.
+      type: object
+      additionalProperties: true
+
+    StudyMetadata:
+      type: object
+      description: >
+        Study metadata reflecting SpeziStudyDefinition.Metadata.
+        Encoded using Swift's auto-synthesized Codable format.
+      required:
+        - id
+        - title
+        - shortTitle
+        - explanationText
+        - shortExplanationText
+        - participationCriterion
+        - enrollmentConditions
+      properties:
+        id:
           type: string
+          format: uuid
+          description: The study's unique identifier
+        title:
+          $ref: '#/components/schemas/LocalizedString'
+        shortTitle:
+          $ref: '#/components/schemas/LocalizedString'
         icon:
+          $ref: '#/components/schemas/StudyMetadataIcon'
+        explanationText:
+          $ref: '#/components/schemas/LocalizedString'
+        shortExplanationText:
+          $ref: '#/components/schemas/LocalizedString'
+        studyDependency:
+          type: string
+          format: uuid
+          description: ID of another study the participant must be enrolled in first
+        participationCriterion:
+          $ref: '#/components/schemas/StudyMetadataParticipationCriterion'
+        enrollmentConditions:
+          $ref: '#/components/schemas/StudyMetadataEnrollmentConditions'
+        consentFileRef:
+          $ref: '#/components/schemas/FileReference'
+
+    StudyMetadataIcon:
+      description: >
+        Icon for displaying the study. Uses Swift Codable enum encoding:
+        {"systemSymbol": {"_0": "heart.fill"}} or {"custom": {"_0": "https://..."}}.
+      oneOf:
+        - type: object
+          required: [systemSymbol]
+          properties:
+            systemSymbol:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  type: string
+                  description: SF Symbol name
+          additionalProperties: false
+        - type: object
+          required: [custom]
+          properties:
+            custom:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  type: string
+                  format: uri
+                  description: Custom icon URL
+          additionalProperties: false
+
+    StudyMetadataParticipationCriterion:
+      description: >
+        Participation criterion using Swift Codable enum encoding.
+        Leaf criteria: {"ageAtLeast": {"_0": 18}}, {"isFromRegion": {"_0": "US"}},
+        {"speaksLanguage": {"_0": "en"}}, {"custom": {"_0": {"keyValue": "...", "displayTitle": "..."}}}.
+        Logical operators: {"not": {"_0": <criterion>}},
+        {"all": {"_0": [<criteria>]}}, {"any": {"_0": [<criteria>]}}.
+      oneOf:
+        - type: object
+          required: [ageAtLeast]
+          properties:
+            ageAtLeast:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  type: integer
+          additionalProperties: false
+        - type: object
+          required: [isFromRegion]
+          properties:
+            isFromRegion:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  type: string
+                  description: Region identifier (e.g. "US")
+          additionalProperties: false
+        - type: object
+          required: [speaksLanguage]
+          properties:
+            speaksLanguage:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  type: string
+                  description: Language identifier (e.g. "en")
+          additionalProperties: false
+        - type: object
+          required: [custom]
+          properties:
+            custom:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  type: object
+                  required: [keyValue, displayTitle]
+                  properties:
+                    keyValue:
+                      type: string
+                    displayTitle:
+                      type: string
+          additionalProperties: false
+        - type: object
+          required: [not]
+          properties:
+            not:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  $ref: '#/components/schemas/StudyMetadataParticipationCriterion'
+          additionalProperties: false
+        - type: object
+          required: [all]
+          properties:
+            all:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StudyMetadataParticipationCriterion'
+          additionalProperties: false
+        - type: object
+          required: [any]
+          properties:
+            any:
+              type: object
+              required: [_0]
+              properties:
+                _0:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/StudyMetadataParticipationCriterion'
+          additionalProperties: false
+
+    StudyMetadataEnrollmentConditions:
+      description: >
+        Enrollment conditions using Swift Codable enum encoding:
+        {"none": {}} or {"requiresInvitation": {"verificationEndpoint": "https://..."}}.
+      oneOf:
+        - type: object
+          required: [none]
+          properties:
+            none:
+              type: object
+          additionalProperties: false
+        - type: object
+          required: [requiresInvitation]
+          properties:
+            requiresInvitation:
+              type: object
+              required: [verificationEndpoint]
+              properties:
+                verificationEndpoint:
+                  type: string
+                  format: uri
+          additionalProperties: false
+
+    FileReference:
+      type: object
+      description: Reference to a file in a study bundle
+      required:
+        - category
+        - filename
+        - fileExtension
+      properties:
+        category:
+          type: string
+          description: File category (e.g. "consent")
+        filename:
+          type: string
+        fileExtension:
           type: string
 
     EnrollInput:
@@ -2192,18 +2408,129 @@ components:
           type: string
           description: Optional invitation code for studies that require one
 
-    ConsentRecordInput:
+    # ── Consent Schemas ──────────────────────────────────────────────────
+
+    ConsentContent:
       type: object
-      description: Request body for submitting a consent record
+      description: Localized consent form content (title and markdown body)
       required:
-        - consentURL
-        - consentData
+        - title
+        - content
       properties:
-        consentURL:
+        title:
           type: string
-          format: uri
-        consentData:
+        content:
+          type: string
+          description: Consent document markdown
+
+    LocalizedConsentContent:
+      type: object
+      description: Locale-keyed map of consent content
+      additionalProperties:
+        $ref: '#/components/schemas/ConsentContent'
+      examples:
+        - en-US:
+            title: Study Consent Form
+            content: "# Consent\n\nBy participating..."
+          de-DE:
+            title: Einwilligungserklärung
+            content: "# Einwilligung\n\nDurch die Teilnahme..."
+
+    StudyConsent:
+      type: object
+      description: Study consent definition with version and localized content
+      required:
+        - version
+        - content
+      properties:
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+$'
+          description: Semantic version of the consent form
+          examples:
+            - "1.0.0"
+        content:
+          $ref: '#/components/schemas/LocalizedConsentContent'
+      examples:
+        - version: "1.0.0"
+          content:
+            en-US:
+              title: Study Consent Form
+              content: "# Consent\n\nYou are being asked to participate in a research study."
+            de-DE:
+              title: Einwilligungsformular
+              content: "# Einwilligung\n\nSie werden gebeten, an einer Forschungsstudie teilzunehmen."
+
+    NameComponents:
+      type: object
+      properties:
+        givenName:
+          type: string
+        familyName:
+          type: string
+
+    SignatureData:
+      type: object
+      required:
+        - name
+        - signature
+        - size
+      properties:
+        name:
+          $ref: '#/components/schemas/NameComponents'
+        signature:
+          type: string
+          description: Base64-encoded PKDrawing data
+        size:
+          type: array
+          items:
+            type: number
+          minItems: 2
+          maxItems: 2
+          description: "[width, height] in points"
+
+    UserResponses:
+      type: object
+      properties:
+        toggles:
           type: object
+          additionalProperties:
+            type: boolean
+        selects:
+          type: object
+          additionalProperties:
+            type: string
+        signatures:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SignatureData'
+
+    ConsentDataPayload:
+      type: object
+      required:
+        - revision
+        - userResponses
+      properties:
+        revision:
+          type: integer
+          description: Revision number of the consent form the participant agreed to
+          examples:
+            - 1
+        userResponses:
+          $ref: '#/components/schemas/UserResponses'
+      examples:
+        - revision: 1
+          userResponses:
+            toggles:
+              data-sharing: true
+            selects: {}
+            signatures:
+              participant:
+                name:
+                  givenName: Jane
+                  familyName: Doe
+                signature: "base64encodeddata..."
+                size: [300, 150]
 
     ConsentRecordResponse:
       type: object
@@ -2212,8 +2539,8 @@ components:
         - id
         - enrollmentId
         - revision
-        - consentURL
         - consentData
+        - pdfURL
       properties:
         id:
           type: string
@@ -2223,11 +2550,10 @@ components:
           format: uuid
         revision:
           type: integer
-        consentURL:
-          type: string
-          format: uri
         consentData:
-          type: object
+          $ref: '#/components/schemas/ConsentDataPayload'
+        pdfURL:
+          type: string
 
     GenderIdentity:
       type: string

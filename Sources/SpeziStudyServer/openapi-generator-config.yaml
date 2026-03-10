@@ -13,6 +13,7 @@ namingStrategy: idiomatic
 additionalImports:
   - SpeziLocalization
   - SpeziHealthKit
+  - SpeziStudyDefinition
 typeOverrides:
   schemas:
     InformationalContent: SpeziStudyServer.InformationalContent
@@ -24,3 +25,7 @@ typeOverrides:
     StudyDetailData: "SpeziLocalization.LocalizationsDictionary<SpeziStudyServer.StudyDetailContent>"
     SampleTypesCollection: "[SpeziHealthKit.SampleTypeProxy]"
     LocalizationKey: SpeziLocalization.LocalizationKey
+    StudyConsent: "SpeziLocalization.LocalizationsDictionary<SpeziStudyServer.ConsentContent>"
+    LocalizedConsentContent: "SpeziLocalization.LocalizationsDictionary<SpeziStudyServer.ConsentContent>"
+    StudyMetadataCodable: SpeziStudyDefinition.StudyDefinition.Metadata
+    StudyMetadataParticipationCriterion: SpeziStudyDefinition.StudyDefinition.ParticipationCriterion

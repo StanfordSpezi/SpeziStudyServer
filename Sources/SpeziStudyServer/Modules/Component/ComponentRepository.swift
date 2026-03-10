@@ -35,9 +35,14 @@ final class ComponentRepository: Module, Sendable {
     func create(
         studyId: UUID,
         data: ComponentData,
-        name: String,
-        id: UUID? = nil
+        name: String
     ) async throws -> Component {
+        let id = UUID()
+        var data = data
+        if case .healthDataCollection(var healthData) = data {
+            healthData.id = id
+            data = .healthDataCollection(healthData)
+        }
         let component = Component(studyId: studyId, data: data, name: name, id: id)
         try await component.save(on: database)
         return component

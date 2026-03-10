@@ -30,50 +30,11 @@ enum ComponentData: Codable, Sendable, Hashable {
     case questionnaire(LocalizationsDictionary<QuestionnaireContent>)
     case healthDataCollection(StudyDefinition.HealthDataCollectionComponent)
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case content
-    }
-
-    private enum DataType: String, Codable {
-        case informational
-        case questionnaire
-        case healthDataCollection
-    }
-
     var type: ComponentType {
         switch self {
         case .informational: .informational
         case .questionnaire: .questionnaire
         case .healthDataCollection: .healthDataCollection
-        }
-    }
-
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(DataType.self, forKey: .type)
-        switch type {
-        case .informational:
-            self = .informational(try container.decode(LocalizationsDictionary<InformationalContent>.self, forKey: .content))
-        case .questionnaire:
-            self = .questionnaire(try container.decode(LocalizationsDictionary<QuestionnaireContent>.self, forKey: .content))
-        case .healthDataCollection:
-            self = .healthDataCollection(try container.decode(StudyDefinition.HealthDataCollectionComponent.self, forKey: .content))
-        }
-    }
-
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .informational(let content):
-            try container.encode(DataType.informational, forKey: .type)
-            try container.encode(content, forKey: .content)
-        case .questionnaire(let content):
-            try container.encode(DataType.questionnaire, forKey: .type)
-            try container.encode(content, forKey: .content)
-        case .healthDataCollection(let content):
-            try container.encode(DataType.healthDataCollection, forKey: .type)
-            try container.encode(content, forKey: .content)
         }
     }
 }

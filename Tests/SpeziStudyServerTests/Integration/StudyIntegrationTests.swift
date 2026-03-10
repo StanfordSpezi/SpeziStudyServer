@@ -228,7 +228,7 @@ struct StudyIntegrationTests { // swiftlint:disable:this type_body_length
 
     @Test
     func listStudiesInGroup() async throws {
-        try await TestApp.withApp(groups: ["/Group 1/admin", "/Group 2/admin"]) { app, token in
+        try await TestApp.withApp(token: .researcher(groups: ["/Group 1/admin", "/Group 2/admin"])) { app, token in
             let group1 = try await GroupFixtures.createGroup(on: app.db, name: "Group 1")
             let group1Id = try group1.requireId()
             let group2 = try await GroupFixtures.createGroup(on: app.db, name: "Group 2")

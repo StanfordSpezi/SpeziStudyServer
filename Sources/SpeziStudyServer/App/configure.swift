@@ -63,6 +63,8 @@ public func configureServices(for app: Application) async {
         StudyRepository(database: app.db)
         ComponentRepository(database: app.db)
         ComponentScheduleRepository(database: app.db)
+        ProfileService()
+        ProfileRepository(database: app.db)
     }
 }
 

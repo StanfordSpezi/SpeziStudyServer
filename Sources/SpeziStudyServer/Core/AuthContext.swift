@@ -55,29 +55,37 @@ struct AuthContext: Sendable {
         self.groupMemberships = memberships
     }
 
-    static func requireCurrent() throws -> AuthContext {
-        guard let context = current else {
-            throw ServerError.missingToken
+    @discardableResult
+    static func checkIsResearcher() throws -> AuthContext {
+        let context = try requireCurrent()
+        guard context.roles.contains(context.researcherRole) else {
+            throw ServerError.forbidden
         }
         return context
     }
 
-    func checkHasAccess(groupName: String, role: GroupRole) throws {
-        try requireResearcher()
-        guard let memberRole = groupMemberships[groupName], memberRole >= role else {
+    @discardableResult
+    static func checkIsParticipant() throws -> AuthContext {
+        let context = try requireCurrent()
+        guard context.roles.contains(context.participantRole) else {
             throw ServerError.forbidden
         }
+        return context
     }
 
-    func requireResearcher() throws {
-        guard roles.contains(researcherRole) else {
+    @discardableResult
+    static func checkHasAccess(groupName: String, role: GroupRole) throws -> AuthContext {
+        let context = try checkIsResearcher()
+        guard let memberRole = context.groupMemberships[groupName], memberRole >= role else {
             throw ServerError.forbidden
         }
+        return context
     }
 
-    func requireParticipant() throws {
-        guard roles.contains(participantRole) else {
-            throw ServerError.forbidden
+    private static func requireCurrent() throws -> AuthContext {
+        guard let context = current else {
+            throw ServerError.missingToken
         }
+        return context
     }
 }

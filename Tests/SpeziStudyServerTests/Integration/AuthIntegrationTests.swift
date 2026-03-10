@@ -147,11 +147,11 @@ struct AuthIntegrationTests {
             researcher(.PUT, "\(base)/studies/\(studyId)/components/\(componentId)/schedules/\(scheduleId)", body: scheduleBody, successStatus: .ok),
             researcher(.DELETE, "\(base)/studies/\(studyId)/components/\(componentId)/schedules/\(scheduleId)", successStatus: .noContent),
 
-            // Participant — not yet implemented
-            participant(.GET, "\(base)/participant/profile", successStatus: .notImplemented),
-            participant(.POST, "\(base)/participant/profile", body: jsonData(["firstName": "Jane"]), successStatus: .notImplemented),
-            participant(.PUT, "\(base)/participant/profile", body: jsonData(["dateOfBirth": "2000-01-01"]), successStatus: .notImplemented),
-            participant(.GET, "\(base)/participant/studies", successStatus: .notImplemented),
+            // Participant — profile & studies (fixture pre-created by participantAllowedActions)
+            participant(.POST, "\(base)/participant/profile", body: jsonData(["firstName": "Jane"]), successStatus: .conflict),
+            participant(.GET, "\(base)/participant/profile", successStatus: .ok),
+            participant(.PUT, "\(base)/participant/profile", body: jsonData(["dateOfBirth": "2000-01-01"]), successStatus: .ok),
+            participant(.GET, "\(base)/participant/studies", successStatus: .ok),
             participant(.POST, "\(base)/participant/enrollments", body: jsonData(["studyId": studyId.uuidString]), successStatus: .notImplemented),
             participant(.GET, "\(base)/participant/enrollments", successStatus: .notImplemented),
             participant(.POST, "\(base)/participant/enrollments/\(dummyId)/withdraw", successStatus: .notImplemented),
@@ -198,7 +198,7 @@ struct AuthIntegrationTests {
 
     @Test
     func unauthenticatedReturns401() async throws {
-        try await withFixtures(groups: nil) { app, token, endpoints in
+        try await withFixtures(token: .none) { app, token, endpoints in
             for endpoint in endpoints {
                 try await self.expectStatus(.unauthorized, for: endpoint, token: token, on: app)
             }
@@ -207,7 +207,7 @@ struct AuthIntegrationTests {
 
     @Test
     func wrongGroupReturns403() async throws {
-        try await withFixtures(groups: ["/Other Group/admin"]) { app, token, endpoints in
+        try await withFixtures(token: .researcher(groups: ["/Other Group/admin"])) { app, token, endpoints in
             for endpoint in endpoints where endpoint.requiresGroupAccess {
                 try await self.expectStatus(.forbidden, for: endpoint, token: token, on: app)
             }
@@ -216,7 +216,7 @@ struct AuthIntegrationTests {
 
     @Test
     func researcherDeniedAdminActions() async throws {
-        try await withFixtures(groups: ["/Test Group/researcher"]) { app, token, endpoints in
+        try await withFixtures(token: .researcher(groups: ["/Test Group/researcher"])) { app, token, endpoints in
             for endpoint in endpoints where endpoint.requiresGroupAccess && endpoint.minRole > .researcher {
                 try await self.expectStatus(.forbidden, for: endpoint, token: token, on: app)
             }
@@ -225,7 +225,7 @@ struct AuthIntegrationTests {
 
     @Test
     func researcherAllowedActions() async throws {
-        try await withFixtures(groups: ["/Test Group/researcher"]) { app, token, endpoints in
+        try await withFixtures(token: .researcher(groups: ["/Test Group/researcher"])) { app, token, endpoints in
             for endpoint in endpoints where endpoint.requiresGroupAccess && endpoint.minRole <= .researcher
                 && !endpoint.path.contains("/components") {
                 try await self.expectStatus(endpoint.successStatus, for: endpoint, token: token, on: app)
@@ -235,7 +235,7 @@ struct AuthIntegrationTests {
 
     @Test
     func adminAllowedActions() async throws {
-        try await withFixtures(groups: ["/Test Group/admin"]) { app, token, endpoints in
+        try await withFixtures(token: .researcher(groups: ["/Test Group/admin"])) { app, token, endpoints in
             for endpoint in endpoints where endpoint.requiresGroupAccess && endpoint.minRole == .admin
                 && !endpoint.path.contains("/components") {
                 try await self.expectStatus(endpoint.successStatus, for: endpoint, token: token, on: app)
@@ -245,7 +245,7 @@ struct AuthIntegrationTests {
 
     @Test
     func participantDeniedResearcherEndpoints() async throws {
-        try await TestApp.withApp(participantSubject: "participant-test-user") { app, token in
+        try await TestApp.withApp(token: .participant(subject: "participant-test-user")) { app, token in
             let endpoints = Self.allEndpoints(groupId: dummyUUID, studyId: dummyUUID, componentId: dummyUUID, scheduleId: dummyUUID)
 
             for endpoint in endpoints where !endpoint.isParticipant {
@@ -267,9 +267,7 @@ struct AuthIntegrationTests {
 
     @Test
     func participantAllowedActions() async throws {
-        try await TestApp.withApp(participantSubject: "participant-test-user") { app, token in
-            let endpoints = Self.allEndpoints(groupId: dummyUUID, studyId: dummyUUID, componentId: dummyUUID, scheduleId: dummyUUID)
-
+        try await withFixtures(token: .participant(subject: "participant-test-user")) { app, token, endpoints in
             for endpoint in endpoints where endpoint.isParticipant {
                 try await self.expectStatus(endpoint.successStatus, for: endpoint, token: token, on: app)
             }
@@ -293,10 +291,10 @@ struct AuthIntegrationTests {
     // MARK: - Instance Helpers
 
     private func withFixtures(
-        groups: [String]?, // swiftlint:disable:this discouraged_optional_collection
+        token tokenConfig: TestApp.Token,
         _ test: @escaping @Sendable (Application, String?, [Endpoint]) async throws -> Void
     ) async throws {
-        try await TestApp.withApp(groups: groups) { app, token in
+        try await TestApp.withApp(token: tokenConfig) { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let groupId = try group.requireId()
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
@@ -305,6 +303,11 @@ struct AuthIntegrationTests {
             let componentId = try component.requireId()
             let schedule = try await ComponentFixtures.createSchedule(on: app.db, componentId: componentId)
             let scheduleId = try schedule.requireId()
+
+            if case .participant(let subject) = tokenConfig {
+                try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: subject)
+            }
+
             try await test(app, token, Self.allEndpoints(
                 groupId: groupId,
                 studyId: studyId,

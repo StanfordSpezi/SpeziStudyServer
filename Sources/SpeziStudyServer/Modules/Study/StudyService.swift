@@ -18,14 +18,13 @@ final class StudyService: Module, @unchecked Sendable {
     init() {}
 
     func checkHasAccess(to id: UUID, role: AuthContext.GroupRole) async throws {
-        let context = try AuthContext.requireCurrent()
-        try context.requireResearcher()
+        try AuthContext.checkIsResearcher()
 
         guard let groupName = try await repository.findGroupName(forStudyId: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        try context.checkHasAccess(groupName: groupName, role: role)
+        try AuthContext.checkHasAccess(groupName: groupName, role: role)
     }
 
     func getStudy(id: UUID) async throws -> Study {

@@ -19,38 +19,31 @@ enum TestApp {
     private static let researcherRole = "spezistudyplatform-researcher"
     private static let participantRole = "spezistudyplatform-participant"
 
-    static func withApp( // swiftlint:disable:next discouraged_optional_collection
-        groups: [String]? = ["/Test Group/admin"],
+    enum Token: Sendable {
+        /// No token — unauthenticated request.
+        case none
+        /// Researcher token with the given Keycloak group paths.
+        case researcher(groups: [String] = ["/Test Group/admin"])
+        /// Participant token with the given subject (identity provider ID).
+        case participant(subject: String)
+    }
+
+    static func withApp(
+        token tokenConfig: Token = .researcher(),
         _ test: @escaping @Sendable (Application, String?) async throws -> Void
     ) async throws {
         let app = try await Application.make(.testing)
 
         do {
             let keys = try await configureTesting(app)
-            let token: String? = if let groups {
-                try await signToken(keys: keys, subject: "researcher-test-user", roles: [researcherRole], groups: groups)
-            } else {
+            let token: String? = switch tokenConfig {
+            case .none:
                 nil
+            case .researcher(let groups):
+                try await signToken(keys: keys, subject: "researcher-test-user", roles: [researcherRole], groups: groups)
+            case .participant(let subject):
+                try await signToken(keys: keys, subject: subject, roles: [participantRole], groups: [])
             }
-            try await test(app, token)
-            try await cleanup(on: app.db)
-            try await app.asyncShutdown()
-        } catch {
-            try? await cleanup(on: app.db)
-            try? await app.asyncShutdown()
-            throw error
-        }
-    }
-
-    static func withApp(
-        participantSubject: String,
-        _ test: @escaping @Sendable (Application, String) async throws -> Void
-    ) async throws {
-        let app = try await Application.make(.testing)
-
-        do {
-            let keys = try await configureTesting(app)
-            let token = try await signToken(keys: keys, subject: participantSubject, roles: [participantRole], groups: [])
             try await test(app, token)
             try await cleanup(on: app.db)
             try await app.asyncShutdown()
@@ -101,6 +94,8 @@ enum TestApp {
     }
 
     private static func cleanup(on database: any Database) async throws {
+        try await InvitationCode.query(on: database).delete()
+        try await PublishedStudy.query(on: database).delete()
         try await Participant.query(on: database).delete()
         try await Group.query(on: database).delete()
     }

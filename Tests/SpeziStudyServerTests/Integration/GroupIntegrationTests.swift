@@ -16,7 +16,7 @@ import VaporTesting
 struct GroupIntegrationTests {
     @Test
     func listGroupsReturnsOnlyAccessible() async throws {
-        try await TestApp.withApp(groups: ["/Group A/admin"]) { app, token in
+        try await TestApp.withApp(token: .researcher(groups: ["/Group A/admin"])) { app, token in
             let groupA = try await GroupFixtures.createGroup(on: app.db, name: "Group A")
             try await GroupFixtures.createGroup(on: app.db, name: "Group B")
 
@@ -36,7 +36,7 @@ struct GroupIntegrationTests {
 
     @Test
     func listGroupsReturnsMultipleAccessible() async throws {
-        try await TestApp.withApp(groups: ["/Group A/researcher", "/Group B/admin"]) { app, token in
+        try await TestApp.withApp(token: .researcher(groups: ["/Group A/researcher", "/Group B/admin"])) { app, token in
             try await GroupFixtures.createGroup(on: app.db, name: "Group A")
             try await GroupFixtures.createGroup(on: app.db, name: "Group B")
             try await GroupFixtures.createGroup(on: app.db, name: "Group C")
@@ -56,7 +56,7 @@ struct GroupIntegrationTests {
 
     @Test
     func getGroupByIdAllowed() async throws {
-        try await TestApp.withApp(groups: ["/Test Group/researcher"]) { app, token in
+        try await TestApp.withApp(token: .researcher(groups: ["/Test Group/researcher"])) { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let groupId = try group.requireId()
 
@@ -74,7 +74,7 @@ struct GroupIntegrationTests {
 
     @Test
     func getGroupByIdForbidden() async throws {
-        try await TestApp.withApp(groups: ["/Other Group/admin"]) { app, token in
+        try await TestApp.withApp(token: .researcher(groups: ["/Other Group/admin"])) { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let groupId = try group.requireId()
 

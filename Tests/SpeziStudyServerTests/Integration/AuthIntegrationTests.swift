@@ -117,14 +117,16 @@ struct AuthIntegrationTests {
             researcher(.GET, "\(base)/groups/\(groupId)/studies", successStatus: .ok),
             researcher(.PATCH, "\(base)/studies/\(studyId)", body: jsonData(patchBody()), successStatus: .ok),
             researcher(.POST, "\(base)/groups/\(groupId)/studies", body: jsonData(studyBody()), minRole: .admin, successStatus: .created),
-            researcher(.DELETE, "\(base)/studies/\(studyId)", minRole: .admin, successStatus: .noContent),
 
-            // Studies — not yet implemented
+            // Invitation Codes
+            researcher(.GET, "\(base)/studies/\(studyId)/invitation-codes", successStatus: .ok),
+            researcher(.POST, "\(base)/studies/\(studyId)/invitation-codes", body: jsonData(["count": 1] as [String: Any]), successStatus: .created),
+            researcher(.DELETE, "\(base)/studies/\(studyId)/invitation-codes/\(dummyId)", successStatus: .notFound),
+
+            // Studies — destructive + not yet implemented
+            researcher(.DELETE, "\(base)/studies/\(studyId)", minRole: .admin, successStatus: .noContent),
             researcher(.POST, "\(base)/studies/\(studyId)/publish", minRole: .admin, successStatus: .notImplemented, requiresGroupAccess: false),
             researcher(.GET, "\(base)/studies/\(studyId)/published", successStatus: .notImplemented, requiresGroupAccess: false),
-            researcher(.GET, "\(base)/studies/\(studyId)/invitation-codes", successStatus: .notImplemented, requiresGroupAccess: false),
-            researcher(.POST, "\(base)/studies/\(studyId)/invitation-codes", body: jsonData(["count": 1] as [String: Any]), minRole: .admin, successStatus: .notImplemented, requiresGroupAccess: false),
-            researcher(.DELETE, "\(base)/studies/\(studyId)/invitation-codes/\(dummyId)", minRole: .admin, successStatus: .notImplemented, requiresGroupAccess: false),
             researcher(.GET, "\(base)/studies/\(studyId)/enrollments", successStatus: .notImplemented, requiresGroupAccess: false),
 
             // Components

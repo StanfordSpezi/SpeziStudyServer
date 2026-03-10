@@ -47,6 +47,10 @@ extension Controller {
     var profileService: ProfileService {
         spezi[ProfileService.self]
     }
+
+    var invitationCodeService: InvitationCodeService {
+        spezi[InvitationCodeService.self]
+    }
 }
 
 
@@ -63,27 +67,6 @@ extension Controller {
     func getStudiesStudyIdPublished(
         _ input: Operations.GetStudiesStudyIdPublished.Input
     ) async throws -> Operations.GetStudiesStudyIdPublished.Output {
-        try AuthContext.checkIsResearcher()
-        throw ServerError.endpointNotImplemented
-    }
-
-    func getStudiesStudyIdInvitationCodes(
-        _ input: Operations.GetStudiesStudyIdInvitationCodes.Input
-    ) async throws -> Operations.GetStudiesStudyIdInvitationCodes.Output {
-        try AuthContext.checkIsResearcher()
-        throw ServerError.endpointNotImplemented
-    }
-
-    func postStudiesStudyIdInvitationCodes(
-        _ input: Operations.PostStudiesStudyIdInvitationCodes.Input
-    ) async throws -> Operations.PostStudiesStudyIdInvitationCodes.Output {
-        try AuthContext.checkIsResearcher()
-        throw ServerError.endpointNotImplemented
-    }
-
-    func deleteStudiesStudyIdInvitationCodesCodeId(
-        _ input: Operations.DeleteStudiesStudyIdInvitationCodesCodeId.Input
-    ) async throws -> Operations.DeleteStudiesStudyIdInvitationCodesCodeId.Output {
         try AuthContext.checkIsResearcher()
         throw ServerError.endpointNotImplemented
     }

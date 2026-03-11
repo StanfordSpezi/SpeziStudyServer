@@ -7,6 +7,7 @@
 //
 
 import Fluent
+import FluentKit
 import Foundation
 import Spezi
 
@@ -23,6 +24,7 @@ final class EnrollmentRepository: Module, Sendable {
     }
 
     func findByParticipantAndStudy(participantId: UUID, studyId: UUID) async throws -> Enrollment? {
+        // swiftlint:disable:next first_where
         try await Enrollment.query(on: database)
             .filter(\.$participant.$id == participantId)
             .filter(\.$study.$id == studyId)
@@ -43,12 +45,7 @@ final class EnrollmentRepository: Module, Sendable {
 
     func create(_ enrollment: Enrollment) async throws -> Enrollment {
         try await enrollment.save(on: database)
-
-        guard let created = try await Enrollment.find(try enrollment.requireId(), on: database) else {
-            throw ServerError.failedToRetrieveCreatedObject
-        }
-
-        return created
+        return enrollment
     }
 
     func update(_ enrollment: Enrollment) async throws -> Enrollment {

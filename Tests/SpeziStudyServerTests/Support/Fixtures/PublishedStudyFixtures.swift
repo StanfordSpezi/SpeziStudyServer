@@ -21,7 +21,8 @@ enum PublishedStudyFixtures {
         revision: Int = 1,
         visibility: StudyVisibility = .public,
         title: String = "Test Study",
-        icon: String = "heart"
+        icon: String = "heart",
+        enrollmentConditions: StudyDefinition.EnrollmentConditions = .none
     ) async throws -> PublishedStudy {
         let metadata = StudyDefinition.Metadata(
             id: studyId,
@@ -30,7 +31,7 @@ enum PublishedStudyFixtures {
             explanationText: .init([.enUS: ""]),
             shortExplanationText: .init([.enUS: ""]),
             participationCriterion: .all([]),
-            enrollmentConditions: .none
+            enrollmentConditions: enrollmentConditions
         )
         let published = PublishedStudy(
             studyId: studyId,

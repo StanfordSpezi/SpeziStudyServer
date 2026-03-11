@@ -13,8 +13,8 @@ import SpeziStudyDefinition
 
 
 final class ComponentService: Module, @unchecked Sendable {
-    @Dependency(StudyService.self) var studyService: StudyService
-    @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
+    @Dependency(StudyService.self) var studyService
+    @Dependency(ComponentRepository.self) var componentRepository
 
     func listComponents(studyId: UUID) async throws -> [Component] {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
@@ -69,7 +69,7 @@ final class ComponentService: Module, @unchecked Sendable {
         content: LocalizationsDictionary<InformationalContent>
     ) async throws -> Component {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
-        return try await componentRepository.create(studyId: studyId, data: .informational(content), name: name)
+        return try await componentRepository.create(Component(studyId: studyId, data: .informational(content), name: name))
     }
 
     func createQuestionnaireComponent(
@@ -78,7 +78,7 @@ final class ComponentService: Module, @unchecked Sendable {
         content: LocalizationsDictionary<QuestionnaireContent>
     ) async throws -> Component {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
-        return try await componentRepository.create(studyId: studyId, data: .questionnaire(content), name: name)
+        return try await componentRepository.create(Component(studyId: studyId, data: .questionnaire(content), name: name))
     }
 
     func createHealthDataComponent(
@@ -87,7 +87,7 @@ final class ComponentService: Module, @unchecked Sendable {
         data: StudyDefinition.HealthDataCollectionComponent
     ) async throws -> Component {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
-        return try await componentRepository.create(studyId: studyId, data: .healthDataCollection(data), name: name)
+        return try await componentRepository.create(Component(studyId: studyId, data: .healthDataCollection(data), name: name))
     }
 
     // MARK: - Update Component
@@ -101,8 +101,7 @@ final class ComponentService: Module, @unchecked Sendable {
         let component = try await getComponent(studyId: studyId, id: id, expectedType: .informational)
         component.name = name
         component.data = .informational(content)
-        try await componentRepository.update(component)
-        return component
+        return try await componentRepository.update(component)
     }
 
     func updateQuestionnaireComponent(
@@ -114,8 +113,7 @@ final class ComponentService: Module, @unchecked Sendable {
         let component = try await getComponent(studyId: studyId, id: id, expectedType: .questionnaire)
         component.name = name
         component.data = .questionnaire(content)
-        try await componentRepository.update(component)
-        return component
+        return try await componentRepository.update(component)
     }
 
     func updateHealthDataComponent(
@@ -127,7 +125,6 @@ final class ComponentService: Module, @unchecked Sendable {
         let component = try await getComponent(studyId: studyId, id: id, expectedType: .healthDataCollection)
         component.name = name
         component.data = .healthDataCollection(data)
-        try await componentRepository.update(component)
-        return component
+        return try await componentRepository.update(component)
     }
 }

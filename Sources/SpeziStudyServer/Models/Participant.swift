@@ -36,21 +36,21 @@ final class Participant: Model, @unchecked Sendable {
 
     @Field(key: "identity_provider_id") var identityProviderId: String
 
-    @OptionalField(key: "first_name") var firstName: String?
+    @Field(key: "first_name") var firstName: String
 
-    @OptionalField(key: "last_name") var lastName: String?
+    @Field(key: "last_name") var lastName: String
 
-    @OptionalField(key: "email") var email: String?
+    @Field(key: "email") var email: String
 
-    @OptionalField(key: "gender") var gender: GenderIdentity?
+    @Field(key: "gender") var gender: GenderIdentity
 
-    @OptionalField(key: "date_of_birth") var dateOfBirth: Date?
+    @Field(key: "date_of_birth") var dateOfBirth: Date
 
-    @OptionalField(key: "region") var region: String?
+    @Field(key: "region") var region: String
 
-    @OptionalField(key: "language") var language: String?
+    @Field(key: "language") var language: String
 
-    @OptionalField(key: "phone_number") var phoneNumber: String?
+    @Field(key: "phone_number") var phoneNumber: String
 
     @Timestamp(key: "created_at", on: .create) var createdAt: Date?
 
@@ -62,14 +62,14 @@ final class Participant: Model, @unchecked Sendable {
 
     init(
         identityProviderId: String,
-        firstName: String? = nil,
-        lastName: String? = nil,
-        email: String? = nil,
-        gender: GenderIdentity? = nil,
-        dateOfBirth: Date? = nil,
-        region: String? = nil,
-        language: String? = nil,
-        phoneNumber: String? = nil,
+        firstName: String,
+        lastName: String,
+        email: String,
+        gender: GenderIdentity,
+        dateOfBirth: Date,
+        region: String,
+        language: String,
+        phoneNumber: String,
         id: UUID? = nil
     ) {
         self.id = id

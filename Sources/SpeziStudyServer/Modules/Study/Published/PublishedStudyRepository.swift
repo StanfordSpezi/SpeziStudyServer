@@ -9,6 +9,7 @@
 import Fluent
 import Foundation
 import Spezi
+import SQLKit
 
 
 final class PublishedStudyRepository: Module, Sendable {
@@ -32,11 +33,45 @@ final class PublishedStudyRepository: Module, Sendable {
 
     func create(_ publishedStudy: PublishedStudy) async throws -> PublishedStudy {
         try await publishedStudy.save(on: database)
+        return publishedStudy
+    }
 
-        guard let created = try await PublishedStudy.find(try publishedStudy.requireId(), on: database) else {
-            throw ServerError.failedToRetrieveCreatedObject
+    /// Browse: returns the latest revision of each publicly visible published study.
+    /// Uses a raw SQL subquery with `GROUP BY` + `MAX(revision)` to find the latest
+    /// revision per study in the database, then fetches full models for only those rows.
+    func listLatestPublicStudies() async throws -> [PublishedStudy] {
+        guard let sql = database as? any SQLDatabase else {
+            throw ServerError.internalServerError("Database does not support SQL")
         }
 
-        return created
+        let rows = try await sql.raw("""
+            SELECT published_study.id
+            FROM \(raw: PublishedStudy.schema) published_study
+            INNER JOIN (
+                SELECT study_id, MAX(revision) AS max_revision
+                FROM \(raw: PublishedStudy.schema)
+                GROUP BY study_id
+            ) latest ON published_study.study_id = latest.study_id
+                AND published_study.revision = latest.max_revision
+            WHERE published_study.visibility = 'public'
+            """)
+            .all()
+
+        let ids = try rows.map { try $0.decode(column: "id", as: UUID.self) }
+        guard !ids.isEmpty else {
+            return []
+        }
+
+        return try await PublishedStudy.query(on: database)
+            .filter(\.$id ~~ ids)
+            .all()
+    }
+
+    /// Lookup: returns the latest published revision for a specific study.
+    func findLatestPublished(forStudyId studyId: UUID) async throws -> PublishedStudy? {
+        try await PublishedStudy.query(on: database)
+            .filter(\.$study.$id == studyId)
+            .sort(\.$revision, .descending)
+            .first()
     }
 }

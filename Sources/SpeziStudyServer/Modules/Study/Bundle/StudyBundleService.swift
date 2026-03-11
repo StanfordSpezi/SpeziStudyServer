@@ -22,7 +22,9 @@ final class StudyBundleService: Module, @unchecked Sendable {
 
     func buildBundle(studyId: UUID) async throws -> Data {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
-        let study = try await studyRepository.findWithComponentsAndSchedules(id: studyId)
+        guard let study = try await studyRepository.findWithComponentsAndSchedules(id: studyId) else {
+            throw ServerError.notFound(resource: "Study", identifier: studyId.uuidString)
+        }
 
         let (metadata, consentFiles) = try await buildMetadata(from: study)
         let (components, componentFiles) = try buildComponents(from: study.components)

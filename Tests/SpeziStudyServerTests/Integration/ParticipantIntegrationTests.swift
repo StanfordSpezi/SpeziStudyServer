@@ -14,6 +14,17 @@ import VaporTesting
 
 @Suite(.serialized)
 struct ParticipantIntegrationTests {
+    private static let profileBody: [String: String] = [
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "gender": "female",
+        "dateOfBirth": "2000-01-15",
+        "region": "US",
+        "language": "en",
+        "phoneNumber": "+1234567890"
+    ]
+
     // MARK: - Profile Tests
 
     @Test
@@ -21,14 +32,7 @@ struct ParticipantIntegrationTests {
         try await TestApp.withApp(token: .participant(subject: "profile-create-user")) { app, token in
             try await app.test(.POST, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
-                try req.encodeJSONBody([
-                    "firstName": "Jane",
-                    "lastName": "Doe",
-                    "email": "jane@example.com",
-                    "dateOfBirth": "2000-01-15",
-                    "region": "US",
-                    "language": "en"
-                ] as [String: String])
+                try req.encodeJSONBody(Self.profileBody)
             }) { response in
                 #expect(response.status == .created)
 
@@ -40,6 +44,7 @@ struct ParticipantIntegrationTests {
                 #expect(profile.dateOfBirth == "2000-01-15")
                 #expect(profile.region == "US")
                 #expect(profile.language == "en")
+                #expect(profile.phoneNumber == "+1234567890")
             }
         }
     }
@@ -49,14 +54,14 @@ struct ParticipantIntegrationTests {
         try await TestApp.withApp(token: .participant(subject: "profile-conflict-user")) { app, token in
             try await app.test(.POST, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
-                try req.encodeJSONBody(["firstName": "Jane"] as [String: String])
+                try req.encodeJSONBody(Self.profileBody)
             }) { response in
                 #expect(response.status == .created)
             }
 
             try await app.test(.POST, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
-                try req.encodeJSONBody(["firstName": "Jane"] as [String: String])
+                try req.encodeJSONBody(Self.profileBody)
             }) { response in
                 #expect(response.status == .conflict)
             }
@@ -68,7 +73,7 @@ struct ParticipantIntegrationTests {
         try await TestApp.withApp(token: .participant(subject: "profile-get-user")) { app, token in
             try await app.test(.POST, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
-                try req.encodeJSONBody(["firstName": "Jane"] as [String: String])
+                try req.encodeJSONBody(Self.profileBody)
             }) { response in
                 #expect(response.status == .created)
             }
@@ -100,18 +105,19 @@ struct ParticipantIntegrationTests {
         try await TestApp.withApp(token: .participant(subject: "profile-update-user")) { app, token in
             try await app.test(.POST, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
-                try req.encodeJSONBody(["firstName": "Jane"] as [String: String])
+                try req.encodeJSONBody(Self.profileBody)
             }) { response in
                 #expect(response.status == .created)
             }
 
+            var updatedBody = Self.profileBody
+            updatedBody["firstName"] = "Updated"
+            updatedBody["lastName"] = "Smith"
+            updatedBody["dateOfBirth"] = "1995-06-20"
+
             try await app.test(.PUT, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
-                try req.encodeJSONBody([
-                    "firstName": "Updated",
-                    "lastName": "Smith",
-                    "dateOfBirth": "1995-06-20"
-                ] as [String: String])
+                try req.encodeJSONBody(updatedBody)
             }) { response in
                 #expect(response.status == .ok)
 
@@ -128,7 +134,7 @@ struct ParticipantIntegrationTests {
         try await TestApp.withApp(token: .participant(subject: "profile-update-notfound-user")) { app, token in
             try await app.test(.PUT, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
-                try req.encodeJSONBody(["firstName": "Jane"] as [String: String])
+                try req.encodeJSONBody(Self.profileBody)
             }) { response in
                 #expect(response.status == .notFound)
             }
@@ -177,7 +183,7 @@ struct ParticipantIntegrationTests {
                 on: app.db, studyId: studyId, visibility: .unlisted, title: "Unlisted Study"
             )
 
-            let code = InvitationCode(studyId: studyId, code: "TEST-CODE-123", issuedBy: "researcher")
+            let code = InvitationCode(studyId: studyId, code: "TEST-CODE-123")
             try await code.save(on: app.db)
 
             try await app.test(.GET, "\(apiBasePath)/participant/studies?code=TEST-CODE-123", beforeRequest: { req in

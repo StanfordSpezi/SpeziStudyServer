@@ -26,11 +26,6 @@ final class ConsentRepository: Module, Sendable {
 
     func createConsentRecord(_ record: EnrollmentConsent) async throws -> EnrollmentConsent {
         try await record.save(on: database)
-
-        guard let created = try await EnrollmentConsent.find(try record.requireId(), on: database) else {
-            throw ServerError.failedToRetrieveCreatedObject
-        }
-
-        return created
+        return record
     }
 }

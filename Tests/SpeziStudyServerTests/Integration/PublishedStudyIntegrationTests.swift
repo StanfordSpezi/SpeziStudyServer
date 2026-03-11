@@ -29,7 +29,7 @@ struct PublishedStudyIntegrationTests {
                 let published = try response.content.decode(Components.Schemas.PublishedStudyResponse.self)
                 #expect(published.studyId == studyId.uuidString)
                 #expect(published.revision == 1)
-                #expect(published.visibility == ._public)
+                #expect(published.visibility == .public)
             }
         }
     }

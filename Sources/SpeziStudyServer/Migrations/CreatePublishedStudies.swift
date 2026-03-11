@@ -18,8 +18,7 @@ struct CreatePublishedStudies: AsyncMigration {
             .field("visibility", .string, .required)
             .field("bundle_url", .string, .required)
             .field("metadata", .json, .required)
-            .field("published_at", .datetime, .required)
-            .field("updated_at", .datetime)
+            .timestamps()
             .unique(on: "study_id", "revision")
             .create()
     }

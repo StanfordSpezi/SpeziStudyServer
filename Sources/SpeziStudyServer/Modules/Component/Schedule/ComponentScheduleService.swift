@@ -12,9 +12,9 @@ import SpeziStudyDefinition
 
 
 final class ComponentScheduleService: Module, @unchecked Sendable {
-    @Dependency(StudyService.self) var studyService: StudyService
-    @Dependency(ComponentRepository.self) var componentRepository: ComponentRepository
-    @Dependency(ComponentScheduleRepository.self) var repository: ComponentScheduleRepository
+    @Dependency(StudyService.self) var studyService
+    @Dependency(ComponentRepository.self) var componentRepository
+    @Dependency(ComponentScheduleRepository.self) var repository
 
     func listSchedules(studyId: UUID, componentId: UUID) async throws -> [ComponentSchedule] {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
@@ -59,8 +59,7 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
         }
 
         schedule.scheduleData = data
-        try await repository.update(schedule)
-        return schedule
+        return try await repository.update(schedule)
     }
 
     func deleteSchedule(studyId: UUID, componentId: UUID, scheduleId: UUID) async throws {

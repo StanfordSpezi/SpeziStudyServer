@@ -33,8 +33,9 @@ final class ComponentScheduleRepository: Module, Sendable {
         return schedule
     }
 
-    func update(_ schedule: ComponentSchedule) async throws {
+    func update(_ schedule: ComponentSchedule) async throws -> ComponentSchedule {
         try await schedule.update(on: database)
+        return schedule
     }
 
     func delete(id: UUID) async throws -> Bool {

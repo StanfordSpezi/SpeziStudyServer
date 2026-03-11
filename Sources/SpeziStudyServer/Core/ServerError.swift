@@ -18,7 +18,6 @@ struct ServerError: Error, Sendable {
     static let missingToken = unauthorized("Missing Authorization header")
     static let invalidToken = unauthorized("Invalid or expired token")
     static let forbidden = Self(status: .forbidden, title: "Forbidden", detail: "Insufficient permissions")
-    static let failedToRetrieveCreatedObject = internalServerError("Failed to retrieve created object")
     static let unexpectedError = internalServerError("An unexpected error occurred")
     static let endpointNotImplemented = Self(status: .notImplemented, title: "Not Implemented", detail: "Endpoint not implemented")
 

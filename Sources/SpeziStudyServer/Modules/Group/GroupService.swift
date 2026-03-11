@@ -12,7 +12,7 @@ import SpeziFoundation
 
 
 final class GroupService: Module, @unchecked Sendable {
-    @Dependency(GroupRepository.self) var repository: GroupRepository
+    @Dependency(GroupRepository.self) var repository
 
     init() {}
 
@@ -49,7 +49,7 @@ final class GroupService: Module, @unchecked Sendable {
         let existingNames = try await repository.listAll().mapIntoSet(\.name)
 
         for keycloakGroup in keycloakGroups where !existingNames.contains(keycloakGroup.name) {
-            _ = try await repository.create(Group(name: keycloakGroup.name, icon: "tree-pine"))
+            try await repository.create(Group(name: keycloakGroup.name, icon: "tree-pine"))
         }
     }
 }

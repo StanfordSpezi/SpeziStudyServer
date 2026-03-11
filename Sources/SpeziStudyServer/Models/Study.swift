@@ -85,6 +85,8 @@ final class Study: Model, @unchecked Sendable {
 
     @Children(for: \.$study) var enrollments: [Enrollment]
 
+    @Children(for: \.$study) var invitationCodes: [InvitationCode]
+
     init() {}
 
     init(

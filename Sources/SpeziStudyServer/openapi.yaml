@@ -329,11 +329,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          description: Invitation code has already been used and cannot be deleted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetails'
+          $ref: '#/components/responses/Conflict'
 
   /studies/{studyId}/enrollments:
     get:
@@ -791,6 +787,8 @@ paths:
                 $ref: '#/components/schemas/ParticipantProfile'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/TooManyRequests'
 
@@ -841,6 +839,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/TooManyRequests'
 
@@ -1402,7 +1402,7 @@ components:
         participationCriterion:
           $ref: '#/components/schemas/ParticipationCriterion'
         consent:
-          $ref: '#/components/schemas/LocalizedConsentContent'
+          $ref: '#/components/schemas/StudyConsent'
         enrollmentConditions:
           $ref: '#/components/schemas/EnrollmentConditions'
 
@@ -2137,6 +2137,7 @@ components:
         count:
           type: integer
           minimum: 1
+          maximum: 50
           description: Number of invitation codes to generate
         expiresAt:
           type: string
@@ -2423,7 +2424,7 @@ components:
           type: string
           description: Consent document markdown
 
-    LocalizedConsentContent:
+    StudyConsent:
       type: object
       description: Locale-keyed map of consent content
       additionalProperties:
@@ -2435,31 +2436,6 @@ components:
           de-DE:
             title: Einwilligungserklärung
             content: "# Einwilligung\n\nDurch die Teilnahme..."
-
-    StudyConsent:
-      type: object
-      description: Study consent definition with version and localized content
-      required:
-        - version
-        - content
-      properties:
-        version:
-          type: string
-          pattern: '^\d+\.\d+\.\d+$'
-          description: Semantic version of the consent form
-          examples:
-            - "1.0.0"
-        content:
-          $ref: '#/components/schemas/LocalizedConsentContent'
-      examples:
-        - version: "1.0.0"
-          content:
-            en-US:
-              title: Study Consent Form
-              content: "# Consent\n\nYou are being asked to participate in a research study."
-            de-DE:
-              title: Einwilligungsformular
-              content: "# Einwilligung\n\nSie werden gebeten, an einer Forschungsstudie teilzunehmen."
 
     NameComponents:
       type: object
@@ -2570,16 +2546,27 @@ components:
       description: The authenticated participant's profile
       required:
         - id
+        - firstName
+        - lastName
+        - email
+        - gender
+        - dateOfBirth
+        - region
+        - language
+        - phoneNumber
       properties:
         id:
           type: string
           format: uuid
         firstName:
           type: string
+          maxLength: 200
         lastName:
           type: string
+          maxLength: 200
         email:
           type: string
+          format: email
         gender:
           $ref: '#/components/schemas/GenderIdentity'
         dateOfBirth:
@@ -2587,21 +2574,36 @@ components:
           format: date
         region:
           type: string
+          maxLength: 10
         language:
           type: string
+          maxLength: 10
         phoneNumber:
           type: string
+          maxLength: 30
 
     ParticipantProfileInput:
       type: object
-      description: Input for updating the participant's profile
+      description: Input for creating or updating the participant's profile
+      required:
+        - firstName
+        - lastName
+        - email
+        - gender
+        - dateOfBirth
+        - region
+        - language
+        - phoneNumber
       properties:
         firstName:
           type: string
+          maxLength: 200
         lastName:
           type: string
+          maxLength: 200
         email:
           type: string
+          format: email
         gender:
           $ref: '#/components/schemas/GenderIdentity'
         dateOfBirth:
@@ -2609,7 +2611,10 @@ components:
           format: date
         region:
           type: string
+          maxLength: 10
         language:
           type: string
+          maxLength: 10
         phoneNumber:
           type: string
+          maxLength: 30

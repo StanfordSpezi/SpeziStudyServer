@@ -10,67 +10,59 @@ import Foundation
 import SpeziLocalization
 
 
-struct ParticipantProfileInput: Sendable {
-    var firstName: String?
-    var lastName: String?
-    var email: String?
-    var gender: GenderIdentity?
-    var dateOfBirth: Date?
-    var region: String?
-    var language: String?
-    var phoneNumber: String?
+private let dateOnlyFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone(identifier: "UTC")
+    return formatter
+}()
 
-    init(_ schema: Components.Schemas.ParticipantProfileInput) {
+
+struct ParticipantProfileInput: Sendable {
+    var firstName: String
+    var lastName: String
+    var email: String
+    var gender: GenderIdentity
+    var dateOfBirth: Date
+    var region: String
+    var language: String
+    var phoneNumber: String
+
+    init(_ schema: Components.Schemas.ParticipantProfileInput) throws {
         self.firstName = schema.firstName
         self.lastName = schema.lastName
         self.email = schema.email
-        self.gender = schema.gender.flatMap { GenderIdentity(rawValue: $0.rawValue) }
-        self.dateOfBirth = schema.dateOfBirth.flatMap { Self.dateOnlyFormatter.date(from: $0) }
+        guard let gender = GenderIdentity(rawValue: schema.gender.rawValue) else {
+            throw ServerError.badRequest("Invalid gender value")
+        }
+        self.gender = gender
+        guard let dateOfBirth = dateOnlyFormatter.date(from: schema.dateOfBirth) else {
+            throw ServerError.badRequest("Invalid date format, expected yyyy-MM-dd")
+        }
+        self.dateOfBirth = dateOfBirth
         self.region = schema.region
         self.language = schema.language
         self.phoneNumber = schema.phoneNumber
     }
-
-    private static let dateOnlyFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter
-    }()
 }
 
 
 extension Components.Schemas.ParticipantProfile {
     init(_ model: Participant) throws {
+        guard let gender = Components.Schemas.GenderIdentity(rawValue: model.gender.rawValue) else {
+            throw ServerError.internalServerError("Invalid gender value in database")
+        }
         self.init(
             id: try model.requireId().uuidString,
             firstName: model.firstName,
             lastName: model.lastName,
             email: model.email,
-            gender: model.gender.flatMap { Components.Schemas.GenderIdentity(rawValue: $0.rawValue) },
-            dateOfBirth: model.dateOfBirth.map { Self.dateOnlyFormatter.string(from: $0) },
+            gender: gender,
+            dateOfBirth: dateOnlyFormatter.string(from: model.dateOfBirth),
             region: model.region,
             language: model.language,
             phoneNumber: model.phoneNumber
-        )
-    }
-
-    private static let dateOnlyFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter
-    }()
-}
-
-
-extension Components.Schemas.PublishedStudyListItem {
-    init(_ model: PublishedStudy) throws {
-        self.init(
-            id: model.$study.id.uuidString,
-            metadata: model.metadata
         )
     }
 }

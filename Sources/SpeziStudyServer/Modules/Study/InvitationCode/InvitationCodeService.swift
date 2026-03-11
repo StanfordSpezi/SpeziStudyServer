@@ -11,10 +11,16 @@ import Spezi
 
 
 final class InvitationCodeService: Module, @unchecked Sendable {
-    @Dependency(InvitationCodeRepository.self) var repository: InvitationCodeRepository
-    @Dependency(StudyService.self) var studyService: StudyService
+    @Dependency(InvitationCodeRepository.self) var repository
+    @Dependency(StudyService.self) var studyService
 
     init() {}
+
+    private static func generateCode() -> String {
+        let characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+        let raw = (0..<8).map { _ in characters.randomElement()! }
+        return "\(String(raw[0..<4]))-\(String(raw[4..<8]))"
+    }
 
     func listCodes(studyId: UUID) async throws -> [InvitationCode] {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
@@ -24,7 +30,10 @@ final class InvitationCodeService: Module, @unchecked Sendable {
     func createCodes(studyId: UUID, count: Int, expiresAt: Date?) async throws -> [InvitationCode] {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
-        let context = try AuthContext.checkIsResearcher()
+        guard (1...50).contains(count) else {
+            throw ServerError.badRequest("Count must be between 1 and 50")
+        }
+
         var codes: [InvitationCode] = []
         var generatedCodes: Set<String> = []
 
@@ -33,7 +42,6 @@ final class InvitationCodeService: Module, @unchecked Sendable {
             codes.append(InvitationCode(
                 studyId: studyId,
                 code: code,
-                issuedBy: context.subject,
                 expiresAt: expiresAt
             ))
         }
@@ -48,19 +56,19 @@ final class InvitationCodeService: Module, @unchecked Sendable {
             throw ServerError.notFound(resource: "InvitationCode", identifier: codeId.uuidString)
         }
 
-        if code.redeemedAt != nil {
+        if code.enrollment != nil {
             throw ServerError.conflict("Cannot delete an invitation code that has already been redeemed")
         }
 
         try await repository.delete(code)
     }
 
-    func redeemInvitationCode(_ code: String, studyId: UUID) async throws {
-        try await repository.redeemInvitationCode(code, studyId: studyId)
-    }
-
-    func linkInvitationCode(_ code: String, toEnrollmentId enrollmentId: UUID, studyId: UUID) async throws {
-        try await repository.linkInvitationCode(code, toEnrollmentId: enrollmentId, studyId: studyId)
+    func validateCode(_ code: String, studyId: UUID) async throws -> UUID {
+        try AuthContext.checkIsParticipant()
+        guard let invitationCode = try await repository.findValid(code: code, studyId: studyId) else {
+            throw ServerError.badRequest("Invalid or expired invitation code")
+        }
+        return try invitationCode.requireId()
     }
 
     private func generateUniqueCode(excluding batchCodes: inout Set<String>) async throws -> String {
@@ -76,11 +84,5 @@ final class InvitationCodeService: Module, @unchecked Sendable {
             return code
         }
         throw ServerError.internalServerError("Failed to generate a unique invitation code")
-    }
-
-    private static func generateCode() -> String {
-        let characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-        let raw = (0..<8).map { _ in characters.randomElement()! }
-        return "\(String(raw[0..<4]))-\(String(raw[4..<8]))"
     }
 }

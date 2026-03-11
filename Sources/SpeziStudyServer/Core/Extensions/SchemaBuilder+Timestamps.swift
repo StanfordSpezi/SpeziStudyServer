@@ -12,7 +12,7 @@ import Fluent
 extension SchemaBuilder {
     @discardableResult
     func timestamps() -> Self {
-        field("created_at", .datetime)
+        field("created_at", .datetime, .required)
             .field("updated_at", .datetime)
     }
 }

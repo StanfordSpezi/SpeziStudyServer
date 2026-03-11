@@ -8,7 +8,6 @@
 
 import Fluent
 import Foundation
-import SQLKit
 import Spezi
 
 
@@ -20,6 +19,7 @@ final class ProfileRepository: Module, Sendable {
     }
 
     func findByIdentityProviderId(_ id: String) async throws -> Participant? {
+        // swiftlint:disable:next first_where
         try await Participant.query(on: database)
             .filter(\.$identityProviderId == id)
             .first()
@@ -27,54 +27,11 @@ final class ProfileRepository: Module, Sendable {
 
     func create(_ participant: Participant) async throws -> Participant {
         try await participant.save(on: database)
-
-        guard let created = try await Participant.find(try participant.requireId(), on: database) else {
-            throw ServerError.failedToRetrieveCreatedObject
-        }
-
-        return created
+        return participant
     }
 
-    func update(_ participant: Participant) async throws {
+    func update(_ participant: Participant) async throws -> Participant {
         try await participant.update(on: database)
-    }
-
-    func listPublicPublishedStudies() async throws -> [PublishedStudy] {
-        try await latestPublishedStudiesQuery()
-            .filter(\.$visibility == .public)
-            .all()
-    }
-
-    func findPublishedStudyByInvitationCode(_ code: String) async throws -> PublishedStudy? {
-        guard let invitationCode = try await findInvitationCode(code) else {
-            return nil
-        }
-
-        return try await latestPublishedStudiesQuery()
-            .filter(\.$study.$id == invitationCode.$study.id)
-            .first()
-    }
-
-    func findInvitationCode(_ code: String) async throws -> InvitationCode? {
-        try await InvitationCode.query(on: database)
-            .filter(\.$code == code)
-            .filter(\.$redeemedAt == nil)
-            .group(.or) { group in
-                group.filter(\.$expiresAt == nil)
-                group.filter(\.$expiresAt > Date())
-            }
-            .first()
-    }
-
-    /// Returns a query for published studies filtered to only the latest revision per study.
-    private func latestPublishedStudiesQuery() -> QueryBuilder<PublishedStudy> {
-        PublishedStudy.query(on: database)
-            .filter(.custom(SQLRaw("""
-                "revision" = (
-                    SELECT MAX("revision")
-                    FROM "published_studies"
-                    WHERE "study_id" = "published_studies"."study_id"
-                )
-                """)))
+        return participant
     }
 }

@@ -147,14 +147,19 @@ struct InvitationCodeIntegrationTests {
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
-            let code = InvitationCode(
-                studyId: studyId,
-                code: "REDEEMED1",
-                issuedBy: "researcher-test-user",
-                redeemedAt: Date()
-            )
+            // Create a code and an enrollment that references it (simulating a redeemed code)
+            let code = InvitationCode(studyId: studyId, code: "REDEEMED1")
             try await code.save(on: app.db)
             let codeId = try code.requireId()
+
+            let participant = try await ParticipantFixtures.createParticipant(on: app.db)
+            let enrollment = Enrollment(
+                participantId: try participant.requireId(),
+                studyId: studyId,
+                currentRevision: 1,
+                invitationCodeId: codeId
+            )
+            try await enrollment.save(on: app.db)
 
             try await app.test(.DELETE, "\(apiBasePath)/studies/\(studyId)/invitation-codes/\(codeId)", beforeRequest: { req in
                 req.bearerAuth(token)

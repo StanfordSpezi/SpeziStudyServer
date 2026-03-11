@@ -68,5 +68,3 @@ extension Controller {
         spezi[ConsentService.self]
     }
 }
-
-

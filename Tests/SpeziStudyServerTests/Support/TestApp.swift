@@ -15,10 +15,6 @@ import VaporTesting
 
 
 enum TestApp {
-    private static let testSecret = "test-hmac-secret-for-jwt-signing"
-    private static let researcherRole = "spezistudyplatform-researcher"
-    private static let participantRole = "spezistudyplatform-participant"
-
     enum Token: Sendable {
         /// No token — unauthenticated request.
         case none
@@ -27,6 +23,10 @@ enum TestApp {
         /// Participant token with the given subject (identity provider ID).
         case participant(subject: String)
     }
+
+    private static let testSecret = "test-hmac-secret-for-jwt-signing"
+    private static let researcherRole = "spezistudyplatform-researcher"
+    private static let participantRole = "spezistudyplatform-participant"
 
     static func withApp(
         token tokenConfig: Token = .researcher(),
@@ -94,8 +94,7 @@ enum TestApp {
     }
 
     private static func cleanup(on database: any Database) async throws {
-        try await InvitationCode.query(on: database).delete()
-        try await PublishedStudy.query(on: database).delete()
+        // Cascades handle all dependent tables (Study, Component, Enrollment, etc.)
         try await Participant.query(on: database).delete()
         try await Group.query(on: database).delete()
     }

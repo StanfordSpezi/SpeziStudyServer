@@ -21,6 +21,7 @@ final class InvitationCodeRepository: Module, Sendable {
     func listByStudyId(_ studyId: UUID) async throws -> [InvitationCode] {
         try await InvitationCode.query(on: database)
             .filter(\.$study.$id == studyId)
+            .with(\.$enrollment)
             .all()
     }
 
@@ -31,52 +32,37 @@ final class InvitationCodeRepository: Module, Sendable {
     }
 
     func find(id: UUID) async throws -> InvitationCode? {
-        try await InvitationCode.find(id, on: database)
+        try await InvitationCode.query(on: database)
+            .filter(\.$id == id)
+            .with(\.$enrollment)
+            .first()
     }
 
     func create(_ codes: [InvitationCode]) async throws -> [InvitationCode] {
-        for code in codes {
-            try await code.save(on: database)
+        try await database.transaction { transaction in
+            for code in codes {
+                try await code.save(on: transaction)
+            }
         }
-
-        let ids = try codes.map { try $0.requireId() }
-        return try await InvitationCode.query(on: database)
-            .filter(\.$id ~~ ids)
-            .all()
+        return codes
     }
 
     func delete(_ code: InvitationCode) async throws {
         try await code.delete(on: database)
     }
 
-    func redeemInvitationCode(_ code: String, studyId: UUID) async throws {
-        let invitationCode = try await InvitationCode.query(on: database)
+    /// Finds an invitation code that exists, is not expired, and has not been redeemed.
+    func findValid(code: String, studyId: UUID? = nil) async throws -> InvitationCode? {
+        var query = InvitationCode.query(on: database)
             .filter(\.$code == code)
-            .filter(\.$study.$id == studyId)
-            .filter(\.$redeemedAt == nil)
-            .group(.or) { group in
-                group.filter(\.$expiresAt == nil)
-                group.filter(\.$expiresAt > Date())
-            }
-            .first()
-
-        guard let invitationCode else {
-            throw ServerError.badRequest("Invalid or expired invitation code")
+            .filterNotExpired()
+            .with(\.$enrollment)
+        if let studyId {
+            query = query.filter(\.$study.$id == studyId)
         }
-
-        invitationCode.redeemedAt = Date()
-        try await invitationCode.save(on: database)
-    }
-
-    func linkInvitationCode(_ code: String, toEnrollmentId enrollmentId: UUID, studyId: UUID) async throws {
-        guard let invitationCode = try await InvitationCode.query(on: database)
-            .filter(\.$code == code)
-            .filter(\.$study.$id == studyId)
-            .first() else {
-            return
+        guard let invitationCode = try await query.first() else {
+            return nil
         }
-
-        invitationCode.$enrollment.id = enrollmentId
-        try await invitationCode.save(on: database)
+        return invitationCode.enrollment == nil ? invitationCode : nil
     }
 }

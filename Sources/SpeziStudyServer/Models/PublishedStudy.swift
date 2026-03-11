@@ -36,7 +36,7 @@ final class PublishedStudy: Model, @unchecked Sendable {
 
     @Field(key: "metadata") var metadata: StudyDefinition.Metadata
 
-    @Timestamp(key: "published_at", on: .create) var publishedAt: Date?
+    @Timestamp(key: "created_at", on: .create) var createdAt: Date?
 
     @Timestamp(key: "updated_at", on: .update) var updatedAt: Date?
 

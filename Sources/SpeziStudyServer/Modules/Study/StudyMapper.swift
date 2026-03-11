@@ -66,9 +66,18 @@ extension Components.Schemas.PublishedStudyResponse {
             id: try model.requireId().uuidString,
             studyId: model.$study.id.uuidString,
             revision: model.revision,
-            visibility: .init(rawValue: model.visibility.rawValue)!,
+            visibility: model.visibility,
             bundleURL: model.bundleURL.absoluteString,
-            publishedAt: model.publishedAt ?? Date()
+            publishedAt: model.createdAt!  // swiftlint:disable:this force_unwrapping
+        )
+    }
+}
+
+extension Components.Schemas.PublishedStudyListItem {
+    init(_ model: PublishedStudy) throws {
+        self.init(
+            id: model.$study.id.uuidString,
+            metadata: model.metadata
         )
     }
 }
@@ -136,7 +145,8 @@ extension StudyDefinition.EnrollmentConditions {
         case .none:
             self = .none
         case .requiresInvitationCode:
-            self = .requiresInvitation(verificationEndpoint: URL(string: "https://placeholder.invalid")!)  // swiftlint:disable:this force_unwrapping
+            // TODO:
+            self = .requiresInvitation(verificationEndpoint: URL(string: "https://example.com")!)  // swiftlint:disable:this force_unwrapping
         }
     }
 }

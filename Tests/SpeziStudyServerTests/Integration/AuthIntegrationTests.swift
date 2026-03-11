@@ -78,11 +78,18 @@ struct AuthIntegrationTests {
     private static func participant(
         _ method: HTTPMethod,
         _ path: String,
-        body: Data? = nil, // swiftlint:disable:this function_default_parameter_at_end
-        contentType: HTTPMediaType? = nil,
-        successStatus: HTTPStatus
+        successStatus: HTTPStatus,
+        body: Data? = nil,
+        contentType: HTTPMediaType? = nil
     ) -> Endpoint {
-        Endpoint(method: method, path: path, body: body, contentType: contentType ?? (body != nil ? .json : nil), role: .participant, successStatus: successStatus)
+        Endpoint(
+            method: method,
+            path: path,
+            body: body,
+            contentType: contentType ?? (body != nil ? .json : nil),
+            role: .participant,
+            successStatus: successStatus
+        )
     }
 
 
@@ -155,20 +162,20 @@ struct AuthIntegrationTests {
             researcher(.DELETE, "\(base)/studies/\(studyId)/components/\(componentId)/schedules/\(scheduleId)", successStatus: .noContent),
 
             // Participant — profile & studies (fixture pre-created by participantAllowedActions)
-            participant(.POST, "\(base)/participant/profile", body: jsonData(["firstName": "Jane"]), successStatus: .conflict),
+            participant(.POST, "\(base)/participant/profile", successStatus: .conflict, body: jsonData(profileBody())),
             participant(.GET, "\(base)/participant/profile", successStatus: .ok),
-            participant(.PUT, "\(base)/participant/profile", body: jsonData(["dateOfBirth": "2000-01-01"]), successStatus: .ok),
+            participant(.PUT, "\(base)/participant/profile", successStatus: .ok, body: jsonData(profileBody(firstName: "Updated"))),
             participant(.GET, "\(base)/participant/studies", successStatus: .ok),
-            participant(.POST, "\(base)/participant/enrollments", body: jsonData(["studyId": studyId.uuidString]), successStatus: .notFound),
+            participant(.POST, "\(base)/participant/enrollments", successStatus: .notFound, body: jsonData(["studyId": studyId.uuidString])),
             participant(.GET, "\(base)/participant/enrollments", successStatus: .ok),
             participant(.POST, "\(base)/participant/enrollments/\(dummyId)/withdraw", successStatus: .notFound),
             participant(.GET, "\(base)/participant/enrollments/\(dummyId)/consents", successStatus: .notFound),
             participant(
                 .POST,
                 "\(base)/participant/enrollments/\(dummyId)/consents",
+                successStatus: .notFound,
                 body: multipartConsentBody(),
-                contentType: .init(type: "multipart", subType: "form-data", parameters: ["boundary": "AuthTestBoundary"]),
-                successStatus: .notFound
+                contentType: .init(type: "multipart", subType: "form-data", parameters: ["boundary": "AuthTestBoundary"])
             )
         ]
     }
@@ -354,6 +361,19 @@ private func jsonData(_ dict: [String: Any]) -> Data? {
 
 private func jsonData(_ value: some Encodable) -> Data? {
     try? JSONEncoder().encode(value)
+}
+
+private func profileBody(firstName: String = "Jane") -> [String: String] {
+    [
+        "firstName": firstName,
+        "lastName": "Doe",
+        "email": "jane@example.com",
+        "gender": "female",
+        "dateOfBirth": "2000-01-15",
+        "region": "US",
+        "language": "en",
+        "phoneNumber": "+1234567890"
+    ]
 }
 
 private func studyBody(title: String = "X") -> [String: Any] {

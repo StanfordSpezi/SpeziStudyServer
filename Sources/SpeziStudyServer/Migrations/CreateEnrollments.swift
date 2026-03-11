@@ -16,18 +16,24 @@ struct CreateEnrollments: AsyncMigration {
             .id()
             .field("participant_id", .uuid, .required, .references("participants", "id", onDelete: .cascade))
             .field("study_id", .uuid, .required, .references("studies", "id", onDelete: .cascade))
+            .field("invitation_code_id", .uuid, .references("invitation_codes", "id"))
             .field("current_revision", .int, .required)
-            .field("created_at", .datetime, .required)
-            .field("updated_at", .datetime)
             .field("withdrawn_at", .datetime)
             .field("participation_data", .json, .required)
+            .timestamps()
             .unique(on: "participant_id", "study_id")
+            .unique(on: "invitation_code_id")
             .create()
 
         if let sql = database as? any SQLDatabase {
             try await sql.create(index: "idx_enrollments_study_id")
                 .on("enrollments")
                 .column("study_id")
+                .run()
+
+            try await sql.create(index: "idx_enrollments_participant_id")
+                .on("enrollments")
+                .column("participant_id")
                 .run()
         }
     }

@@ -32,24 +32,24 @@ final class ComponentRepository: Module, Sendable {
             .first()
     }
 
-    func create(
-        studyId: UUID,
-        data: ComponentData,
-        name: String
-    ) async throws -> Component {
+    func create(_ component: Component) async throws -> Component {
         let id = UUID()
-        var data = data
-        if case .healthDataCollection(var healthData) = data {
+        component.id = id
+        if case .healthDataCollection(var healthData) = component.data {
             healthData.id = id
-            data = .healthDataCollection(healthData)
+            component.data = .healthDataCollection(healthData)
         }
-        let component = Component(studyId: studyId, data: data, name: name, id: id)
         try await component.save(on: database)
         return component
     }
 
-    func update(_ component: Component) async throws {
+    func update(_ component: Component) async throws -> Component {
+        if case .healthDataCollection(var healthData) = component.data {
+            healthData.id = try component.requireId()
+            component.data = .healthDataCollection(healthData)
+        }
         try await component.update(on: database)
+        return component
     }
 
     func delete(id: UUID, studyId: UUID) async throws -> Bool {

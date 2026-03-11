@@ -16,7 +16,7 @@ extension Controller {
         guard case .json(let schema) = input.body else {
             throw ServerError.jsonBodyRequired
         }
-        let profileInput = ParticipantProfileInput(schema)
+        let profileInput = try ParticipantProfileInput(schema)
         let participant = try await profileService.createProfile(input: profileInput)
         return .created(.init(body: .json(try .init(participant))))
     }
@@ -34,7 +34,7 @@ extension Controller {
         guard case .json(let schema) = input.body else {
             throw ServerError.jsonBodyRequired
         }
-        let profileInput = ParticipantProfileInput(schema)
+        let profileInput = try ParticipantProfileInput(schema)
         let participant = try await profileService.updateProfile(input: profileInput)
         return .ok(.init(body: .json(try .init(participant))))
     }

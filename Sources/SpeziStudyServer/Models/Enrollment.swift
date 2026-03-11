@@ -25,6 +25,8 @@ final class Enrollment: Model, @unchecked Sendable {
 
     @Parent(key: "study_id") var study: Study
 
+    @OptionalParent(key: "invitation_code_id") var invitationCode: InvitationCode?
+
     @Field(key: "current_revision") var currentRevision: Int
 
     @Timestamp(key: "created_at", on: .create) var createdAt: Date?
@@ -43,12 +45,14 @@ final class Enrollment: Model, @unchecked Sendable {
         participantId: UUID,
         studyId: UUID,
         currentRevision: Int,
+        invitationCodeId: UUID? = nil,
         participationData: ParticipationData = ParticipationData(),
         id: UUID? = nil
     ) {
         self.id = id
         self.$participant.id = participantId
         self.$study.id = studyId
+        self.$invitationCode.id = invitationCodeId
         self.currentRevision = currentRevision
         self.participationData = participationData
     }

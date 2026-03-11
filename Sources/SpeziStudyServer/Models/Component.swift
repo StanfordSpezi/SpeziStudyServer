@@ -51,9 +51,9 @@ final class Component: Model, @unchecked Sendable {
 
     @Field(key: "name") var name: String
 
-    @Timestamp(key: "created_at", on: .create) var createdAt: Date?
-
     @Field(key: "type") var type: ComponentType
+
+    @Timestamp(key: "created_at", on: .create) var createdAt: Date?
 
     @Timestamp(key: "updated_at", on: .update) var updatedAt: Date?
 

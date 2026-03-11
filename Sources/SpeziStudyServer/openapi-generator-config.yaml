@@ -26,6 +26,7 @@ typeOverrides:
     SampleTypesCollection: "[SpeziHealthKit.SampleTypeProxy]"
     LocalizationKey: SpeziLocalization.LocalizationKey
     StudyConsent: "SpeziLocalization.LocalizationsDictionary<SpeziStudyServer.ConsentContent>"
-    LocalizedConsentContent: "SpeziLocalization.LocalizationsDictionary<SpeziStudyServer.ConsentContent>"
+
     StudyMetadataCodable: SpeziStudyDefinition.StudyDefinition.Metadata
     StudyMetadataParticipationCriterion: SpeziStudyDefinition.StudyDefinition.ParticipationCriterion
+    StudyVisibility: SpeziStudyServer.StudyVisibility

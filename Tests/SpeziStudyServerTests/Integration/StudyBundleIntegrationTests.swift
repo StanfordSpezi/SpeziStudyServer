@@ -94,7 +94,9 @@ struct StudyBundleIntegrationTests {
         let studyId = try study.requireId()
 
         // Consent
-        study.consent = LocalizationsDictionary([.enUS: ConsentContent(title: "Informed Consent", content: "# Informed Consent\n\nPlease read carefully before participating.")])
+        study.consent = LocalizationsDictionary([
+            .enUS: ConsentContent(title: "Informed Consent", content: "# Informed Consent\n\nPlease read carefully.")
+        ])
         try await study.save(on: database)
 
         // Informational component
@@ -196,7 +198,7 @@ struct StudyBundleIntegrationTests {
         // Consent text
         let consentRef = try #require(definition.metadata.consentFileRef)
         let consentText = try #require(bundle.consentText(for: consentRef, in: enUS))
-        #expect(consentText == "---\ntitle: Informed Consent\nversion: 1.0.0\n---\n# Informed Consent\n\nPlease read carefully before participating.")
+        #expect(consentText == "---\ntitle: Informed Consent\nversion: 1.0.0\n---\n# Informed Consent\n\nPlease read carefully.")
 
         // Informational component
         let informationalDef = try #require(definition.components.first(where: {

@@ -19,37 +19,36 @@ final class InvitationCode: Model, @unchecked Sendable {
 
     @Field(key: "code") var code: String
 
-    @OptionalParent(key: "enrollment_id") var enrollment: Enrollment?
-
-    @Field(key: "issued_by") var issuedBy: String
-
-    @OptionalField(key: "redeemed_at") var redeemedAt: Date?
-
     @OptionalField(key: "expires_at") var expiresAt: Date?
 
     @Timestamp(key: "created_at", on: .create) var createdAt: Date?
 
     @Timestamp(key: "updated_at", on: .update) var updatedAt: Date?
 
+    @OptionalChild(for: \.$invitationCode) var enrollment: Enrollment?
+
     init() {}
 
     init(
         studyId: UUID,
         code: String,
-        issuedBy: String,
-        enrollmentId: UUID? = nil,
-        redeemedAt: Date? = nil,
         expiresAt: Date? = nil,
         id: UUID? = nil
     ) {
         self.id = id
         self.$study.id = studyId
         self.code = code
-        self.issuedBy = issuedBy
-        self.redeemedAt = redeemedAt
         self.expiresAt = expiresAt
-        if let enrollmentId {
-            self.$enrollment.id = enrollmentId
+    }
+}
+
+
+extension QueryBuilder where Model == InvitationCode {
+    /// Filters to only unexpired invitation codes.
+    func filterNotExpired() -> Self {
+        self.group(.or) { group in
+            group.filter(\.$expiresAt == nil)
+            group.filter(\.$expiresAt > Date())
         }
     }
 }

@@ -14,7 +14,7 @@ import VaporTesting
 
 
 @Suite(.serialized)
-struct ParticipantEnrollmentIntegrationTests {
+struct ParticipantEnrollmentIntegrationTests { // swiftlint:disable:this type_body_length
     private static let participantSubject = "enrollment-test-participant"
 
     // MARK: - Enroll
@@ -82,11 +82,11 @@ struct ParticipantEnrollmentIntegrationTests {
     func enrollWithInvitationCode() async throws {
         try await TestApp.withApp(token: .participant(subject: Self.participantSubject)) { app, token in
             let (studyId, study) = try await setUpPublishedStudy(on: app, enrollmentConditions: .requiresInvitation(
-                verificationEndpoint: URL(string: "https://placeholder.invalid")! // swiftlint:disable:this force_unwrapping
+                verificationEndpoint: URL(string: "https://example.com")! // swiftlint:disable:this force_unwrapping
             ))
             try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: Self.participantSubject)
 
-            let code = InvitationCode(studyId: studyId, code: "ENRL-CODE", issuedBy: "researcher")
+            let code = InvitationCode(studyId: studyId, code: "ENRL-CODE")
             try await code.save(on: app.db)
 
             try await app.test(.POST, "\(apiBasePath)/participant/enrollments", beforeRequest: { req in
@@ -102,7 +102,8 @@ struct ParticipantEnrollmentIntegrationTests {
     func enrollWithoutRequiredCodeReturnsBadRequest() async throws {
         try await TestApp.withApp(token: .participant(subject: Self.participantSubject)) { app, token in
             let (studyId, _) = try await setUpPublishedStudy(on: app, enrollmentConditions: .requiresInvitation(
-                verificationEndpoint: URL(string: "https://placeholder.invalid")! // swiftlint:disable:this force_unwrapping
+                // TODO:
+                verificationEndpoint: URL(string: "https://example.com")! // swiftlint:disable:this force_unwrapping
             ))
             try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: Self.participantSubject)
 
@@ -223,6 +224,50 @@ struct ParticipantEnrollmentIntegrationTests {
         }
     }
 
+    // MARK: - Cross-Participant Access
+
+    @Test
+    func otherParticipantCannotWithdrawEnrollment() async throws {
+        let otherSubject = "other-participant"
+        try await TestApp.withApp(token: .participant(subject: otherSubject)) { app, token in
+            let (studyId, _) = try await setUpPublishedStudy(on: app)
+
+            let participantA = try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: Self.participantSubject)
+            let enrollment = Enrollment(participantId: try participantA.requireId(), studyId: studyId, currentRevision: 1)
+            try await enrollment.save(on: app.db)
+            let enrollmentId = try enrollment.requireId()
+
+            try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: otherSubject)
+
+            try await app.test(.POST, "\(apiBasePath)/participant/enrollments/\(enrollmentId)/withdraw", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
+                #expect(response.status == .notFound)
+            }
+        }
+    }
+
+    @Test
+    func otherParticipantCannotListConsents() async throws {
+        let otherSubject = "other-participant"
+        try await TestApp.withApp(token: .participant(subject: otherSubject)) { app, token in
+            let (studyId, _) = try await setUpPublishedStudy(on: app)
+
+            let participantA = try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: Self.participantSubject)
+            let enrollment = Enrollment(participantId: try participantA.requireId(), studyId: studyId, currentRevision: 1)
+            try await enrollment.save(on: app.db)
+            let enrollmentId = try enrollment.requireId()
+
+            try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: otherSubject)
+
+            try await app.test(.GET, "\(apiBasePath)/participant/enrollments/\(enrollmentId)/consents", beforeRequest: { req in
+                req.bearerAuth(token)
+            }) { response in
+                #expect(response.status == .notFound)
+            }
+        }
+    }
+
     // MARK: - Consents
 
     @Test
@@ -334,7 +379,7 @@ struct ParticipantEnrollmentIntegrationTests {
         )
         try await study.save(on: app.db)
         let studyId = try study.requireId()
-        try await PublishedStudyFixtures.createPublishedStudy(on: app.db, studyId: studyId)
+        try await PublishedStudyFixtures.createPublishedStudy(on: app.db, studyId: studyId, enrollmentConditions: enrollmentConditions)
         return (studyId, study)
     }
 

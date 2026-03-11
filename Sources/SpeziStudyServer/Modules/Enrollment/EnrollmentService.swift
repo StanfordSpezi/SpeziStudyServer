@@ -11,8 +11,8 @@ import Spezi
 
 
 final class EnrollmentService: Module, @unchecked Sendable {
-    @Dependency(EnrollmentRepository.self) var repository: EnrollmentRepository
-    @Dependency(StudyService.self) var studyService: StudyService
+    @Dependency(EnrollmentRepository.self) var repository
+    @Dependency(StudyService.self) var studyService
 
     init() {}
 

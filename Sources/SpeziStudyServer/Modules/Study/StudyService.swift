@@ -12,8 +12,8 @@ import Spezi
 
 
 final class StudyService: Module, @unchecked Sendable {
-    @Dependency(StudyRepository.self) var repository: StudyRepository
-    @Dependency(GroupService.self) var groupService: GroupService
+    @Dependency(StudyRepository.self) var repository
+    @Dependency(GroupService.self) var groupService
 
     init() {}
 

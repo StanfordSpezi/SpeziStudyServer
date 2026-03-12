@@ -14,8 +14,6 @@ final class ConsentService: Module, @unchecked Sendable {
     @Dependency(ConsentRepository.self) var repository
     @Dependency(ParticipantEnrollmentService.self) var participantEnrollmentService
 
-    init() {}
-
     func listConsents(enrollmentId: UUID) async throws -> [EnrollmentConsent] {
         let enrollment = try await participantEnrollmentService.requireOwnedEnrollment(id: enrollmentId)
         return try await repository.listConsentRecords(enrollmentId: try enrollment.requireId())

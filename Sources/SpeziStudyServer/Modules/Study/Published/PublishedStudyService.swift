@@ -14,8 +14,7 @@ final class PublishedStudyService: Module, @unchecked Sendable {
     @Dependency(PublishedStudyRepository.self) var repository
     @Dependency(StudyService.self) var studyService
     @Dependency(StudyBundleService.self) var studyBundleService
-
-    init() {}
+    @Dependency(InvitationCodeRepository.self) var invitationCodeRepository
 
     func publish(studyId: UUID) async throws -> PublishedStudy {
         try await studyService.checkHasAccess(to: studyId, role: .admin)
@@ -41,5 +40,21 @@ final class PublishedStudyService: Module, @unchecked Sendable {
     func listPublished(studyId: UUID) async throws -> [PublishedStudy] {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
         return try await repository.listByStudyId(studyId)
+    }
+
+    func browseStudies(code: String?) async throws -> [PublishedStudy] {
+        try AuthContext.checkIsParticipant()
+
+        if let code {
+            guard let invitationCode = try await invitationCodeRepository.findValid(code: code) else {
+                return []
+            }
+            guard let published = try await repository.findLatestPublished(forStudyId: invitationCode.$study.id) else {
+                return []
+            }
+            return [published]
+        }
+
+        return try await repository.listLatestPublicStudies()
     }
 }

@@ -21,21 +21,6 @@ final class ComponentService: Module, @unchecked Sendable {
         return try await componentRepository.findAll(studyId: studyId)
     }
 
-    func getComponentName(studyId: UUID, componentId: UUID) async throws -> String {
-        try await studyService.checkHasAccess(to: studyId, role: .researcher)
-
-        guard let component = try await componentRepository.find(id: componentId, studyId: studyId) else {
-            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-        }
-        return component.name
-    }
-
-    func validateExists(studyId: UUID, componentId: UUID) async throws {
-        guard try await componentRepository.find(id: componentId, studyId: studyId) != nil else {
-            throw ServerError.notFound(resource: "Component", identifier: componentId.uuidString)
-        }
-    }
-
     func deleteComponent(studyId: UUID, componentId: UUID) async throws {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
 

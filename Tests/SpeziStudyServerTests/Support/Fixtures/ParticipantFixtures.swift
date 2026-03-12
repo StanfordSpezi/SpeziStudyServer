@@ -12,6 +12,19 @@ import Foundation
 
 
 enum ParticipantFixtures {
+    static func profileBody(firstName: String = "Jane") -> [String: String] {
+        [
+            "firstName": firstName,
+            "lastName": "Doe",
+            "email": "jane@example.com",
+            "gender": "female",
+            "dateOfBirth": "2000-01-15",
+            "region": "US",
+            "language": "en",
+            "phoneNumber": "+1234567890"
+        ]
+    }
+
     @discardableResult
     static func createParticipant(
         on database: any Database,

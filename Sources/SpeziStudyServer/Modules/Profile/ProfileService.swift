@@ -12,10 +12,6 @@ import Spezi
 
 final class ProfileService: Module, @unchecked Sendable {
     @Dependency(ProfileRepository.self) var repository
-    @Dependency(PublishedStudyRepository.self) var publishedStudyRepository
-    @Dependency(InvitationCodeRepository.self) var invitationCodeRepository
-
-    init() {}
 
     func createProfile(input: ParticipantProfileInput) async throws -> Participant {
         let context = try AuthContext.checkIsParticipant()
@@ -67,21 +63,5 @@ final class ProfileService: Module, @unchecked Sendable {
         participant.phoneNumber = input.phoneNumber
 
         return try await repository.update(participant)
-    }
-
-    func browseStudies(code: String?) async throws -> [PublishedStudy] {
-        try AuthContext.checkIsParticipant()
-
-        if let code {
-            guard let invitationCode = try await invitationCodeRepository.findValid(code: code) else {
-                return []
-            }
-            guard let published = try await publishedStudyRepository.findLatestPublished(forStudyId: invitationCode.$study.id) else {
-                return []
-            }
-            return [published]
-        }
-
-        return try await publishedStudyRepository.listLatestPublicStudies()
     }
 }

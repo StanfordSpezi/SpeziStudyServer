@@ -7,7 +7,6 @@
 //
 
 import Fluent
-import FluentKit
 import Foundation
 import Spezi
 
@@ -21,14 +20,6 @@ final class EnrollmentRepository: Module, Sendable {
 
     func find(id: UUID) async throws -> Enrollment? {
         try await Enrollment.find(id, on: database)
-    }
-
-    func findByParticipantAndStudy(participantId: UUID, studyId: UUID) async throws -> Enrollment? {
-        // swiftlint:disable:next first_where
-        try await Enrollment.query(on: database)
-            .filter(\.$participant.$id == participantId)
-            .filter(\.$study.$id == studyId)
-            .first()
     }
 
     func listByStudyId(_ studyId: UUID) async throws -> [Enrollment] {
@@ -49,7 +40,7 @@ final class EnrollmentRepository: Module, Sendable {
     }
 
     func update(_ enrollment: Enrollment) async throws -> Enrollment {
-        try await enrollment.save(on: database)
+        try await enrollment.update(on: database)
         return enrollment
     }
 }

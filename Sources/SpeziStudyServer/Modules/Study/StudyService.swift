@@ -15,8 +15,6 @@ final class StudyService: Module, @unchecked Sendable {
     @Dependency(StudyRepository.self) var repository
     @Dependency(GroupService.self) var groupService
 
-    init() {}
-
     func checkHasAccess(to id: UUID, role: AuthContext.GroupRole) async throws {
         try AuthContext.checkIsResearcher()
 

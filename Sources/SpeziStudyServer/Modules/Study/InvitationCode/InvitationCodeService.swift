@@ -14,8 +14,6 @@ final class InvitationCodeService: Module, @unchecked Sendable {
     @Dependency(InvitationCodeRepository.self) var repository
     @Dependency(StudyService.self) var studyService
 
-    init() {}
-
     private static func generateCode() -> String {
         let characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
         let raw = (0..<8).map { _ in characters.randomElement()! }

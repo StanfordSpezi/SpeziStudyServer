@@ -14,8 +14,6 @@ final class EnrollmentService: Module, @unchecked Sendable {
     @Dependency(EnrollmentRepository.self) var repository
     @Dependency(StudyService.self) var studyService
 
-    init() {}
-
     func listEnrollments(studyId: UUID) async throws -> [Enrollment] {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
         return try await repository.listByStudyId(studyId)

@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-import FluentKit
+import Fluent
 import Foundation
 import Spezi
 import SpeziStudyDefinition
@@ -17,7 +17,6 @@ final class ParticipantEnrollmentService: Module, @unchecked Sendable {
     @Dependency(ProfileService.self) var profileService
     @Dependency(PublishedStudyRepository.self) var publishedStudyRepository
     @Dependency(InvitationCodeService.self) var invitationCodeService
-    init() {}
 
     func enroll(studyId: UUID, invitationCode: String?) async throws -> Enrollment {
         let participant = try await profileService.getProfile()
@@ -45,7 +44,7 @@ final class ParticipantEnrollmentService: Module, @unchecked Sendable {
         do {
             return try await enrollmentRepository.create(enrollment)
         } catch where (error as? any DatabaseError)?.isConstraintFailure == true {
-            throw ServerError.conflict("Invitation code has already been used")
+            throw ServerError.conflict("Already enrolled in this study or invitation code has already been used")
         }
     }
 

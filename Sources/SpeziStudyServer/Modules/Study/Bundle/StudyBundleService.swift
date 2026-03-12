@@ -18,8 +18,6 @@ final class StudyBundleService: Module, @unchecked Sendable {
     @Dependency(StudyService.self) var studyService
     @Dependency(StudyRepository.self) var studyRepository
 
-    init() {}
-
     func buildBundle(studyId: UUID) async throws -> Data {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
         guard let study = try await studyRepository.findWithComponentsAndSchedules(id: studyId) else {

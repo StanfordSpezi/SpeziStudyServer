@@ -79,9 +79,9 @@ struct ParticipantEnrollmentIntegrationTests { // swiftlint:disable:this type_bo
     }
 
     @Test
-    func enrollWithInvitationCode() async throws {
+    func enrollWithInvitationCodeReturnsCreated() async throws {
         try await TestApp.withApp(token: .participant(subject: Self.participantSubject)) { app, token in
-            let (studyId, study) = try await setUpPublishedStudy(on: app, enrollmentConditions: .requiresInvitation(
+            let (studyId, _) = try await setUpPublishedStudy(on: app, enrollmentConditions: .requiresInvitation(
                 verificationEndpoint: URL(string: "https://example.com")! // swiftlint:disable:this force_unwrapping
             ))
             try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: Self.participantSubject)
@@ -370,14 +370,11 @@ struct ParticipantEnrollmentIntegrationTests { // swiftlint:disable:this type_bo
         enrollmentConditions: StudyDefinition.EnrollmentConditions = .none
     ) async throws -> (UUID, Study) {
         let group = try await GroupFixtures.createGroup(on: app.db)
-        let study = Study(
+        let study = try await StudyFixtures.createStudy(
+            on: app.db,
             groupId: try group.requireId(),
-            locales: [.enUS],
-            icon: "heart",
-            details: .init([.enUS: StudyDetailContent(title: "Test Study")]),
             enrollmentConditions: enrollmentConditions
         )
-        try await study.save(on: app.db)
         let studyId = try study.requireId()
         try await PublishedStudyFixtures.createPublishedStudy(on: app.db, studyId: studyId, enrollmentConditions: enrollmentConditions)
         return (studyId, study)

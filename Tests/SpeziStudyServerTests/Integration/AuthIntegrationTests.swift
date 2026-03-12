@@ -364,16 +364,7 @@ private func jsonData(_ value: some Encodable) -> Data? {
 }
 
 private func profileBody(firstName: String = "Jane") -> [String: String] {
-    [
-        "firstName": firstName,
-        "lastName": "Doe",
-        "email": "jane@example.com",
-        "gender": "female",
-        "dateOfBirth": "2000-01-15",
-        "region": "US",
-        "language": "en",
-        "phoneNumber": "+1234567890"
-    ]
+    ParticipantFixtures.profileBody(firstName: firstName)
 }
 
 private func studyBody(title: String = "X") -> [String: Any] {

@@ -14,16 +14,7 @@ import VaporTesting
 
 @Suite(.serialized)
 struct ParticipantIntegrationTests {
-    private static let profileBody: [String: String] = [
-        "firstName": "Jane",
-        "lastName": "Doe",
-        "email": "jane@example.com",
-        "gender": "female",
-        "dateOfBirth": "2000-01-15",
-        "region": "US",
-        "language": "en",
-        "phoneNumber": "+1234567890"
-    ]
+    private static let profileBody = ParticipantFixtures.profileBody()
 
     // MARK: - Profile Tests
 
@@ -50,7 +41,7 @@ struct ParticipantIntegrationTests {
     }
 
     @Test
-    func createProfileConflict() async throws {
+    func createProfileReturnsConflict() async throws {
         try await TestApp.withApp(token: .participant(subject: "profile-conflict-user")) { app, token in
             try await app.test(.POST, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
@@ -90,7 +81,7 @@ struct ParticipantIntegrationTests {
     }
 
     @Test
-    func getProfileNotFound() async throws {
+    func getProfileReturnsNotFound() async throws {
         try await TestApp.withApp(token: .participant(subject: "profile-notfound-user")) { app, token in
             try await app.test(.GET, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
@@ -130,7 +121,7 @@ struct ParticipantIntegrationTests {
     }
 
     @Test
-    func updateProfileNotFound() async throws {
+    func updateProfileReturnsNotFound() async throws {
         try await TestApp.withApp(token: .participant(subject: "profile-update-notfound-user")) { app, token in
             try await app.test(.PUT, "\(apiBasePath)/participant/profile", beforeRequest: { req in
                 req.bearerAuth(token)
@@ -199,7 +190,7 @@ struct ParticipantIntegrationTests {
     }
 
     @Test
-    func browseStudiesWithInvalidCode() async throws {
+    func browseStudiesWithInvalidCodeReturnsEmpty() async throws {
         try await TestApp.withApp(token: .participant(subject: "browse-invalid-code-user")) { app, token in
             try await app.test(.GET, "\(apiBasePath)/participant/studies?code=NONEXISTENT", beforeRequest: { req in
                 req.bearerAuth(token)
@@ -213,7 +204,7 @@ struct ParticipantIntegrationTests {
     }
 
     @Test
-    func browseStudiesEmpty() async throws {
+    func browseStudiesReturnsEmpty() async throws {
         try await TestApp.withApp(token: .participant(subject: "browse-empty-user")) { app, token in
             try await app.test(.GET, "\(apiBasePath)/participant/studies", beforeRequest: { req in
                 req.bearerAuth(token)

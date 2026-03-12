@@ -36,9 +36,9 @@ final class PublishedStudyRepository: Module, Sendable {
         return publishedStudy
     }
 
-    /// Browse: returns the latest revision of each publicly visible published study.
-    /// Uses a raw SQL subquery with `GROUP BY` + `MAX(revision)` to find the latest
-    /// revision per study in the database, then fetches full models for only those rows.
+    /// Returns the latest revision of each study, but only if that revision is public.
+    /// Studies whose latest revision is unlisted are intentionally excluded — earlier
+    /// public revisions are not surfaced.
     func listLatestPublicStudies() async throws -> [PublishedStudy] {
         guard let sql = database as? any SQLDatabase else {
             throw ServerError.internalServerError("Database does not support SQL")

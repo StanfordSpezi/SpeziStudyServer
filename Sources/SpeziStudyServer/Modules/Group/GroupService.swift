@@ -14,8 +14,6 @@ import SpeziFoundation
 final class GroupService: Module, @unchecked Sendable {
     @Dependency(GroupRepository.self) var repository
 
-    init() {}
-
     func listGroups() async throws -> [Group] {
         let context = try AuthContext.checkIsResearcher()
         let accessibleNames = Array(context.groupMemberships.keys)

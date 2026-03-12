@@ -9,7 +9,6 @@
 import Fluent
 import Foundation
 import SpeziLocalization
-import SpeziStudyDefinition
 @testable import SpeziStudyServer
 
 
@@ -20,14 +19,14 @@ enum StudyFixtures {
         groupId: UUID,
         id: UUID = UUID(),
         title: String = "Test Study",
-        enrollmentConditions: StudyDefinition.EnrollmentConditions = .none
+        enrollmentCondition: EnrollmentConditions = .none
     ) async throws -> Study {
         let study = Study(
             groupId: groupId,
             locales: [.enUS],
             icon: "heart",
             details: .init([.enUS: StudyDetailContent(title: title)]),
-            enrollmentConditions: enrollmentConditions,
+            enrollmentCondition: enrollmentCondition,
             id: id
         )
         try await study.save(on: database)

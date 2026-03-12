@@ -29,13 +29,13 @@ final class Enrollment: Model, @unchecked Sendable {
 
     @Field(key: "current_revision") var currentRevision: Int
 
+    @Field(key: "participation_data") var participationData: ParticipationData
+    
+    @OptionalField(key: "withdrawn_at") var withdrawnAt: Date?
+    
     @Timestamp(key: "created_at", on: .create) var createdAt: Date?
 
     @Timestamp(key: "updated_at", on: .update) var updatedAt: Date?
-
-    @OptionalField(key: "withdrawn_at") var withdrawnAt: Date?
-
-    @Field(key: "participation_data") var participationData: ParticipationData
 
     @Children(for: \.$enrollment) var consents: [EnrollmentConsent]
 

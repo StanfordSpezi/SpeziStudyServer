@@ -31,9 +31,10 @@ final class InvitationCodeRepository: Module, Sendable {
             .count() > 0
     }
 
-    func find(id: UUID) async throws -> InvitationCode? {
+    func find(id: UUID, studyId: UUID) async throws -> InvitationCode? {
         try await InvitationCode.query(on: database)
             .filter(\.$id == id)
+            .filter(\.$study.$id == studyId)
             .with(\.$enrollment)
             .first()
     }

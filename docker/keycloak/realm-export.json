@@ -32,6 +32,17 @@
   "roles": {
     "realm": [
       {
+        "name": "default-roles-spezi-study",
+        "description": "Composite role for default realm roles",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "spezistudyplatform-participant"
+          ]
+        },
+        "clientRole": false
+      },
+      {
         "name": "spezistudyplatform-researcher",
         "description": "Researchers authorized to manage studies on the Spezi Study Platform",
         "composite": false,
@@ -44,6 +55,17 @@
         "clientRole": false
       }
     ]
+  },
+  "defaultRole": {
+    "name": "default-roles-spezi-study",
+    "description": "Composite role for default realm roles",
+    "composite": true,
+    "composites": {
+      "realm": [
+        "spezistudyplatform-participant"
+      ]
+    },
+    "clientRole": false
   },
   "clients": [
     {

@@ -29,7 +29,8 @@ final class PublishedStudyService: Module, @unchecked Sendable {
         let published = PublishedStudy(
             studyId: studyId,
             revision: nextRevision,
-            visibility: .public,
+            visibility: study.visibility,
+            enrollmentCondition: study.enrollmentCondition,
             bundleURL: bundleURL,
             metadata: metadata
         )

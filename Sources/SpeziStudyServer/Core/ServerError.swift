@@ -49,6 +49,10 @@ struct ServerError: Error, Sendable {
         Self(status: .conflict, title: "Conflict", detail: detail)
     }
 
+    static func conflict(resource: String, identifier: String) -> Self {
+        .conflict("\(resource) with identifier '\(identifier)' already exists")
+    }
+
     static func internalServerError(_ detail: String) -> Self {
         Self(status: .internalServerError, title: "Internal Server Error", detail: detail)
     }

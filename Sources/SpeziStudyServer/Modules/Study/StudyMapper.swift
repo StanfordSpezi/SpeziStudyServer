@@ -31,7 +31,8 @@ extension StudyPatch {
             details: schema.details,
             participationCriterion: schema.participationCriterion.map { .init($0) },
             consent: schema.consent,
-            enrollmentConditions: schema.enrollmentConditions.map { .init($0) }
+            visibility: schema.visibility,
+            enrollmentCondition: schema.enrollmentConditions
         )
     }
 }
@@ -55,7 +56,8 @@ extension Components.Schemas.StudyResponse {
             details: model.details,
             participationCriterion: try .init(model.participationCriterion),
             consent: model.consent,
-            enrollmentConditions: .init(model.enrollmentConditions)
+            visibility: model.visibility,
+            enrollmentConditions: model.enrollmentCondition
         )
     }
 }
@@ -126,27 +128,3 @@ extension StudyDefinition.ParticipationCriterion {
 }
 
 
-// MARK: - EnrollmentConditions Mapping
-
-extension Components.Schemas.EnrollmentConditions {
-    init(_ model: StudyDefinition.EnrollmentConditions) {
-        switch model {
-        case .none:
-            self = .none
-        case .requiresInvitation:
-            self = .requiresInvitationCode
-        }
-    }
-}
-
-extension StudyDefinition.EnrollmentConditions {
-    init(_ schema: Components.Schemas.EnrollmentConditions) {
-        switch schema {
-        case .none:
-            self = .none
-        case .requiresInvitationCode:
-            // TODO:
-            self = .requiresInvitation(verificationEndpoint: URL(string: "https://example.com")!)  // swiftlint:disable:this force_unwrapping
-        }
-    }
-}

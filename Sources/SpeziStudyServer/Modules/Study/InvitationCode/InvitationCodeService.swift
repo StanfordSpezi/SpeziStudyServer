@@ -50,7 +50,7 @@ final class InvitationCodeService: Module, @unchecked Sendable {
     func deleteCode(studyId: UUID, codeId: UUID) async throws {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
 
-        guard let code = try await repository.find(id: codeId) else {
+        guard let code = try await repository.find(id: codeId, studyId: studyId) else {
             throw ServerError.notFound(resource: "InvitationCode", identifier: codeId.uuidString)
         }
 

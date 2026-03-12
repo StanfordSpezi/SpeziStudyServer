@@ -787,6 +787,8 @@ paths:
                 $ref: '#/components/schemas/ParticipantProfile'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -813,6 +815,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '409':
           $ref: '#/components/responses/Conflict'
         '429':
@@ -839,6 +843,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -871,6 +877,8 @@ paths:
                   $ref: '#/components/schemas/PublishedStudyListItem'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/TooManyRequests'
 
@@ -890,6 +898,8 @@ paths:
                   $ref: '#/components/schemas/EnrollmentResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '429':
           $ref: '#/components/responses/TooManyRequests'
 
@@ -914,6 +924,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
@@ -937,6 +949,8 @@ paths:
                 $ref: '#/components/schemas/EnrollmentResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
@@ -962,6 +976,8 @@ paths:
                   $ref: '#/components/schemas/ConsentRecordResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -1004,6 +1020,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -1403,6 +1421,8 @@ components:
           $ref: '#/components/schemas/ParticipationCriterion'
         consent:
           $ref: '#/components/schemas/StudyConsent'
+        visibility:
+          $ref: '#/components/schemas/StudyVisibility'
         enrollmentConditions:
           $ref: '#/components/schemas/EnrollmentConditions'
 
@@ -1416,6 +1436,7 @@ components:
         - details
         - participationCriterion
         - consent
+        - visibility
         - enrollmentConditions
       properties:
         id:
@@ -1440,6 +1461,8 @@ components:
           $ref: '#/components/schemas/ParticipationCriterion'
         consent:
           $ref: '#/components/schemas/StudyConsent'
+        visibility:
+          $ref: '#/components/schemas/StudyVisibility'
         enrollmentConditions:
           $ref: '#/components/schemas/EnrollmentConditions'
 
@@ -2196,204 +2219,6 @@ components:
         Mapped via typeOverride; the wire format matches Swift's auto-synthesized Codable output.
       type: object
       additionalProperties: true
-
-    StudyMetadata:
-      type: object
-      description: >
-        Study metadata reflecting SpeziStudyDefinition.Metadata.
-        Encoded using Swift's auto-synthesized Codable format.
-      required:
-        - id
-        - title
-        - shortTitle
-        - explanationText
-        - shortExplanationText
-        - participationCriterion
-        - enrollmentConditions
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The study's unique identifier
-        title:
-          $ref: '#/components/schemas/LocalizedString'
-        shortTitle:
-          $ref: '#/components/schemas/LocalizedString'
-        icon:
-          $ref: '#/components/schemas/StudyMetadataIcon'
-        explanationText:
-          $ref: '#/components/schemas/LocalizedString'
-        shortExplanationText:
-          $ref: '#/components/schemas/LocalizedString'
-        studyDependency:
-          type: string
-          format: uuid
-          description: ID of another study the participant must be enrolled in first
-        participationCriterion:
-          $ref: '#/components/schemas/StudyMetadataParticipationCriterion'
-        enrollmentConditions:
-          $ref: '#/components/schemas/StudyMetadataEnrollmentConditions'
-        consentFileRef:
-          $ref: '#/components/schemas/FileReference'
-
-    StudyMetadataIcon:
-      description: >
-        Icon for displaying the study. Uses Swift Codable enum encoding:
-        {"systemSymbol": {"_0": "heart.fill"}} or {"custom": {"_0": "https://..."}}.
-      oneOf:
-        - type: object
-          required: [systemSymbol]
-          properties:
-            systemSymbol:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  type: string
-                  description: SF Symbol name
-          additionalProperties: false
-        - type: object
-          required: [custom]
-          properties:
-            custom:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  type: string
-                  format: uri
-                  description: Custom icon URL
-          additionalProperties: false
-
-    StudyMetadataParticipationCriterion:
-      description: >
-        Participation criterion using Swift Codable enum encoding.
-        Leaf criteria: {"ageAtLeast": {"_0": 18}}, {"isFromRegion": {"_0": "US"}},
-        {"speaksLanguage": {"_0": "en"}}, {"custom": {"_0": {"keyValue": "...", "displayTitle": "..."}}}.
-        Logical operators: {"not": {"_0": <criterion>}},
-        {"all": {"_0": [<criteria>]}}, {"any": {"_0": [<criteria>]}}.
-      oneOf:
-        - type: object
-          required: [ageAtLeast]
-          properties:
-            ageAtLeast:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  type: integer
-          additionalProperties: false
-        - type: object
-          required: [isFromRegion]
-          properties:
-            isFromRegion:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  type: string
-                  description: Region identifier (e.g. "US")
-          additionalProperties: false
-        - type: object
-          required: [speaksLanguage]
-          properties:
-            speaksLanguage:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  type: string
-                  description: Language identifier (e.g. "en")
-          additionalProperties: false
-        - type: object
-          required: [custom]
-          properties:
-            custom:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  type: object
-                  required: [keyValue, displayTitle]
-                  properties:
-                    keyValue:
-                      type: string
-                    displayTitle:
-                      type: string
-          additionalProperties: false
-        - type: object
-          required: [not]
-          properties:
-            not:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  $ref: '#/components/schemas/StudyMetadataParticipationCriterion'
-          additionalProperties: false
-        - type: object
-          required: [all]
-          properties:
-            all:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/StudyMetadataParticipationCriterion'
-          additionalProperties: false
-        - type: object
-          required: [any]
-          properties:
-            any:
-              type: object
-              required: [_0]
-              properties:
-                _0:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/StudyMetadataParticipationCriterion'
-          additionalProperties: false
-
-    StudyMetadataEnrollmentConditions:
-      description: >
-        Enrollment conditions using Swift Codable enum encoding:
-        {"none": {}} or {"requiresInvitation": {"verificationEndpoint": "https://..."}}.
-      oneOf:
-        - type: object
-          required: [none]
-          properties:
-            none:
-              type: object
-          additionalProperties: false
-        - type: object
-          required: [requiresInvitation]
-          properties:
-            requiresInvitation:
-              type: object
-              required: [verificationEndpoint]
-              properties:
-                verificationEndpoint:
-                  type: string
-                  format: uri
-          additionalProperties: false
-
-    FileReference:
-      type: object
-      description: Reference to a file in a study bundle
-      required:
-        - category
-        - filename
-        - fileExtension
-      properties:
-        category:
-          type: string
-          description: File category (e.g. "consent")
-        filename:
-          type: string
-        fileExtension:
-          type: string
 
     EnrollInput:
       type: object

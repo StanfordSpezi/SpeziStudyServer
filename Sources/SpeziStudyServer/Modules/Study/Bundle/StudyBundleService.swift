@@ -67,7 +67,7 @@ final class StudyBundleService: Module, @unchecked Sendable {
             explanationText: explanationTexts,
             shortExplanationText: shortExplanationTexts,
             participationCriterion: study.participationCriterion,
-            enrollmentConditions: study.enrollmentConditions,
+            enrollmentConditions: .none,
             consentFileRef: consentRef
         )
 

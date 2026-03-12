@@ -113,7 +113,7 @@ extension Components.Schemas.ExportSessionStartDate {
 // MARK: - Schema to Model
 
 extension StudyDefinition.HealthDataCollectionComponent {
-    init(id: UUID, _ schema: Components.Schemas.HealthDataComponentData) {
+    init(_ schema: Components.Schemas.HealthDataComponentData) {
         let historicalDataCollection: HistoricalDataCollection
         if let historical = schema.historicalDataCollection,
            historical.enabled == true {
@@ -127,7 +127,7 @@ extension StudyDefinition.HealthDataCollectionComponent {
         }
 
         self.init(
-            id: id,
+            id: UUID(),
             sampleTypes: SampleTypesCollection(schema.sampleTypes),
             optionalSampleTypes: [],
             historicalDataCollection: historicalDataCollection

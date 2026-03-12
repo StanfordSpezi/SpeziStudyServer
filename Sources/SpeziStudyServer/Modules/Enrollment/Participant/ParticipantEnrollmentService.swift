@@ -9,7 +9,6 @@
 import Fluent
 import Foundation
 import Spezi
-import SpeziStudyDefinition
 
 
 final class ParticipantEnrollmentService: Module, @unchecked Sendable {
@@ -27,7 +26,7 @@ final class ParticipantEnrollmentService: Module, @unchecked Sendable {
         }
 
         var invitationCodeId: UUID?
-        if case .requiresInvitation = publishedStudy.metadata.enrollmentConditions {
+        if publishedStudy.enrollmentCondition == .requiresInvitationCode {
             guard let code = invitationCode else {
                 throw ServerError.badRequest("This study requires an invitation code")
             }

@@ -8,6 +8,7 @@
 
 import Foundation
 import Spezi
+import Fluent
 
 
 final class ProfileService: Module, @unchecked Sendable {
@@ -18,7 +19,7 @@ final class ProfileService: Module, @unchecked Sendable {
 
         let existing = try await repository.findByIdentityProviderId(context.subject)
         if existing != nil {
-            throw ServerError.conflict("Participant profile already exists")
+            throw ServerError.conflict(resource: "Participant", identifier: context.subject)
         }
 
         let participant = Participant(
@@ -33,14 +34,18 @@ final class ProfileService: Module, @unchecked Sendable {
             phoneNumber: input.phoneNumber
         )
 
-        return try await repository.create(participant)
+        do {
+            return try await repository.create(participant)
+        } catch where (error as? any DatabaseError)?.isConstraintFailure == true {
+            throw ServerError.conflict(resource: "Participant", identifier: context.subject)
+        }
     }
 
     func getProfile() async throws -> Participant {
         let context = try AuthContext.checkIsParticipant()
 
         guard let participant = try await repository.findByIdentityProviderId(context.subject) else {
-            throw ServerError.notFound("Participant profile not found")
+            throw ServerError.notFound(resource: "Participant", identifier: context.subject)
         }
 
         return participant
@@ -50,7 +55,7 @@ final class ProfileService: Module, @unchecked Sendable {
         let context = try AuthContext.checkIsParticipant()
 
         guard let participant = try await repository.findByIdentityProviderId(context.subject) else {
-            throw ServerError.notFound("Participant profile not found")
+            throw ServerError.notFound(resource: "Participant", identifier: context.subject)
         }
 
         participant.firstName = input.firstName

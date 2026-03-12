@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import SpeziStudyDefinition
 @testable import SpeziStudyServer
 import Testing
 import VaporTesting
@@ -81,9 +80,7 @@ struct ParticipantEnrollmentIntegrationTests { // swiftlint:disable:this type_bo
     @Test
     func enrollWithInvitationCodeReturnsCreated() async throws {
         try await TestApp.withApp(token: .participant(subject: Self.participantSubject)) { app, token in
-            let (studyId, _) = try await setUpPublishedStudy(on: app, enrollmentConditions: .requiresInvitation(
-                verificationEndpoint: URL(string: "https://example.com")! // swiftlint:disable:this force_unwrapping
-            ))
+            let (studyId, _) = try await setUpPublishedStudy(on: app, enrollmentCondition: .requiresInvitationCode)
             try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: Self.participantSubject)
 
             let code = InvitationCode(studyId: studyId, code: "ENRL-CODE")
@@ -101,10 +98,7 @@ struct ParticipantEnrollmentIntegrationTests { // swiftlint:disable:this type_bo
     @Test
     func enrollWithoutRequiredCodeReturnsBadRequest() async throws {
         try await TestApp.withApp(token: .participant(subject: Self.participantSubject)) { app, token in
-            let (studyId, _) = try await setUpPublishedStudy(on: app, enrollmentConditions: .requiresInvitation(
-                // TODO:
-                verificationEndpoint: URL(string: "https://example.com")! // swiftlint:disable:this force_unwrapping
-            ))
+            let (studyId, _) = try await setUpPublishedStudy(on: app, enrollmentCondition: .requiresInvitationCode)
             try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: Self.participantSubject)
 
             try await app.test(.POST, "\(apiBasePath)/participant/enrollments", beforeRequest: { req in
@@ -367,16 +361,20 @@ struct ParticipantEnrollmentIntegrationTests { // swiftlint:disable:this type_bo
     @discardableResult
     private func setUpPublishedStudy(
         on app: Application,
-        enrollmentConditions: StudyDefinition.EnrollmentConditions = .none
+        enrollmentCondition: EnrollmentConditions = .none
     ) async throws -> (UUID, Study) {
         let group = try await GroupFixtures.createGroup(on: app.db)
         let study = try await StudyFixtures.createStudy(
             on: app.db,
             groupId: try group.requireId(),
-            enrollmentConditions: enrollmentConditions
+            enrollmentCondition: enrollmentCondition
         )
         let studyId = try study.requireId()
-        try await PublishedStudyFixtures.createPublishedStudy(on: app.db, studyId: studyId, enrollmentConditions: enrollmentConditions)
+        try await PublishedStudyFixtures.createPublishedStudy(
+            on: app.db,
+            studyId: studyId,
+            enrollmentCondition: enrollmentCondition
+        )
         return (studyId, study)
     }
 

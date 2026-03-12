@@ -16,6 +16,7 @@ struct CreatePublishedStudies: AsyncMigration {
             .field("study_id", .uuid, .required, .references("studies", "id", onDelete: .cascade))
             .field("revision", .int, .required)
             .field("visibility", .string, .required)
+            .field("enrollment_condition", .string, .required)
             .field("bundle_url", .string, .required)
             .field("metadata", .json, .required)
             .timestamps()

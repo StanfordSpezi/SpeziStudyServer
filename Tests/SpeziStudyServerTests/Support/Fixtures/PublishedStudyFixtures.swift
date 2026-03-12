@@ -20,9 +20,9 @@ enum PublishedStudyFixtures {
         studyId: UUID,
         revision: Int = 1,
         visibility: StudyVisibility = .public,
+        enrollmentCondition: EnrollmentConditions = .none,
         title: String = "Test Study",
-        icon: String = "heart",
-        enrollmentConditions: StudyDefinition.EnrollmentConditions = .none
+        icon: String = "heart"
     ) async throws -> PublishedStudy {
         let metadata = StudyDefinition.Metadata(
             id: studyId,
@@ -31,13 +31,14 @@ enum PublishedStudyFixtures {
             explanationText: .init([.enUS: ""]),
             shortExplanationText: .init([.enUS: ""]),
             participationCriterion: .all([]),
-            enrollmentConditions: enrollmentConditions
+            enrollmentConditions: .none
         )
         let published = PublishedStudy(
             studyId: studyId,
             revision: revision,
             visibility: visibility,
-            bundleURL: URL(string: "https://example.com/bundle.zip")!,
+            enrollmentCondition: enrollmentCondition,
+            bundleURL: URL(string: "https://example.com/bundle.zip")!, // swiftlint:disable:this force_unwrapping
             metadata: metadata
         )
         try await published.save(on: database)

@@ -12,7 +12,7 @@ import SpeziLocalization
 import SpeziStudyDefinition
 
 
-/// Whether a published study is visible when browsing or only accessible via invitation code.
+/// Note: This type is mapped from Components.Schemas.StudyVisibility via typeOverrides in openapi-generator-config.yaml
 enum StudyVisibility: String, Codable, Sendable {
     /// Listed in public study browsing.
     case `public`
@@ -32,6 +32,8 @@ final class PublishedStudy: Model, @unchecked Sendable {
 
     @Field(key: "visibility") var visibility: StudyVisibility
 
+    @Field(key: "enrollment_condition") var enrollmentCondition: EnrollmentConditions
+
     @Field(key: "bundle_url") var bundleURL: URL
 
     @Field(key: "metadata") var metadata: StudyDefinition.Metadata
@@ -46,6 +48,7 @@ final class PublishedStudy: Model, @unchecked Sendable {
         studyId: UUID,
         revision: Int,
         visibility: StudyVisibility,
+        enrollmentCondition: EnrollmentConditions,
         bundleURL: URL,
         metadata: StudyDefinition.Metadata,
         id: UUID? = nil
@@ -54,6 +57,7 @@ final class PublishedStudy: Model, @unchecked Sendable {
         self.$study.id = studyId
         self.revision = revision
         self.visibility = visibility
+        self.enrollmentCondition = enrollmentCondition
         self.bundleURL = bundleURL
         self.metadata = metadata
     }

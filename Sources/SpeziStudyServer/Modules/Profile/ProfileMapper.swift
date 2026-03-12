@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import SpeziLocalization
 
 
 private let dateOnlyFormatter: DateFormatter = {

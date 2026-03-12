@@ -24,8 +24,11 @@ final class ComponentScheduleRepository: Module, Sendable {
             .all()
     }
 
-    func find(id: UUID) async throws -> ComponentSchedule? {
-        try await ComponentSchedule.find(id, on: database)
+    func find(id: UUID, componentId: UUID) async throws -> ComponentSchedule? {
+        try await ComponentSchedule.query(on: database)
+            .filter(\.$id == id)
+            .filter(\.$component.$id == componentId)
+            .first()
     }
 
     func create(_ schedule: ComponentSchedule) async throws -> ComponentSchedule {
@@ -38,8 +41,8 @@ final class ComponentScheduleRepository: Module, Sendable {
         return schedule
     }
 
-    func delete(id: UUID) async throws -> Bool {
-        guard let schedule = try await find(id: id) else {
+    func delete(id: UUID, componentId: UUID) async throws -> Bool {
+        guard let schedule = try await find(id: id, componentId: componentId) else {
             return false
         }
         try await schedule.delete(on: database)

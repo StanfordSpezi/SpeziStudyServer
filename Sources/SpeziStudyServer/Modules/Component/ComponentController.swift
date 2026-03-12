@@ -148,10 +148,7 @@ extension Controller {
             throw ServerError.jsonBodyRequired
         }
 
-        let data = StudyDefinition.HealthDataCollectionComponent(
-            id: UUID(),
-            schema.data
-        )
+        let data = StudyDefinition.HealthDataCollectionComponent(schema.data)
 
         let component = try await componentService.createHealthDataComponent(
             studyId: studyId,
@@ -187,10 +184,7 @@ extension Controller {
             throw ServerError.jsonBodyRequired
         }
 
-        let data = StudyDefinition.HealthDataCollectionComponent(
-            id: componentId,
-            schema.data
-        )
+        let data = StudyDefinition.HealthDataCollectionComponent(schema.data)
 
         let component = try await componentService.updateHealthDataComponent(
             studyId: studyId,

@@ -12,6 +12,15 @@ import SpeziStudyDefinition
 import Vapor
 
 
+/// Note: This type is mapped from Components.Schemas.EnrollmentConditions via typeOverrides in openapi-generator-config.yaml
+enum EnrollmentConditions: String, Codable, Sendable {
+    /// No special conditions — anyone can enroll.
+    case none
+    /// Enrollment requires a valid invitation code.
+    case requiresInvitationCode
+}
+
+
 /// Note: This type is mapped from Components.Schemas.StudyDetailContent via typeOverrides in openapi-generator-config.yaml
 struct StudyDetailContent: Codable, Sendable, Hashable {
     var title: String
@@ -52,7 +61,8 @@ struct StudyPatch: Sendable {
     var details: LocalizationsDictionary<StudyDetailContent>?
     var participationCriterion: StudyDefinition.ParticipationCriterion?
     var consent: LocalizationsDictionary<ConsentContent>?
-    var enrollmentConditions: StudyDefinition.EnrollmentConditions?
+    var visibility: StudyVisibility?
+    var enrollmentCondition: EnrollmentConditions?
 }
 
 
@@ -73,7 +83,9 @@ final class Study: Model, @unchecked Sendable {
 
     @Field(key: "consent") var consent: LocalizationsDictionary<ConsentContent>
 
-    @Field(key: "enrollment_conditions") var enrollmentConditions: StudyDefinition.EnrollmentConditions
+    @Field(key: "visibility") var visibility: StudyVisibility
+
+    @Field(key: "enrollment_condition") var enrollmentCondition: EnrollmentConditions
 
     @Timestamp(key: "created_at", on: .create) var createdAt: Date?
 
@@ -96,7 +108,8 @@ final class Study: Model, @unchecked Sendable {
         details: LocalizationsDictionary<StudyDetailContent> = .init(),
         participationCriterion: StudyDefinition.ParticipationCriterion = .all([]),
         consent: LocalizationsDictionary<ConsentContent> = .init(),
-        enrollmentConditions: StudyDefinition.EnrollmentConditions = .none,
+        visibility: StudyVisibility = .public,
+        enrollmentCondition: EnrollmentConditions = .none,
         id: UUID? = nil
     ) {
         self.id = id
@@ -106,7 +119,8 @@ final class Study: Model, @unchecked Sendable {
         self.details = details
         self.participationCriterion = participationCriterion
         self.consent = consent
-        self.enrollmentConditions = enrollmentConditions
+        self.visibility = visibility
+        self.enrollmentCondition = enrollmentCondition
     }
 
     func apply(_ patch: StudyPatch) {
@@ -121,6 +135,7 @@ final class Study: Model, @unchecked Sendable {
         apply(\.details, to: \.details)
         apply(\.participationCriterion, to: \.participationCriterion)
         apply(\.consent, to: \.consent)
-        apply(\.enrollmentConditions, to: \.enrollmentConditions)
+        apply(\.visibility, to: \.visibility)
+        apply(\.enrollmentCondition, to: \.enrollmentCondition)
     }
 }

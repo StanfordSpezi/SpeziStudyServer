@@ -26,7 +26,7 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
         try await requireSchedulableComponent(id: componentId, studyId: studyId)
 
-        guard let schedule = try await repository.find(id: scheduleId) else {
+        guard let schedule = try await repository.find(id: scheduleId, componentId: componentId) else {
             throw ServerError.notFound(resource: "ComponentSchedule", identifier: scheduleId.uuidString)
         }
 
@@ -54,7 +54,7 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
         try await requireSchedulableComponent(id: componentId, studyId: studyId)
 
-        guard let schedule = try await repository.find(id: scheduleId) else {
+        guard let schedule = try await repository.find(id: scheduleId, componentId: componentId) else {
             throw ServerError.notFound(resource: "ComponentSchedule", identifier: scheduleId.uuidString)
         }
 
@@ -66,7 +66,7 @@ final class ComponentScheduleService: Module, @unchecked Sendable {
         try await studyService.checkHasAccess(to: studyId, role: .researcher)
         try await requireSchedulableComponent(id: componentId, studyId: studyId)
 
-        let deleted = try await repository.delete(id: scheduleId)
+        let deleted = try await repository.delete(id: scheduleId, componentId: componentId)
         if !deleted {
             throw ServerError.notFound(resource: "ComponentSchedule", identifier: scheduleId.uuidString)
         }

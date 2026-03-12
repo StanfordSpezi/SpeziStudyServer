@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-import FluentKit
+import Fluent
 import Foundation
 @testable import SpeziStudyServer
 import Testing

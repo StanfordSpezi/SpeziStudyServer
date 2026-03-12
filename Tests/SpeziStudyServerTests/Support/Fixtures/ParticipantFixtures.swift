@@ -37,7 +37,7 @@ enum ParticipantFixtures {
             lastName: "Doe",
             email: "jane@example.com",
             gender: .female,
-            dateOfBirth: DateComponents(calendar: .current, year: 1990, month: 1, day: 1).date!, // swiftlint:disable:this force_unwrapping
+            dateOfBirth: DateComponents(calendar: .current, year: 2000, month: 1, day: 15).date!, // swiftlint:disable:this force_unwrapping
             region: "US",
             language: "en",
             phoneNumber: "+1234567890",

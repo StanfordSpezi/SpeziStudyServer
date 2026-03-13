@@ -32,6 +32,10 @@ final class InvitationCodeService: Module, @unchecked Sendable {
             throw ServerError.badRequest("Count must be between 1 and 50")
         }
 
+        if let expiresAt, expiresAt <= Date() {
+            throw ServerError.badRequest("Expiration date must be in the future")
+        }
+
         var codes: [InvitationCode] = []
         var generatedCodes: Set<String> = []
 

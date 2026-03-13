@@ -11,21 +11,6 @@ post {
 }
 
 body:multipart-form {
-  consentData: @json {
-    "toggles": {
-      "agree_data_use": true
-    },
-    "selects": {},
-    "signatures": {
-      "primary": {
-        "name": {
-          "givenName": "Jane",
-          "familyName": "Doe"
-        },
-        "signature": "",
-        "size": [0, 0]
-      }
-    }
-  }
-  consentPDF: @file(consent.pdf)
+  consentData: {"toggles":{"agree_data_use":true},"selects":{},"signatures":{"primary":{"name":{"givenName":"Jane","familyName":"Doe"},"signature":"","size":[0,0]}}}
+  consentPDF: 
 }

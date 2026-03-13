@@ -35,6 +35,7 @@ final class ComponentRepository: Module, Sendable {
     func create(_ component: Component) async throws -> Component {
         let id = UUID()
         component.id = id
+        component.type = component.data.type
         if case .healthDataCollection(var healthData) = component.data {
             healthData.id = id
             component.data = .healthDataCollection(healthData)

@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
+import Fluent
 import Foundation
 import Spezi
 
@@ -40,7 +41,11 @@ final class PublishedStudyService: Module, @unchecked Sendable {
             metadata: metadata
         )
 
-        return try await repository.create(published)
+        do {
+            return try await repository.create(published)
+        } catch where (error as? any DatabaseError)?.isConstraintFailure == true {
+            throw ServerError.conflict("Study revision \(nextRevision) already exists")
+        }
     }
 
     func listPublished(studyId: UUID) async throws -> [PublishedStudy] {

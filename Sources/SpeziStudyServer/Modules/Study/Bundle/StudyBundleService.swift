@@ -14,11 +14,22 @@ import SpeziStudyDefinition
 import ZIPFoundation
 
 
-/// Wraps a string in double quotes if it contains YAML-special characters.
+/// Wraps a string in double quotes and escapes special characters for YAML front matter.
 private func yamlEscape(_ value: String) -> String {
-    let needsQuoting = value.contains(where: { ":{}[]#&*!|>'\"%@`".contains($0) })
-        || value.contains("\n")
-    return needsQuoting ? "\"\(value.replacingOccurrences(of: "\"", with: "\\\""))\"" : value
+    let specialChars = ":{}[]#&*!|>'\"%@`"
+    let needsQuoting = value.contains(where: { specialChars.contains($0) })
+        || value.contains(where: { $0.isNewline || $0 == "\t" || $0 == "\0" })
+    if !needsQuoting {
+        return value
+    }
+    let escaped = value
+        .replacingOccurrences(of: "\\", with: "\\\\")
+        .replacingOccurrences(of: "\"", with: "\\\"")
+        .replacingOccurrences(of: "\n", with: "\\n")
+        .replacingOccurrences(of: "\r", with: "\\r")
+        .replacingOccurrences(of: "\t", with: "\\t")
+        .replacingOccurrences(of: "\0", with: "\\0")
+    return "\"\(escaped)\""
 }
 
 

@@ -19,6 +19,10 @@ final class Group: Model, @unchecked Sendable {
 
     @Field(key: "icon") var icon: String
 
+    @Timestamp(key: "created_at", on: .create) var createdAt: Date?
+
+    @Timestamp(key: "updated_at", on: .update) var updatedAt: Date?
+
     @Children(for: \.$group) var studies: [Study]
 
     init() {}

@@ -1,0 +1,16 @@
+meta {
+  name: Submit Consent
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/participant/enrollments/{{enrollmentId}}/consents
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  consentData: {"toggles":{"agree_data_use":true},"selects":{},"signatures":{"primary":{"name":{"givenName":"Jane","familyName":"Doe"},"signature":"","size":[0,0]}}}
+  consentPDF: 
+}

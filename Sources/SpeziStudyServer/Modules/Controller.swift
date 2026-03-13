@@ -21,21 +21,11 @@ struct Controller: APIProtocol {
 }
 
 
+// MARK: - Services
+
 extension Controller {
     var studyService: StudyService {
         spezi[StudyService.self]
-    }
-
-    var informationalComponentService: InformationalComponentService {
-        spezi[InformationalComponentService.self]
-    }
-
-    var questionnaireComponentService: QuestionnaireComponentService {
-        spezi[QuestionnaireComponentService.self]
-    }
-
-    var healthDataComponentService: HealthDataComponentService {
-        spezi[HealthDataComponentService.self]
     }
 
     var componentService: ComponentService {
@@ -52,5 +42,29 @@ extension Controller {
 
     var studyBundleService: StudyBundleService {
         spezi[StudyBundleService.self]
+    }
+
+    var profileService: ProfileService {
+        spezi[ProfileService.self]
+    }
+
+    var invitationCodeService: InvitationCodeService {
+        spezi[InvitationCodeService.self]
+    }
+
+    var publishedStudyService: PublishedStudyService {
+        spezi[PublishedStudyService.self]
+    }
+
+    var enrollmentService: EnrollmentService {
+        spezi[EnrollmentService.self]
+    }
+
+    var participantEnrollmentService: ParticipantEnrollmentService {
+        spezi[ParticipantEnrollmentService.self]
+    }
+
+    var consentService: ConsentService {
+        spezi[ConsentService.self]
     }
 }

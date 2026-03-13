@@ -54,10 +54,10 @@ See `.env.example` for all available environment options.
 ### Run Tests
 
 ```bash
-swift test
+swift test --no-parallel
 ```
 
-Tests use an in-memory SQLite database and mock JWT signing — no Docker services required.
+Tests must run without parallelism (`--no-parallel`) because integration test suites share an in-memory SQLite database per suite. Tests use mock JWT signing — no Docker services required.
 
 ### Docker Compose Services
 

@@ -18,13 +18,15 @@ enum StudyFixtures {
         on database: any Database,
         groupId: UUID,
         id: UUID = UUID(),
-        title: String = "Test Study"
+        title: String = "Test Study",
+        enrollmentCondition: EnrollmentConditions = .none
     ) async throws -> Study {
         let study = Study(
             groupId: groupId,
             locales: [.enUS],
             icon: "heart",
             details: .init([.enUS: StudyDetailContent(title: title)]),
+            enrollmentCondition: enrollmentCondition,
             id: id
         )
         try await study.save(on: database)

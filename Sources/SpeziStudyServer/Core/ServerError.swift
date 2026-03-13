@@ -18,9 +18,8 @@ struct ServerError: Error, Sendable {
     static let missingToken = unauthorized("Missing Authorization header")
     static let invalidToken = unauthorized("Invalid or expired token")
     static let forbidden = Self(status: .forbidden, title: "Forbidden", detail: "Insufficient permissions")
-    static let failedToRetrieveCreatedObject = internalServerError("Failed to retrieve created object")
     static let unexpectedError = internalServerError("An unexpected error occurred")
-    static let endpointNotImplemented = internalServerError("Endpoint not implemented")
+    static let endpointNotImplemented = Self(status: .notImplemented, title: "Not Implemented", detail: "Endpoint not implemented")
 
     let status: HTTPResponse.Status
     let title: String
@@ -48,6 +47,10 @@ struct ServerError: Error, Sendable {
 
     static func conflict(_ detail: String) -> Self {
         Self(status: .conflict, title: "Conflict", detail: detail)
+    }
+
+    static func conflict(resource: String, identifier: String) -> Self {
+        .conflict("\(resource) with identifier '\(identifier)' already exists")
     }
 
     static func internalServerError(_ detail: String) -> Self {

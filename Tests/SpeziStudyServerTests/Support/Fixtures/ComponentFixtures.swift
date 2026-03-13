@@ -21,18 +21,11 @@ enum ComponentFixtures {
         on database: any Database,
         studyId: UUID,
         name: String = "Test Health Data"
-    ) async throws -> (Component, HealthDataComponent) {
+    ) async throws -> Component {
+        let componentId = UUID()
         let component = Component(
             studyId: studyId,
-            type: .healthDataCollection,
-            name: name
-        )
-        try await component.save(on: database)
-
-        let componentId = try component.requireId()
-        let healthData = HealthDataComponent(
-            componentId: componentId,
-            data: .init(
+            data: .healthDataCollection(.init(
                 id: componentId,
                 sampleTypes: SampleTypesCollection([
                     SampleTypeProxy.quantity(.heartRate),
@@ -40,11 +33,12 @@ enum ComponentFixtures {
                 ]),
                 optionalSampleTypes: SampleTypesCollection(),
                 historicalDataCollection: .disabled
-            )
+            )),
+            name: name,
+            id: componentId
         )
-        try await healthData.save(on: database)
-
-        return (component, healthData)
+        try await component.save(on: database)
+        return component
     }
 
     @discardableResult
@@ -52,15 +46,8 @@ enum ComponentFixtures {
         on database: any Database,
         studyId: UUID,
         name: String = "Test Questionnaire"
-    ) async throws -> (Component, QuestionnaireComponent) {
-        let component = Component(
-            studyId: studyId,
-            type: .questionnaire,
-            name: name
-        )
-        try await component.save(on: database)
-
-        let componentId = try component.requireId()
+    ) async throws -> Component {
+        let componentId = UUID()
         // Valid FHIR R4 Questionnaire — StudyBundle validation requires id, status, language, title, and item
         let questionnaireJSON = """
             {
@@ -72,13 +59,14 @@ enum ComponentFixtures {
               "item": [{"linkId": "q1", "text": "How are you?", "type": "string"}]
             }
             """
-        let questionnaire = QuestionnaireComponent(
-            componentId: componentId,
-            data: .init([.enUS: QuestionnaireContent(questionnaire: questionnaireJSON)])
+        let component = Component(
+            studyId: studyId,
+            data: .questionnaire(.init([.enUS: QuestionnaireContent(questionnaire: questionnaireJSON)])),
+            name: name,
+            id: componentId
         )
-        try await questionnaire.save(on: database)
-
-        return (component, questionnaire)
+        try await component.save(on: database)
+        return component
     }
 
     @discardableResult
@@ -86,22 +74,14 @@ enum ComponentFixtures {
         on database: any Database,
         studyId: UUID,
         name: String = "Test Informational"
-    ) async throws -> (Component, InformationalComponent) {
+    ) async throws -> Component {
         let component = Component(
             studyId: studyId,
-            type: .informational,
+            data: .informational(.init([.enUS: InformationalContent(title: "Test", lede: nil, content: "Content")])),
             name: name
         )
         try await component.save(on: database)
-
-        let componentId = try component.requireId()
-        let informational = InformationalComponent(
-            componentId: componentId,
-            data: .init([.enUS: InformationalContent(title: "Test", lede: nil, content: "Content")])
-        )
-        try await informational.save(on: database)
-
-        return (component, informational)
+        return component
     }
 
     @discardableResult

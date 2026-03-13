@@ -105,8 +105,6 @@ only_rules:
   - file_name_no_space
   # Specifies how the types within a file should be ordered.
   - file_types_order
-  # Prefer using ``.first(where:)`` over ``.filter { }.first` in collections.
-  - first_where
   # Prefer flatMap over map followed by reduce([], +).
   - flatmap_over_map_reduce
   # where clauses are preferred over a single if inside a for.

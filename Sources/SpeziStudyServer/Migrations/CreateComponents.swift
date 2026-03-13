@@ -7,6 +7,7 @@
 //
 
 import Fluent
+import SQLKit
 
 
 struct CreateComponents: AsyncMigration {
@@ -14,9 +15,18 @@ struct CreateComponents: AsyncMigration {
         try await database.schema("components")
             .id()
             .field("study_id", .uuid, .required, .references("studies", "id", onDelete: .cascade))
+            .field("data", .json, .required)
             .field("type", .string, .required)
             .field("name", .string, .required)
+            .timestamps()
             .create()
+
+        if let sql = database as? any SQLDatabase {
+            try await sql.create(index: "idx_components_study_id")
+                .on("components")
+                .column("study_id")
+                .run()
+        }
     }
 
     func revert(on database: any Database) async throws {

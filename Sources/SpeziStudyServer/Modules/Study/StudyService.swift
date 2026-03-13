@@ -12,17 +12,17 @@ import Spezi
 
 
 final class StudyService: Module, @unchecked Sendable {
-    @Dependency(StudyRepository.self) var repository: StudyRepository
-    @Dependency(GroupService.self) var groupService: GroupService
-
-    init() {}
+    @Dependency(StudyRepository.self) var repository
+    @Dependency(GroupService.self) var groupService
 
     func checkHasAccess(to id: UUID, role: AuthContext.GroupRole) async throws {
+        try AuthContext.checkIsResearcher()
+
         guard let groupName = try await repository.findGroupName(forStudyId: id) else {
             throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
         }
 
-        try AuthContext.requireCurrent().checkHasAccess(groupName: groupName, role: role)
+        try AuthContext.checkHasAccess(groupName: groupName, role: role)
     }
 
     func getStudy(id: UUID) async throws -> Study {

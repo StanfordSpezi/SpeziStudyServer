@@ -30,7 +30,9 @@ extension StudyPatch {
             icon: schema.icon,
             details: schema.details,
             participationCriterion: schema.participationCriterion.map { .init($0) },
-            consent: schema.consent
+            consent: schema.consent,
+            visibility: schema.visibility,
+            enrollmentCondition: schema.enrollmentConditions
         )
     }
 }
@@ -53,11 +55,12 @@ extension Components.Schemas.StudyResponse {
             icon: model.icon,
             details: model.details,
             participationCriterion: try .init(model.participationCriterion),
-            consent: model.consent
+            consent: model.consent,
+            visibility: model.visibility,
+            enrollmentConditions: model.enrollmentCondition
         )
     }
 }
-
 
 // MARK: - ParticipationCriterion Mapping
 

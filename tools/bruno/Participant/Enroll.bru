@@ -1,0 +1,18 @@
+meta {
+  name: Enroll
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/participant/enrollments
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "studyId": "{{studyId}}",
+    "invitationCode": null
+  }
+}

@@ -53,11 +53,12 @@ extension Controller {
         return .noContent(.init())
     }
 
+    // TODO: Temporary endpoint for previewing bundles during development. Will be removed once bundles are served from file storage.
     func getStudiesStudyIdBundle(
         _ input: Operations.GetStudiesStudyIdBundle.Input
     ) async throws -> Operations.GetStudiesStudyIdBundle.Output {
         let studyId = try input.path.studyId.requireId()
-        let studyBundle = try await studyBundleService.buildBundle(studyId: studyId)
+        let studyBundle = try await studyBundleService.buildBundle(studyId: studyId, revision: 1)
         return .ok(.init(
             headers: .init(contentDisposition: "attachment; filename=\"\(studyId)-spezistudybundle.zip\""),
             body: .applicationZip(HTTPBody(studyBundle))

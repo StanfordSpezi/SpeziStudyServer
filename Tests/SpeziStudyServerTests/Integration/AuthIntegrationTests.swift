@@ -17,6 +17,24 @@ import VaporTesting
 
 private let dummyUUID = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
 
+private struct FixtureIDs: Sendable {
+    static let dummy = FixtureIDs(
+        groupId: dummyUUID,
+        studyId: dummyUUID,
+        healthDataId: dummyUUID,
+        informationalId: dummyUUID,
+        questionnaireId: dummyUUID,
+        scheduleId: dummyUUID
+    )
+
+    let groupId: UUID
+    let studyId: UUID
+    let healthDataId: UUID
+    let informationalId: UUID
+    let questionnaireId: UUID
+    let scheduleId: UUID
+}
+
 private enum EndpointRole: Sendable {
     /// Requires the researcher realm role. `minRole` controls the required group-level role.
     case researcher(minRole: AuthContext.GroupRole, requiresGroupAccess: Bool)
@@ -145,7 +163,7 @@ struct AuthIntegrationTests {
     @Test
     func participantDeniedResearcherEndpoints() async throws {
         try await TestApp.withApp(token: .participant(subject: "participant-test-user")) { app, token in
-            let endpoints = Self.allEndpoints(groupId: dummyUUID, studyId: dummyUUID, healthDataId: dummyUUID, informationalId: dummyUUID, questionnaireId: dummyUUID, scheduleId: dummyUUID)
+            let endpoints = Self.allEndpoints(.dummy)
 
             for endpoint in endpoints where !endpoint.isParticipant {
                 try await self.expectStatus(.forbidden, for: endpoint, token: token, on: app)
@@ -156,7 +174,7 @@ struct AuthIntegrationTests {
     @Test
     func researcherDeniedParticipantEndpoints() async throws {
         try await TestApp.withApp { app, token in
-            let endpoints = Self.allEndpoints(groupId: dummyUUID, studyId: dummyUUID, healthDataId: dummyUUID, informationalId: dummyUUID, questionnaireId: dummyUUID, scheduleId: dummyUUID)
+            let endpoints = Self.allEndpoints(.dummy)
 
             for endpoint in endpoints where endpoint.isParticipant {
                 try await self.expectStatus(.forbidden, for: endpoint, token: token, on: app)
@@ -211,14 +229,15 @@ struct AuthIntegrationTests {
                 try await ParticipantFixtures.createParticipant(on: app.db, identityProviderId: subject)
             }
 
-            try await test(app, token, Self.allEndpoints(
+            let ids = FixtureIDs(
                 groupId: groupId,
                 studyId: studyId,
                 healthDataId: healthDataId,
                 informationalId: informationalId,
                 questionnaireId: questionnaireId,
                 scheduleId: scheduleId
-            ))
+            )
+            try await test(app, token, Self.allEndpoints(ids))
         }
     }
 
@@ -282,14 +301,13 @@ extension AuthIntegrationTests {
     }
 
     // swiftlint:disable:next function_body_length
-    private static func allEndpoints(
-        groupId: UUID,
-        studyId: UUID,
-        healthDataId: UUID,
-        informationalId: UUID,
-        questionnaireId: UUID,
-        scheduleId: UUID
-    ) -> [Endpoint] {
+    private static func allEndpoints(_ ids: FixtureIDs) -> [Endpoint] {
+        let groupId = ids.groupId
+        let studyId = ids.studyId
+        let healthDataId = ids.healthDataId
+        let informationalId = ids.informationalId
+        let questionnaireId = ids.questionnaireId
+        let scheduleId = ids.scheduleId
         let informational = jsonData(Components.Schemas.InformationalComponentInput(
             name: "X",
             data: .init([.enUS: InformationalContent(title: "T", lede: nil, content: "C")])
@@ -396,7 +414,7 @@ extension AuthIntegrationTests {
 
     private static func normalizedTestedRoutes() -> Set<String> {
         Set(
-            allEndpoints(groupId: dummyUUID, studyId: dummyUUID, healthDataId: dummyUUID, informationalId: dummyUUID, questionnaireId: dummyUUID, scheduleId: dummyUUID)
+            allEndpoints(.dummy)
                 .map { "\($0.method.rawValue) /\($0.path.replacingOccurrences(of: dummyUUID.uuidString, with: "*"))" }
         )
     }

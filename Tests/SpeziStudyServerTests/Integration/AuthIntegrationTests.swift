@@ -127,8 +127,7 @@ struct AuthIntegrationTests {
     @Test
     func researcherAllowedActions() async throws {
         try await withFixtures(token: .researcher(groups: ["/Test Group/researcher"])) { app, token, endpoints in
-            for endpoint in endpoints where endpoint.requiresGroupAccess && endpoint.minRole <= .researcher
-                && !endpoint.path.contains("/components") {
+            for endpoint in endpoints where endpoint.requiresGroupAccess && endpoint.minRole <= .researcher {
                 try await self.expectStatus(endpoint.successStatus, for: endpoint, token: token, on: app)
             }
         }
@@ -137,8 +136,7 @@ struct AuthIntegrationTests {
     @Test
     func adminAllowedActions() async throws {
         try await withFixtures(token: .researcher(groups: ["/Test Group/admin"])) { app, token, endpoints in
-            for endpoint in endpoints where endpoint.requiresGroupAccess && endpoint.minRole == .admin
-                && !endpoint.path.contains("/components") {
+            for endpoint in endpoints where endpoint.requiresGroupAccess && endpoint.minRole == .admin {
                 try await self.expectStatus(endpoint.successStatus, for: endpoint, token: token, on: app)
             }
         }
@@ -147,7 +145,7 @@ struct AuthIntegrationTests {
     @Test
     func participantDeniedResearcherEndpoints() async throws {
         try await TestApp.withApp(token: .participant(subject: "participant-test-user")) { app, token in
-            let endpoints = Self.allEndpoints(groupId: dummyUUID, studyId: dummyUUID, componentId: dummyUUID, scheduleId: dummyUUID)
+            let endpoints = Self.allEndpoints(groupId: dummyUUID, studyId: dummyUUID, healthDataId: dummyUUID, informationalId: dummyUUID, questionnaireId: dummyUUID, scheduleId: dummyUUID)
 
             for endpoint in endpoints where !endpoint.isParticipant {
                 try await self.expectStatus(.forbidden, for: endpoint, token: token, on: app)
@@ -158,7 +156,7 @@ struct AuthIntegrationTests {
     @Test
     func researcherDeniedParticipantEndpoints() async throws {
         try await TestApp.withApp { app, token in
-            let endpoints = Self.allEndpoints(groupId: dummyUUID, studyId: dummyUUID, componentId: dummyUUID, scheduleId: dummyUUID)
+            let endpoints = Self.allEndpoints(groupId: dummyUUID, studyId: dummyUUID, healthDataId: dummyUUID, informationalId: dummyUUID, questionnaireId: dummyUUID, scheduleId: dummyUUID)
 
             for endpoint in endpoints where endpoint.isParticipant {
                 try await self.expectStatus(.forbidden, for: endpoint, token: token, on: app)
@@ -200,9 +198,13 @@ struct AuthIntegrationTests {
             let groupId = try group.requireId()
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: groupId)
             let studyId = try study.requireId()
-            let component = try await ComponentFixtures.createHealthDataComponent(on: app.db, studyId: studyId)
-            let componentId = try component.requireId()
-            let schedule = try await ComponentFixtures.createSchedule(on: app.db, componentId: componentId)
+            let healthData = try await ComponentFixtures.createHealthDataComponent(on: app.db, studyId: studyId)
+            let healthDataId = try healthData.requireId()
+            let informational = try await ComponentFixtures.createInformationalComponent(on: app.db, studyId: studyId)
+            let informationalId = try informational.requireId()
+            let questionnaire = try await ComponentFixtures.createQuestionnaireComponent(on: app.db, studyId: studyId)
+            let questionnaireId = try questionnaire.requireId()
+            let schedule = try await ComponentFixtures.createSchedule(on: app.db, componentId: questionnaireId)
             let scheduleId = try schedule.requireId()
 
             if case .participant(let subject) = tokenConfig {
@@ -212,7 +214,9 @@ struct AuthIntegrationTests {
             try await test(app, token, Self.allEndpoints(
                 groupId: groupId,
                 studyId: studyId,
-                componentId: componentId,
+                healthDataId: healthDataId,
+                informationalId: informationalId,
+                questionnaireId: questionnaireId,
                 scheduleId: scheduleId
             ))
         }
@@ -281,7 +285,9 @@ extension AuthIntegrationTests {
     private static func allEndpoints(
         groupId: UUID,
         studyId: UUID,
-        componentId: UUID,
+        healthDataId: UUID,
+        informationalId: UUID,
+        questionnaireId: UUID,
         scheduleId: UUID
     ) -> [Endpoint] {
         let informational = jsonData(Components.Schemas.InformationalComponentInput(
@@ -327,23 +333,25 @@ extension AuthIntegrationTests {
 
             // Components
             researcher(.GET, "\(base)/studies/\(studyId)/components", successStatus: .ok),
-            researcher(.GET, "\(base)/studies/\(studyId)/components/informational/\(componentId)", successStatus: .ok),
-            researcher(.GET, "\(base)/studies/\(studyId)/components/questionnaire/\(componentId)", successStatus: .ok),
-            researcher(.GET, "\(base)/studies/\(studyId)/components/health-data/\(componentId)", successStatus: .ok),
+            researcher(.GET, "\(base)/studies/\(studyId)/components/informational/\(informationalId)", successStatus: .ok),
+            researcher(.GET, "\(base)/studies/\(studyId)/components/questionnaire/\(questionnaireId)", successStatus: .ok),
+            researcher(.GET, "\(base)/studies/\(studyId)/components/health-data/\(healthDataId)", successStatus: .ok),
             researcher(.POST, "\(base)/studies/\(studyId)/components/informational", body: informational, successStatus: .created),
             researcher(.POST, "\(base)/studies/\(studyId)/components/questionnaire", body: questionnaire, successStatus: .created),
             researcher(.POST, "\(base)/studies/\(studyId)/components/health-data", body: healthData, successStatus: .created),
-            researcher(.PUT, "\(base)/studies/\(studyId)/components/informational/\(componentId)", body: informational, successStatus: .ok),
-            researcher(.PUT, "\(base)/studies/\(studyId)/components/questionnaire/\(componentId)", body: questionnaire, successStatus: .ok),
-            researcher(.PUT, "\(base)/studies/\(studyId)/components/health-data/\(componentId)", body: healthData, successStatus: .ok),
-            researcher(.DELETE, "\(base)/studies/\(studyId)/components/\(componentId)", successStatus: .noContent),
+            researcher(.PUT, "\(base)/studies/\(studyId)/components/informational/\(informationalId)", body: informational, successStatus: .ok),
+            researcher(.PUT, "\(base)/studies/\(studyId)/components/questionnaire/\(questionnaireId)", body: questionnaire, successStatus: .ok),
+            researcher(.PUT, "\(base)/studies/\(studyId)/components/health-data/\(healthDataId)", body: healthData, successStatus: .ok),
 
-            // Component Schedules
-            researcher(.GET, "\(base)/studies/\(studyId)/components/\(componentId)/schedules", successStatus: .ok),
-            researcher(.POST, "\(base)/studies/\(studyId)/components/\(componentId)/schedules", body: scheduleBody, successStatus: .created),
-            researcher(.GET, "\(base)/studies/\(studyId)/components/\(componentId)/schedules/\(scheduleId)", successStatus: .ok),
-            researcher(.PUT, "\(base)/studies/\(studyId)/components/\(componentId)/schedules/\(scheduleId)", body: scheduleBody, successStatus: .ok),
-            researcher(.DELETE, "\(base)/studies/\(studyId)/components/\(componentId)/schedules/\(scheduleId)", successStatus: .noContent),
+            // Component Schedules (use questionnaire — health-data doesn't support schedules)
+            researcher(.GET, "\(base)/studies/\(studyId)/components/\(questionnaireId)/schedules", successStatus: .ok),
+            researcher(.POST, "\(base)/studies/\(studyId)/components/\(questionnaireId)/schedules", body: scheduleBody, successStatus: .created),
+            researcher(.GET, "\(base)/studies/\(studyId)/components/\(questionnaireId)/schedules/\(scheduleId)", successStatus: .ok),
+            researcher(.PUT, "\(base)/studies/\(studyId)/components/\(questionnaireId)/schedules/\(scheduleId)", body: scheduleBody, successStatus: .ok),
+            researcher(.DELETE, "\(base)/studies/\(studyId)/components/\(questionnaireId)/schedules/\(scheduleId)", successStatus: .noContent),
+
+            // Components — destructive (after schedules, which depend on the component existing)
+            researcher(.DELETE, "\(base)/studies/\(studyId)/components/\(healthDataId)", successStatus: .noContent),
 
             // Participant — profile & studies (fixture pre-created by participantAllowedActions)
             participant(.POST, "\(base)/participant/profile", successStatus: .conflict, body: jsonData(profileBody())),
@@ -388,7 +396,7 @@ extension AuthIntegrationTests {
 
     private static func normalizedTestedRoutes() -> Set<String> {
         Set(
-            allEndpoints(groupId: dummyUUID, studyId: dummyUUID, componentId: dummyUUID, scheduleId: dummyUUID)
+            allEndpoints(groupId: dummyUUID, studyId: dummyUUID, healthDataId: dummyUUID, informationalId: dummyUUID, questionnaireId: dummyUUID, scheduleId: dummyUUID)
                 .map { "\($0.method.rawValue) /\($0.path.replacingOccurrences(of: dummyUUID.uuidString, with: "*"))" }
         )
     }

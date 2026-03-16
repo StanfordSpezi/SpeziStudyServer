@@ -27,7 +27,6 @@ final class PublishedStudyService: Module, @unchecked Sendable {
 
         let (metadata, _) = try await studyBundleService.buildMetadata(from: study)
 
-        // TODO: Upload bundle to file storage and use the real URL
         _ = try await studyBundleService.buildBundle(studyId: studyId, revision: nextRevision)
         guard let bundleURL = URL(string: "https://example.com/TODO") else {
             throw ServerError.internalServerError("Failed to construct bundle URL")

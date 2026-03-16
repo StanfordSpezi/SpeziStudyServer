@@ -35,7 +35,6 @@ extension Controller {
             case .consentData(let payload):
                 userResponses = UserResponses(payload.payload.body)
             case .consentPDF(let payload):
-                // TODO: Store consent PDF and set consentURL
                 _ = try await Data(collecting: payload.payload.body, upTo: 10_000_000)
                 consentURL = URL(string: "https://example.com/TODO")
             case .undocumented:

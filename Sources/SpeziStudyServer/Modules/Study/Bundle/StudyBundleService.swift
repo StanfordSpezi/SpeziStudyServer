@@ -100,7 +100,6 @@ final class StudyBundleService: Module, @unchecked Sendable {
             return (nil, [])
         }
 
-        // TODO: Update versioning
         let version = Version(1, 0, 0)
         
         let ref = StudyBundle.FileReference(category: .consent, filename: "Consent", fileExtension: "md")

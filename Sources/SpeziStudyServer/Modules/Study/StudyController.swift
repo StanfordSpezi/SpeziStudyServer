@@ -53,7 +53,6 @@ extension Controller {
         return .noContent(.init())
     }
 
-    // TODO: Temporary endpoint for previewing bundles during development. Will be removed once bundles are served from file storage.
     func getStudiesStudyIdBundle(
         _ input: Operations.GetStudiesStudyIdBundle.Input
     ) async throws -> Operations.GetStudiesStudyIdBundle.Output {

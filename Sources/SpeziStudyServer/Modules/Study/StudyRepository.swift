@@ -20,12 +20,7 @@ final class StudyRepository: Module, Sendable {
 
     func create(_ study: Study) async throws -> Study {
         try await study.save(on: database)
-
-        guard let createdStudy = try await Study.find(try study.requireId(), on: database) else {
-            throw ServerError.failedToRetrieveCreatedObject
-        }
-
-        return createdStudy
+        return study
     }
 
     func find(id: UUID) async throws -> Study? {
@@ -48,12 +43,12 @@ final class StudyRepository: Module, Sendable {
             .first()
     }
 
-    func findWithComponentsAndSchedules(id: UUID) async throws -> Study {
+    func findWithComponentsAndSchedules(id: UUID) async throws -> Study? {
         guard let study = try await Study.query(on: database)
             .filter(\.$id == id)
             .with(\.$components)
             .first() else {
-            throw ServerError.notFound(resource: "Study", identifier: id.uuidString)
+            return nil
         }
 
         for component in study.components {

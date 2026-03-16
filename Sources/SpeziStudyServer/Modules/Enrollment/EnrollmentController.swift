@@ -1,0 +1,20 @@
+//
+// This source file is part of the SpeziStudyServer open source project
+//
+// SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
+//
+// SPDX-License-Identifier: MIT
+//
+
+import Foundation
+
+
+extension Controller {
+    func getStudiesStudyIdEnrollments(
+        _ input: Operations.GetStudiesStudyIdEnrollments.Input
+    ) async throws -> Operations.GetStudiesStudyIdEnrollments.Output {
+        let studyId = try input.path.studyId.requireId()
+        let enrollments = try await enrollmentService.listEnrollments(studyId: studyId)
+        return .ok(.init(body: .json(try enrollments.map { try .init($0) })))
+    }
+}

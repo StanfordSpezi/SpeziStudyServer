@@ -75,8 +75,8 @@ struct ComponentScheduleMapperTests {
         (.saturday, .saturday),
         (.sunday, .sunday)
     ])
-    func weekdayRoundTrip(model: Locale.Weekday, expected: Components.Schemas.WeeklyRepetition.WeekdayPayload) {
-        let schema = Components.Schemas.WeeklyRepetition.WeekdayPayload(model)
+    func weekdayRoundTrip(model: Locale.Weekday, expected: Components.Schemas.WeeklyRepetition.WeekdayPayload) throws {
+        let schema = try Components.Schemas.WeeklyRepetition.WeekdayPayload(model)
         #expect(schema == expected)
         let back = Locale.Weekday(schema)
         #expect(back == model)

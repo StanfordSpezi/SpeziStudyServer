@@ -28,11 +28,22 @@ struct AuthContext: Sendable {
 
     @TaskLocal static var current: AuthContext?
 
+    let subject: String
+    let email: String
     let roles: [String]
-    let groups: [String]
+    let researcherRole: String
+    let participantRole: String
 
-    /// Parses JWT group paths (e.g., "/Stanford Biodesign Digital Health/admin") into a membership map.
-    var groupMemberships: [String: GroupRole] {
+    /// Parsed JWT group paths (e.g., "/Stanford Biodesign Digital Health/admin") as a membership map.
+    let groupMemberships: [String: GroupRole]
+
+    init(subject: String, email: String, roles: [String], groups: [String], researcherRole: String, participantRole: String) {
+        self.subject = subject
+        self.email = email
+        self.roles = roles
+        self.researcherRole = researcherRole
+        self.participantRole = participantRole
+
         var memberships: [String: GroupRole] = [:]
         for path in groups {
             guard path.hasPrefix("/") else { continue }
@@ -43,19 +54,40 @@ struct AuthContext: Sendable {
             }
             memberships[String(parts[0])] = role
         }
-        return memberships
+        self.groupMemberships = memberships
     }
 
-    static func requireCurrent() throws -> AuthContext {
-        guard let context = current else {
-            throw ServerError.missingToken
+    @discardableResult
+    static func checkIsResearcher() throws -> AuthContext {
+        let context = try requireCurrent()
+        guard context.roles.contains(context.researcherRole) else {
+            throw ServerError.forbidden
         }
         return context
     }
 
-    func checkHasAccess(groupName: String, role: GroupRole) throws {
-        guard let memberRole = groupMemberships[groupName], memberRole >= role else {
+    @discardableResult
+    static func checkIsParticipant() throws -> AuthContext {
+        let context = try requireCurrent()
+        guard context.roles.contains(context.participantRole) else {
             throw ServerError.forbidden
         }
+        return context
+    }
+
+    @discardableResult
+    static func checkHasAccess(groupName: String, role: GroupRole) throws -> AuthContext {
+        let context = try checkIsResearcher()
+        guard let memberRole = context.groupMemberships[groupName], memberRole >= role else {
+            throw ServerError.forbidden
+        }
+        return context
+    }
+
+    private static func requireCurrent() throws -> AuthContext {
+        guard let context = current else {
+            throw ServerError.missingToken
+        }
+        return context
     }
 }

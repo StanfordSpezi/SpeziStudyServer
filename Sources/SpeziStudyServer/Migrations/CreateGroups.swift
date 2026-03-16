@@ -16,6 +16,7 @@ struct CreateGroups: AsyncMigration {
             .field("name", .string, .required)
             .field("icon", .string, .required)
             .unique(on: "name")
+            .timestamps()
             .create()
     }
 

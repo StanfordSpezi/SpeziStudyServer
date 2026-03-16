@@ -30,18 +30,15 @@ final class GroupRepository: Module, Sendable {
         try await Group.query(on: database).filter(\.$name ~~ names).all()
     }
 
+    @discardableResult
     func create(_ group: Group) async throws -> Group {
         try await group.save(on: database)
-
-        guard let created = try await Group.find(try group.requireId(), on: database) else {
-            throw ServerError.failedToRetrieveCreatedObject
-        }
-
-        return created
+        return group
     }
 
-    func update(_ group: Group) async throws {
+    func update(_ group: Group) async throws -> Group {
         try await group.update(on: database)
+        return group
     }
 
     func delete(id: UUID) async throws -> Bool {

@@ -22,9 +22,9 @@ struct SchedulePatternMapperTests {
     // MARK: - RepetitionPattern
 
     @Test
-    func repetitionPatternDaily() {
+    func repetitionPatternDaily() throws {
         let model = Repetition.daily(interval: 2, hour: 10, minute: 15, second: 30)
-        let schema = Components.Schemas.RepetitionPattern(model)
+        let schema = try Components.Schemas.RepetitionPattern(model)
         if case .daily(let value) = schema {
             #expect(value.interval == 2)
             #expect(value.hour == 10)
@@ -38,9 +38,9 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func repetitionPatternDailyDefaultInterval() {
+    func repetitionPatternDailyDefaultInterval() throws {
         let model = Repetition.daily(interval: 1, hour: 8, minute: 0, second: 0)
-        let schema = Components.Schemas.RepetitionPattern(model)
+        let schema = try Components.Schemas.RepetitionPattern(model)
         if case .daily(let value) = schema {
             #expect(value.interval == nil)
             #expect(value.minute == nil)
@@ -53,9 +53,9 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func repetitionPatternWeeklyWithWeekday() {
+    func repetitionPatternWeeklyWithWeekday() throws {
         let model = Repetition.weekly(interval: 1, weekday: .wednesday, hour: 14, minute: 0, second: 0)
-        let schema = Components.Schemas.RepetitionPattern(model)
+        let schema = try Components.Schemas.RepetitionPattern(model)
         if case .weekly(let value) = schema {
             #expect(value.weekday == .wednesday)
             #expect(value.hour == 14)
@@ -67,9 +67,9 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func repetitionPatternWeeklyWithoutWeekday() {
+    func repetitionPatternWeeklyWithoutWeekday() throws {
         let model = Repetition.weekly(interval: 2, weekday: nil, hour: 9, minute: 30, second: 0)
-        let schema = Components.Schemas.RepetitionPattern(model)
+        let schema = try Components.Schemas.RepetitionPattern(model)
         if case .weekly(let value) = schema {
             #expect(value.weekday == nil)
             #expect(value.interval == 2)
@@ -81,9 +81,9 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func repetitionPatternMonthlyWithDay() {
+    func repetitionPatternMonthlyWithDay() throws {
         let model = Repetition.monthly(interval: 1, day: 15, hour: 8, minute: 0, second: 0)
-        let schema = Components.Schemas.RepetitionPattern(model)
+        let schema = try Components.Schemas.RepetitionPattern(model)
         if case .monthly(let value) = schema {
             #expect(value.day == 15)
             #expect(value.hour == 8)
@@ -95,9 +95,9 @@ struct SchedulePatternMapperTests {
     }
 
     @Test
-    func repetitionPatternMonthlyWithoutDay() {
+    func repetitionPatternMonthlyWithoutDay() throws {
         let model = Repetition.monthly(interval: 3, day: nil, hour: 12, minute: 0, second: 0)
-        let schema = Components.Schemas.RepetitionPattern(model)
+        let schema = try Components.Schemas.RepetitionPattern(model)
         if case .monthly(let value) = schema {
             #expect(value.day == nil)
             #expect(value.interval == 3)
@@ -185,7 +185,7 @@ struct SchedulePatternMapperTests {
         components.month = 3
 
         let model = ScheduleDef.once(.date(components))
-        let schema = Components.Schemas.ScheduleDefinition(model)
+        let schema = try Components.Schemas.ScheduleDefinition(model)
         if case .once(let value) = schema {
             if case .date = value.pattern {} else { Issue.record("Expected date pattern") }
         } else {
@@ -205,7 +205,7 @@ struct SchedulePatternMapperTests {
             .daily(interval: 1, hour: 8, minute: 0, second: 0),
             offset: DateComponents()
         )
-        let schema = Components.Schemas.ScheduleDefinition(model)
+        let schema = try Components.Schemas.ScheduleDefinition(model)
         if case .repeated(let value) = schema {
             if case .daily = value.pattern {} else { Issue.record("Expected daily pattern") }
         } else {
@@ -233,7 +233,7 @@ struct SchedulePatternMapperTests {
             .weekly(interval: 1, weekday: .monday, hour: 10, minute: 0, second: 0),
             offset: offset
         )
-        let schema = Components.Schemas.ScheduleDefinition(model)
+        let schema = try Components.Schemas.ScheduleDefinition(model)
         if case .repeated(let value) = schema {
             #expect(value.offset?.day == 7)
         } else {

@@ -94,34 +94,34 @@ struct StudyBundleIntegrationTests {
         let studyId = try study.requireId()
 
         // Consent
-        study.consent = LocalizationsDictionary([.enUS: "# Informed Consent\n\nPlease read carefully before participating."])
+        study.consent = LocalizationsDictionary([
+            .enUS: ConsentContent(title: "Informed Consent", content: "# Informed Consent\n\nPlease read carefully.")
+        ])
         try await study.save(on: database)
 
         // Informational component
-        let (informationalComponent, _) = try await ComponentFixtures.createInformationalComponent(
+        let informationalComponent = try await ComponentFixtures.createInformationalComponent(
             on: database,
             studyId: studyId,
             name: "Welcome Article"
         )
         let informationalId = try informationalComponent.requireId()
-        let informational = try #require(await InformationalComponent.find(informationalId, on: database))
-        informational.data = LocalizationsDictionary([
+        informationalComponent.data = .informational(LocalizationsDictionary([
             .enUS: InformationalContent(
                 title: "Welcome",
                 lede: "Introduction",
                 content: "# Welcome\nThis is the welcome article."
             )
-        ])
-        try await informational.save(on: database)
+        ]))
+        try await informationalComponent.update(on: database)
 
         // Questionnaire component
-        let (questionnaireComponent, _) = try await ComponentFixtures.createQuestionnaireComponent(
+        let questionnaireComponent = try await ComponentFixtures.createQuestionnaireComponent(
             on: database,
             studyId: studyId,
             name: "Daily Survey"
         )
         let questionnaireId = try questionnaireComponent.requireId()
-        let questionnaire = try #require(await QuestionnaireComponent.find(questionnaireId, on: database))
         let questionnaireJSON = """
             {
               "resourceType": "Questionnaire",
@@ -132,15 +132,16 @@ struct StudyBundleIntegrationTests {
               "item": [{"linkId": "mood", "text": "Rate your mood", "type": "integer"}]
             }
             """
-        questionnaire.data = LocalizationsDictionary([.enUS: QuestionnaireContent(questionnaire: questionnaireJSON)])
-        try await questionnaire.save(on: database)
+        questionnaireComponent.data = .questionnaire(LocalizationsDictionary([
+            .enUS: QuestionnaireContent(questionnaire: questionnaireJSON)
+        ]))
+        try await questionnaireComponent.update(on: database)
 
         // Health data component
-        let (healthDataComponent, _) = try await ComponentFixtures.createHealthDataComponent(on: database, studyId: studyId)
+        let healthDataComponent = try await ComponentFixtures.createHealthDataComponent(on: database, studyId: studyId)
         let healthDataId = try healthDataComponent.requireId()
-        let healthDataModel = try #require(await HealthDataComponent.find(healthDataId, on: database))
         let historicalCollection = StudyDefinition.HealthDataCollectionComponent.HistoricalDataCollection.enabled(.last(numMonths: 6))
-        healthDataModel.data = StudyDefinition.HealthDataCollectionComponent(
+        healthDataComponent.data = .healthDataCollection(StudyDefinition.HealthDataCollectionComponent(
             id: healthDataId,
             sampleTypes: SampleTypesCollection([
                 .quantity(.heartRate),
@@ -148,8 +149,8 @@ struct StudyBundleIntegrationTests {
             ]),
             optionalSampleTypes: SampleTypesCollection(),
             historicalDataCollection: historicalCollection
-        )
-        try await healthDataModel.save(on: database)
+        ))
+        try await healthDataComponent.update(on: database)
 
         // Schedule: informational shown once on enrollment
         try await ComponentFixtures.createSchedule(
@@ -197,7 +198,7 @@ struct StudyBundleIntegrationTests {
         // Consent text
         let consentRef = try #require(definition.metadata.consentFileRef)
         let consentText = try #require(bundle.consentText(for: consentRef, in: enUS))
-        #expect(consentText == "# Informed Consent\n\nPlease read carefully before participating.")
+        #expect(consentText == "---\ntitle: Informed Consent\nversion: 1.0.0\n---\n# Informed Consent\n\nPlease read carefully.")
 
         // Informational component
         let informationalDef = try #require(definition.components.first(where: {

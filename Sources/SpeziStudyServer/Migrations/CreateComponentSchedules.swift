@@ -7,6 +7,7 @@
 //
 
 import Fluent
+import SQLKit
 
 
 struct CreateComponentSchedules: AsyncMigration {
@@ -15,7 +16,15 @@ struct CreateComponentSchedules: AsyncMigration {
             .id()
             .field("component_id", .uuid, .required, .references("components", "id", onDelete: .cascade))
             .field("schedule_data", .json, .required)
+            .timestamps()
             .create()
+
+        if let sql = database as? any SQLDatabase {
+            try await sql.create(index: "idx_component_schedules_component_id")
+                .on("component_schedules")
+                .column("component_id")
+                .run()
+        }
     }
 
     func revert(on database: any Database) async throws {

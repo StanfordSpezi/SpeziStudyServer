@@ -10,8 +10,8 @@ SPDX-License-Identifier: MIT
 
 # Spezi Study Server
 
-[![Build and Test](https://github.com/StanfordSpezi/SpeziStudyPlatform/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/StanfordSpezi/SpeziStudyPlatform/actions/workflows/build-and-test.yml)
-[![codecov](https://codecov.io/gh/StanfordSpezi/SpeziStudyPlatform/branch/main/graph/badge.svg?token=X7BQYSUKOH)](https://codecov.io/gh/StanfordSpezi/SpeziStudyPlatform)
+[![Build and Test](https://github.com/StanfordSpezi/SpeziStudyPlatform-Server/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/StanfordSpezi/SpeziStudyPlatform-Server/actions/workflows/build-and-test.yml)
+[![codecov](https://codecov.io/gh/StanfordSpezi/SpeziStudyPlatform-Server/branch/main/graph/badge.svg?token=X7BQYSUKOH)](https://codecov.io/gh/StanfordSpezi/SpeziStudyPlatform-Server)
 [![DOI](https://zenodo.org/badge/573230182.svg)](https://zenodo.org/badge/latestdoi/573230182)
 
 A Vapor-based server for managing clinical research studies, built as part of the Spezi ecosystem.
@@ -97,18 +97,15 @@ Sources/SpeziStudyPlatform/
 
 Each module contains its own Controller, Service, Repository, and Mapper.
 
-For detailed architecture documentation, see [AGENTS.md](AGENTS.md).
-
-
 ## License
 
-This project is licensed under the MIT License. See [Licenses](https://github.com/StanfordSpezi/SpeziStudyPlatform/tree/main/LICENSES) for more information.
+This project is licensed under the MIT License. See [Licenses](https://github.com/StanfordSpezi/SpeziStudyPlatform-Server/tree/main/LICENSES) for more information.
 
 
 ## Contributors
 
 This project is developed as part of the Stanford Mussallem Center for Biodesign at Stanford University.
-See [CONTRIBUTORS.md](https://github.com/StanfordSpezi/SpeziStudyPlatform/tree/main/CONTRIBUTORS.md) for a full list of all Spezi Study Server contributors.
+See [CONTRIBUTORS.md](https://github.com/StanfordSpezi/SpeziStudyPlatform-Server/tree/main/CONTRIBUTORS.md) for a full list of all Spezi Study Server contributors.
 
 ![Stanford Mussallem Center for Biodesign Logo](https://raw.githubusercontent.com/StanfordBDHG/.github/main/assets/biodesign-footer-light.png#gh-light-mode-only)
 ![Stanford Mussallem Center for Biodesign Logo](https://raw.githubusercontent.com/StanfordBDHG/.github/main/assets/biodesign-footer-dark.png#gh-dark-mode-only)

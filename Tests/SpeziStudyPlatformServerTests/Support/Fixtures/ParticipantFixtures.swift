@@ -8,7 +8,7 @@
 
 import Fluent
 import Foundation
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 
 
 enum ParticipantFixtures {

@@ -10,7 +10,7 @@
              
 -->
 
-SpeziStudyPlatform contributors
+SpeziStudyPlatformServer contributors
 ====================
 
 * [Philipp Nagy](https://github.com/phnagy)

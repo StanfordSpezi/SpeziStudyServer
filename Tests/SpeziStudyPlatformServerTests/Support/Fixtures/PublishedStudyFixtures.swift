@@ -10,7 +10,7 @@ import Fluent
 import Foundation
 import SpeziLocalization
 import SpeziStudyDefinition
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 
 
 enum PublishedStudyFixtures {

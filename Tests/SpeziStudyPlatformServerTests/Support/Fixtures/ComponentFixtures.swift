@@ -12,7 +12,7 @@ import SpeziHealthKit
 import SpeziLocalization
 import SpeziScheduler
 import SpeziStudyDefinition
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 
 
 enum ComponentFixtures {

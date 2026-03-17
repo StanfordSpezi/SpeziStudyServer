@@ -9,7 +9,7 @@
 import Foundation
 import SpeziScheduler
 import SpeziStudyDefinition
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 import Testing
 
 

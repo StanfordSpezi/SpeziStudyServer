@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 //
 
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 import Testing
 
 

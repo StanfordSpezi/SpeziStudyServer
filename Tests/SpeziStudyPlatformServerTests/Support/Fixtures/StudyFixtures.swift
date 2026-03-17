@@ -9,7 +9,7 @@
 import Fluent
 import Foundation
 import SpeziLocalization
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 
 
 enum StudyFixtures {

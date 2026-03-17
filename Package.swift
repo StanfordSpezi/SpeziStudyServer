@@ -12,7 +12,7 @@ import PackageDescription
 
 
 let package = Package(
-    name: "SpeziStudyPlatform",
+    name: "SpeziStudyPlatformServer",
     platforms: [
         .macOS(.v15)
     ],
@@ -41,7 +41,7 @@ let package = Package(
     ] + swiftLintPackage(),
     targets: [
         .executableTarget(
-            name: "SpeziStudyPlatform",
+            name: "SpeziStudyPlatformServer",
             dependencies: [
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
@@ -66,9 +66,9 @@ let package = Package(
             ] + swiftLintPlugin()
         ),
         .testTarget(
-            name: "SpeziStudyPlatformTests",
+            name: "SpeziStudyPlatformServerTests",
             dependencies: [
-                .target(name: "SpeziStudyPlatform"),
+                .target(name: "SpeziStudyPlatformServer"),
                 .product(name: "VaporTesting", package: "vapor"),
                 .product(name: "ZIPFoundation", package: "ZIPFoundation"),
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),

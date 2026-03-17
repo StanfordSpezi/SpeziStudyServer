@@ -7,15 +7,15 @@
 //
 
 import Foundation
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 import Testing
 import VaporTesting
 
 
 @Suite(.serialized)
-struct InformationalComponentIntegrationTests {
+struct HealthDataComponentIntegrationTests {
     @Test
-    func createInformationalComponent() async throws {
+    func createHealthDataComponent() async throws {
         try await TestApp.withApp { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
@@ -23,40 +23,40 @@ struct InformationalComponentIntegrationTests {
 
             try await app.test(
                 .POST,
-                "\(apiBasePath)/studies/\(studyId)/components/informational",
+                "\(apiBasePath)/studies/\(studyId)/components/health-data",
                 beforeRequest: { req in
                     req.bearerAuth(token)
-                    try req.encodeJSONBody(createRequestBody(name: "Test Article"))
+                    try req.encodeJSONBody(createRequestBody(name: "Heart Rate Collection"))
                 }
             ) { response in
                 #expect(response.status == .created)
 
                 let component = try response.content.decode(
-                    Components.Schemas.InformationalComponentResponse.self
+                    Components.Schemas.HealthDataComponentResponse.self
                 )
-                #expect(component.name == "Test Article")
+                #expect(component.name == "Heart Rate Collection")
                 #expect(component.id.isEmpty == false)
             }
         }
     }
 
     @Test
-    func getInformationalComponent() async throws {
+    func getHealthDataComponent() async throws {
         try await TestApp.withApp { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
-            let component = try await ComponentFixtures.createInformationalComponent(
+            let component = try await ComponentFixtures.createHealthDataComponent(
                 on: app.db,
                 studyId: studyId,
-                name: "Test Article"
+                name: "Test Health Data"
             )
             let componentId = try component.requireId()
 
             try await app.test(
                 .GET,
-                "\(apiBasePath)/studies/\(studyId)/components/informational/\(componentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/health-data/\(componentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                 }
@@ -64,16 +64,16 @@ struct InformationalComponentIntegrationTests {
                 #expect(response.status == .ok)
 
                 let responseComponent = try response.content.decode(
-                    Components.Schemas.InformationalComponentResponse.self
+                    Components.Schemas.HealthDataComponentResponse.self
                 )
                 #expect(responseComponent.id == componentId.uuidString)
-                #expect(responseComponent.name == "Test Article")
+                #expect(responseComponent.name == "Test Health Data")
             }
         }
     }
 
     @Test
-    func getInformationalComponentNotFound() async throws {
+    func getHealthDataComponentNotFound() async throws {
         try await TestApp.withApp { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
@@ -82,7 +82,7 @@ struct InformationalComponentIntegrationTests {
 
             try await app.test(
                 .GET,
-                "\(apiBasePath)/studies/\(studyId)/components/informational/\(nonExistentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/health-data/\(nonExistentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                 }
@@ -93,13 +93,13 @@ struct InformationalComponentIntegrationTests {
     }
 
     @Test
-    func updateInformationalComponent() async throws {
+    func updateHealthDataComponent() async throws {
         try await TestApp.withApp { app, token in
             let group = try await GroupFixtures.createGroup(on: app.db)
             let study = try await StudyFixtures.createStudy(on: app.db, groupId: try group.requireId())
             let studyId = try study.requireId()
 
-            let component = try await ComponentFixtures.createInformationalComponent(
+            let component = try await ComponentFixtures.createHealthDataComponent(
                 on: app.db,
                 studyId: studyId,
                 name: "Original Name"
@@ -108,7 +108,7 @@ struct InformationalComponentIntegrationTests {
 
             try await app.test(
                 .PUT,
-                "\(apiBasePath)/studies/\(studyId)/components/informational/\(componentId)",
+                "\(apiBasePath)/studies/\(studyId)/components/health-data/\(componentId)",
                 beforeRequest: { req in
                     req.bearerAuth(token)
                     try req.encodeJSONBody(createRequestBody(name: "Updated Name"))
@@ -117,7 +117,7 @@ struct InformationalComponentIntegrationTests {
                 #expect(response.status == .ok)
 
                 let updated = try response.content.decode(
-                    Components.Schemas.InformationalComponentResponse.self
+                    Components.Schemas.HealthDataComponentResponse.self
                 )
                 #expect(updated.name == "Updated Name")
             }
@@ -128,9 +128,12 @@ struct InformationalComponentIntegrationTests {
         [
             "name": name,
             "data": [
-                "en-US": [
-                    "title": "Title",
-                    "content": "Content"
+                "sampleTypes": [
+                    "HKQuantityType;HKQuantityTypeIdentifierHeartRate",
+                    "HKQuantityType;HKQuantityTypeIdentifierStepCount"
+                ],
+                "historicalDataCollection": [
+                    "enabled": false
                 ]
             ]
         ]

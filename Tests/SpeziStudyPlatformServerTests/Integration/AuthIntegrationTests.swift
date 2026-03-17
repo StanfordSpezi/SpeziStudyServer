@@ -10,7 +10,7 @@ import Foundation
 import JWTKit
 import SpeziHealthKit
 import SpeziLocalization
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 import Testing
 import VaporTesting
 

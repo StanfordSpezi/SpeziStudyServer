@@ -9,7 +9,7 @@
 import Fluent
 import JWTKit
 import OpenAPIRuntime
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 import Vapor
 import VaporTesting
 

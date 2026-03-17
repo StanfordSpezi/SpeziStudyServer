@@ -8,7 +8,7 @@
 
 import Foundation
 import SpeziStudyDefinition
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 import Testing
 
 

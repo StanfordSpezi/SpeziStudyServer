@@ -12,7 +12,7 @@ import SpeziHealthKit
 import SpeziHealthKitBulkExport
 import SpeziLocalization
 import SpeziStudyDefinition
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 import Testing
 import VaporTesting
 import ZIPFoundation

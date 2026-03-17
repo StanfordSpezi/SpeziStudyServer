@@ -41,13 +41,13 @@ The project uses PostgreSQL and [Keycloak](https://www.keycloak.org) for authent
 ```bash
 cp .env.example .env                          # configure environment (defaults work out of the box)
 docker compose up -d db keycloak-db keycloak  # start PostgreSQL and Keycloak
-swift run SpeziStudyPlatform migrate --yes      # create / update database tables
+swift run SpeziStudyPlatformServer migrate --yes      # create / update database tables
 swift run                                     # start the server
 ```
 
 The server connects to PostgreSQL, fetches JWKS from Keycloak, and syncs groups on startup.
 
-To revert migrations, run `swift run SpeziStudyPlatform migrate --revert`. When using Docker Compose for the app itself, use `docker compose run migrate` and `docker compose run revert` instead.
+To revert migrations, run `swift run SpeziStudyPlatformServer migrate --revert`. When using Docker Compose for the app itself, use `docker compose run migrate` and `docker compose run revert` instead.
 
 See `.env.example` for all available environment options.
 
@@ -73,7 +73,7 @@ Tests must run without parallelism (`--no-parallel`) because integration test su
 
 ## API Documentation
 
-The API is defined using OpenAPI. See [`Sources/SpeziStudyPlatform/openapi.yaml`](Sources/SpeziStudyPlatform/openapi.yaml) for the full specification.
+The API is defined using OpenAPI. See [`Sources/SpeziStudyPlatformServer/openapi.yaml`](Sources/SpeziStudyPlatformServer/openapi.yaml) for the full specification.
 
 ### API Testing with Bruno
 
@@ -87,7 +87,7 @@ Run the **Seed** request to bootstrap a working dataset — it logs in via Keycl
 The server follows a module-based architecture:
 
 ```
-Sources/SpeziStudyPlatform/
+Sources/SpeziStudyPlatformServer/
 ├── App/              # Application bootstrap and configuration
 ├── Modules/          # Feature modules (Study, Component, etc.)
 ├── Models/           # Fluent database models

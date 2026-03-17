@@ -8,7 +8,7 @@
 
 import Foundation
 import SpeziLocalization
-@testable import SpeziStudyPlatform
+@testable import SpeziStudyPlatformServer
 import Testing
 import VaporTesting
 

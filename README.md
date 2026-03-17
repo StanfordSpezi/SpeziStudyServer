@@ -77,7 +77,7 @@ The API is defined using OpenAPI. See [`Sources/SpeziStudyPlatform/openapi.yaml`
 
 ### API Testing with Bruno
 
-API requests for manual testing are available in `tools/bruno/`. [Bruno](https://www.usebruno.com) is an open source API client. Select the **SpeziStudy** environment in Bruno to load the required variables.
+API requests for manual testing are available in `tools/bruno/`. [Bruno](https://www.usebruno.com) is an open-source API client. Select the **SpeziStudy** environment in Bruno to load the required variables.
 
 Run the **Seed** request to bootstrap a working dataset — it logs in via Keycloak, fetches groups, creates a study, and adds sample components in sequence. Requests use post-response scripts to pass IDs (e.g. `groupId`, `studyId`) to subsequent requests automatically, so you can explore the API without manually copying values.
 

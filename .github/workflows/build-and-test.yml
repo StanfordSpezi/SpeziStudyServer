@@ -1,5 +1,5 @@
 #
-# This source file is part of the SpeziStudyServer open source project
+# This source file is part of the Stanford Spezi open source project
 #
 # SPDX-FileCopyrightText: 2025 Stanford University and the project authors (see CONTRIBUTORS.md)
 #
@@ -32,11 +32,11 @@ jobs:
       fail-fast: false
     with:
       runsonlabels: '["macOS", "self-hosted"]'
-      scheme: SpeziStudyServer
+      scheme: SpeziStudyPlatform
       destination: ${{ matrix.platform.destination }}
       buildConfig: ${{ matrix.config }}
-      resultBundle: ${{ format('SpeziStudyServer-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
-      artifactname: ${{ format('SpeziStudyServer-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
+      resultBundle: ${{ format('SpeziStudyPlatform-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
+      artifactname: ${{ format('SpeziStudyPlatform-{0}-{1}.xcresult', matrix.platform.name, matrix.config) }}
   linux_tests:
     name: Build and Test Swift Package Linux (${{ matrix.config }})
     uses: StanfordBDHG/.github/.github/workflows/swift-test.yml@test-flag-for-swift-test
@@ -48,13 +48,13 @@ jobs:
       runs_on_labels: '["blacksmith-4vcpu-ubuntu-2404"]'
       build_configuration: ${{ matrix.config }}
       test_flags: '--no-parallel'
-      artifact_name: ${{ format('SpeziStudyServer-Package-Linux-{0}.lcov', matrix.config) }}
+      artifact_name: ${{ format('SpeziStudyPlatform-Package-Linux-{0}.lcov', matrix.config) }}
   uploadcoveragereport:
     name: Upload Coverage Report
     needs: [macos_tests, linux_tests]
     uses: StanfordBDHG/.github/.github/workflows/create-and-upload-coverage-report.yml@v2
     with:
-      coveragereports: SpeziStudyServer-*.xcresult
-      coveragereports_lcov: SpeziStudyServer-Package-Linux-*.lcov
+      coveragereports: SpeziStudyPlatform-*.xcresult
+      coveragereports_lcov: SpeziStudyPlatform-Package-Linux-*.lcov
     secrets:
       token: ${{ secrets.CODECOV_TOKEN }}

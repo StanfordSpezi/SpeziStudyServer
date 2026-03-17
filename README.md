@@ -1,6 +1,6 @@
 <!--
 
-This source file is part of the Stanford Spezi open-source project
+This source file is part of the Stanford Spezi open source project
 
 SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
 
@@ -10,8 +10,8 @@ SPDX-License-Identifier: MIT
 
 # Spezi Study Server
 
-[![Build and Test](https://github.com/StanfordSpezi/SpeziStudyServer/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/StanfordSpezi/SpeziStudyServer/actions/workflows/build-and-test.yml)
-[![codecov](https://codecov.io/gh/StanfordSpezi/SpeziStudyServer/branch/main/graph/badge.svg?token=X7BQYSUKOH)](https://codecov.io/gh/StanfordSpezi/SpeziStudyServer)
+[![Build and Test](https://github.com/StanfordSpezi/SpeziStudyPlatform/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/StanfordSpezi/SpeziStudyPlatform/actions/workflows/build-and-test.yml)
+[![codecov](https://codecov.io/gh/StanfordSpezi/SpeziStudyPlatform/branch/main/graph/badge.svg?token=X7BQYSUKOH)](https://codecov.io/gh/StanfordSpezi/SpeziStudyPlatform)
 [![DOI](https://zenodo.org/badge/573230182.svg)](https://zenodo.org/badge/latestdoi/573230182)
 
 A Vapor-based server for managing clinical research studies, built as part of the Spezi ecosystem.
@@ -41,13 +41,13 @@ The project uses PostgreSQL and [Keycloak](https://www.keycloak.org) for authent
 ```bash
 cp .env.example .env                          # configure environment (defaults work out of the box)
 docker compose up -d db keycloak-db keycloak  # start PostgreSQL and Keycloak
-swift run SpeziStudyServer migrate --yes      # create / update database tables
+swift run SpeziStudyPlatform migrate --yes      # create / update database tables
 swift run                                     # start the server
 ```
 
 The server connects to PostgreSQL, fetches JWKS from Keycloak, and syncs groups on startup.
 
-To revert migrations, run `swift run SpeziStudyServer migrate --revert`. When using Docker Compose for the app itself, use `docker compose run migrate` and `docker compose run revert` instead.
+To revert migrations, run `swift run SpeziStudyPlatform migrate --revert`. When using Docker Compose for the app itself, use `docker compose run migrate` and `docker compose run revert` instead.
 
 See `.env.example` for all available environment options.
 
@@ -73,11 +73,11 @@ Tests must run without parallelism (`--no-parallel`) because integration test su
 
 ## API Documentation
 
-The API is defined using OpenAPI. See [`Sources/SpeziStudyServer/openapi.yaml`](Sources/SpeziStudyServer/openapi.yaml) for the full specification.
+The API is defined using OpenAPI. See [`Sources/SpeziStudyPlatform/openapi.yaml`](Sources/SpeziStudyPlatform/openapi.yaml) for the full specification.
 
 ### API Testing with Bruno
 
-API requests for manual testing are available in `tools/bruno/`. [Bruno](https://www.usebruno.com) is an open-source API client. Select the **SpeziStudy** environment in Bruno to load the required variables.
+API requests for manual testing are available in `tools/bruno/`. [Bruno](https://www.usebruno.com) is an open source API client. Select the **SpeziStudy** environment in Bruno to load the required variables.
 
 Run the **Seed** request to bootstrap a working dataset — it logs in via Keycloak, fetches groups, creates a study, and adds sample components in sequence. Requests use post-response scripts to pass IDs (e.g. `groupId`, `studyId`) to subsequent requests automatically, so you can explore the API without manually copying values.
 
@@ -87,7 +87,7 @@ Run the **Seed** request to bootstrap a working dataset — it logs in via Keycl
 The server follows a module-based architecture:
 
 ```
-Sources/SpeziStudyServer/
+Sources/SpeziStudyPlatform/
 ├── App/              # Application bootstrap and configuration
 ├── Modules/          # Feature modules (Study, Component, etc.)
 ├── Models/           # Fluent database models
@@ -102,13 +102,13 @@ For detailed architecture documentation, see [AGENTS.md](AGENTS.md).
 
 ## License
 
-This project is licensed under the MIT License. See [Licenses](https://github.com/StanfordSpezi/SpeziStudyServer/tree/main/LICENSES) for more information.
+This project is licensed under the MIT License. See [Licenses](https://github.com/StanfordSpezi/SpeziStudyPlatform/tree/main/LICENSES) for more information.
 
 
 ## Contributors
 
 This project is developed as part of the Stanford Mussallem Center for Biodesign at Stanford University.
-See [CONTRIBUTORS.md](https://github.com/StanfordSpezi/SpeziStudyServer/tree/main/CONTRIBUTORS.md) for a full list of all Spezi Study Server contributors.
+See [CONTRIBUTORS.md](https://github.com/StanfordSpezi/SpeziStudyPlatform/tree/main/CONTRIBUTORS.md) for a full list of all Spezi Study Server contributors.
 
 ![Stanford Mussallem Center for Biodesign Logo](https://raw.githubusercontent.com/StanfordBDHG/.github/main/assets/biodesign-footer-light.png#gh-light-mode-only)
 ![Stanford Mussallem Center for Biodesign Logo](https://raw.githubusercontent.com/StanfordBDHG/.github/main/assets/biodesign-footer-dark.png#gh-dark-mode-only)

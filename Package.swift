@@ -1,6 +1,6 @@
 // swift-tools-version:6.0
 //
-// This source file is part of the SpeziStudyServer open source project
+// This source file is part of the Stanford Spezi open source project
 //
 // SPDX-FileCopyrightText: 2026 Stanford University and the project authors (see CONTRIBUTORS.md)
 //
@@ -12,7 +12,7 @@ import PackageDescription
 
 
 let package = Package(
-    name: "SpeziStudyServer",
+    name: "SpeziStudyPlatform",
     platforms: [
         .macOS(.v15)
     ],
@@ -41,7 +41,7 @@ let package = Package(
     ] + swiftLintPackage(),
     targets: [
         .executableTarget(
-            name: "SpeziStudyServer",
+            name: "SpeziStudyPlatform",
             dependencies: [
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
@@ -66,9 +66,9 @@ let package = Package(
             ] + swiftLintPlugin()
         ),
         .testTarget(
-            name: "SpeziStudyServerTests",
+            name: "SpeziStudyPlatformTests",
             dependencies: [
-                .target(name: "SpeziStudyServer"),
+                .target(name: "SpeziStudyPlatform"),
                 .product(name: "VaporTesting", package: "vapor"),
                 .product(name: "ZIPFoundation", package: "ZIPFoundation"),
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),

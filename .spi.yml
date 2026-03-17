@@ -11,4 +11,4 @@ builder:
   configs:
     - platform: macOS
       documentation_targets:
-      - SpeziStudyServer
+      - SpeziStudyPlatform

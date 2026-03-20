@@ -8,11 +8,10 @@ SPDX-License-Identifier: MIT
 
 -->
 
-# Spezi Study Server
+# SpeziStudyPlatform-Server
 
 [![Build and Test](https://github.com/StanfordSpezi/SpeziStudyPlatform-Server/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/StanfordSpezi/SpeziStudyPlatform-Server/actions/workflows/build-and-test.yml)
 [![codecov](https://codecov.io/gh/StanfordSpezi/SpeziStudyPlatform-Server/branch/main/graph/badge.svg?token=X7BQYSUKOH)](https://codecov.io/gh/StanfordSpezi/SpeziStudyPlatform-Server)
-[![DOI](https://zenodo.org/badge/573230182.svg)](https://zenodo.org/badge/latestdoi/573230182)
 
 A Vapor-based server for managing clinical research studies, built as part of the Spezi ecosystem.
 

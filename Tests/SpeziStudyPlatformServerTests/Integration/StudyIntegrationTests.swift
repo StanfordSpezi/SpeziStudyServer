@@ -130,6 +130,7 @@ struct StudyIntegrationTests { // swiftlint:disable:this type_body_length
             let patchBody: [String: Any] = [
                 "details": [
                     "en-US": [
+                        "title": "Test Study",
                         "shortTitle": "TS",
                         "explanationText": "A test study explanation"
                     ] as [String: Any]

@@ -10,6 +10,7 @@ import Foundation
 import JWTKit
 import SpeziHealthKit
 import SpeziLocalization
+import SpeziStudyPlatformAPIServer
 @testable import SpeziStudyPlatformServer
 import Testing
 import VaporTesting
@@ -310,7 +311,7 @@ extension AuthIntegrationTests {
         let scheduleId = ids.scheduleId
         let informational = jsonData(Components.Schemas.InformationalComponentInput(
             name: "X",
-            data: .init([.enUS: InformationalContent(title: "T", lede: nil, content: "C")])
+            data: .init([.enUS: InformationalContent(title: "T", content: "C")])
         ))
         let questionnaire = jsonData(Components.Schemas.QuestionnaireComponentInput(
             name: "X",

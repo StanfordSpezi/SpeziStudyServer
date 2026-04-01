@@ -9,6 +9,7 @@
 import Foundation
 import HTTPTypes
 import OpenAPIRuntime
+import SpeziStudyPlatformAPIServer
 
 
 /// An error that directly models an RFC 7807 Problem Details response.

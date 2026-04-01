@@ -9,6 +9,7 @@
 import Foundation
 import SpeziScheduler
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 
 
 // MARK: - Top-Level: ComponentSchedule

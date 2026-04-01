@@ -9,6 +9,7 @@
 import Foundation
 import SpeziLocalization
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 
 
 extension Study {

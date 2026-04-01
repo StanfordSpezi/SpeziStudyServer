@@ -11,6 +11,7 @@ import JWTKit
 import OpenAPIRuntime
 import OpenAPIVapor
 import Spezi
+import SpeziStudyPlatformAPIServer
 import SpeziVapor
 import Vapor
 

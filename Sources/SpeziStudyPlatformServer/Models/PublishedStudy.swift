@@ -10,15 +10,7 @@ import Fluent
 import Foundation
 import SpeziLocalization
 import SpeziStudyDefinition
-
-
-/// Note: This type is mapped from Components.Schemas.StudyVisibility via typeOverrides in openapi-generator-config.yaml
-enum StudyVisibility: String, Codable, Sendable {
-    /// Listed in public study browsing.
-    case `public`
-    /// Only accessible via an invitation code.
-    case unlisted
-}
+import SpeziStudyPlatformAPIServer
 
 
 final class PublishedStudy: Model, @unchecked Sendable {

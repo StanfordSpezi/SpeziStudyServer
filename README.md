@@ -72,7 +72,7 @@ Tests must run without parallelism (`--no-parallel`) because integration test su
 
 ## API Documentation
 
-The API is defined using OpenAPI. See [`Sources/SpeziStudyPlatformServer/openapi.yaml`](Sources/SpeziStudyPlatformServer/openapi.yaml) for the full specification.
+The API is defined using OpenAPI. The specification and generated types live in the shared [SpeziStudyPlatform-API](https://github.com/StanfordSpezi/SpeziStudyPlatform-API) package.
 
 ### API Testing with Bruno
 

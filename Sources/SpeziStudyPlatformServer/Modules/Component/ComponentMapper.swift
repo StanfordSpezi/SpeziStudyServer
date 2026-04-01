@@ -10,6 +10,7 @@ import Foundation
 import SpeziHealthKit
 import SpeziHealthKitBulkExport
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 
 
 extension Components.Schemas.Component._TypePayload {

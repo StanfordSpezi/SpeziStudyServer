@@ -10,6 +10,7 @@ import Fluent
 import Foundation
 import SpeziLocalization
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 @testable import SpeziStudyPlatformServer
 
 
@@ -30,8 +31,7 @@ enum PublishedStudyFixtures {
             icon: .systemSymbol(icon),
             explanationText: .init([.enUS: ""]),
             shortExplanationText: .init([.enUS: ""]),
-            participationCriterion: .all([]),
-            enrollmentConditions: .none
+            participationCriterion: .all([])
         )
         let published = PublishedStudy(
             studyId: studyId,

@@ -8,6 +8,7 @@
 
 import Foundation
 import SpeziLocalization
+import SpeziStudyPlatformAPIServer
 @testable import SpeziStudyPlatformServer
 import Testing
 import VaporTesting
@@ -129,6 +130,7 @@ struct StudyIntegrationTests { // swiftlint:disable:this type_body_length
             let patchBody: [String: Any] = [
                 "details": [
                     "en-US": [
+                        "title": "Test Study",
                         "shortTitle": "TS",
                         "explanationText": "A test study explanation"
                     ] as [String: Any]
@@ -144,7 +146,7 @@ struct StudyIntegrationTests { // swiftlint:disable:this type_body_length
                 let responseStudy = try response.content.decode(Components.Schemas.StudyResponse.self)
                 #expect(responseStudy.details[.enUS]?.shortTitle == "TS")
                 #expect(responseStudy.details[.enUS]?.explanationText == "A test study explanation")
-                #expect(responseStudy.details[.enUS]?.shortExplanationText.isEmpty == true)
+                #expect(responseStudy.details[.enUS]?.shortExplanationText?.isEmpty != false)
                 #expect(responseStudy.locales == [.enUS])
                 #expect(responseStudy.icon == "heart")
                 #expect(responseStudy.consent.isEmpty)

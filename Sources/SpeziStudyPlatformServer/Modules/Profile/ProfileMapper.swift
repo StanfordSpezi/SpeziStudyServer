@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SpeziStudyPlatformAPIServer
 
 
 private let dateOnlyFormatter: DateFormatter = {

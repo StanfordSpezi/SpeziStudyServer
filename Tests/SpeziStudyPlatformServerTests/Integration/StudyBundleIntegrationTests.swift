@@ -12,6 +12,7 @@ import SpeziHealthKit
 import SpeziHealthKitBulkExport
 import SpeziLocalization
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 @testable import SpeziStudyPlatformServer
 import Testing
 import VaporTesting
@@ -109,8 +110,8 @@ struct StudyBundleIntegrationTests {
         informationalComponent.data = .informational(LocalizationsDictionary([
             .enUS: InformationalContent(
                 title: "Welcome",
-                lede: "Introduction",
-                content: "# Welcome\nThis is the welcome article."
+                content: "# Welcome\nThis is the welcome article.",
+                lede: "Introduction"
             )
         ]))
         try await informationalComponent.update(on: database)
@@ -197,7 +198,7 @@ struct StudyBundleIntegrationTests {
 
         // Consent text
         let consentRef = try #require(definition.metadata.consentFileRef)
-        let consentText = try #require(bundle.consentText(for: consentRef, in: enUS))
+        let consentText = try #require(bundle.consentText(for: consentRef, in: enUS, fallbackLocale: nil))
         #expect(consentText == "---\ntitle: Informed Consent\nversion: 1.0.0\n---\n# Informed Consent\n\nPlease read carefully.")
 
         // Informational component

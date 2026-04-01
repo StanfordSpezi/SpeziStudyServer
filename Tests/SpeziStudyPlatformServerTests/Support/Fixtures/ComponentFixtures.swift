@@ -12,6 +12,7 @@ import SpeziHealthKit
 import SpeziLocalization
 import SpeziScheduler
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 @testable import SpeziStudyPlatformServer
 
 
@@ -77,7 +78,7 @@ enum ComponentFixtures {
     ) async throws -> Component {
         let component = Component(
             studyId: studyId,
-            data: .informational(.init([.enUS: InformationalContent(title: "Test", lede: nil, content: "Content")])),
+            data: .informational(.init([.enUS: InformationalContent(title: "Test", content: "Content")])),
             name: name
         )
         try await component.save(on: database)

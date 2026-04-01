@@ -11,6 +11,7 @@ import Spezi
 import SpeziFoundation
 import SpeziLocalization
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 import ZIPFoundation
 
 
@@ -86,7 +87,6 @@ final class StudyBundleService: Module, @unchecked Sendable {
             explanationText: explanationTexts,
             shortExplanationText: shortExplanationTexts,
             participationCriterion: study.participationCriterion,
-            enrollmentConditions: .none,
             consentFileRef: consentRef
         )
 

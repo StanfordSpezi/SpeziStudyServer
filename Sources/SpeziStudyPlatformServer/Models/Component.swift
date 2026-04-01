@@ -10,19 +10,7 @@ import Fluent
 import Foundation
 import SpeziLocalization
 import SpeziStudyDefinition
-
-
-/// Note: This type is mapped from Components.Schemas.InformationalContent via typeOverrides in openapi-generator-config.yaml
-struct InformationalContent: Hashable, Codable, Sendable {
-    let title: String
-    let lede: String?
-    let content: String
-}
-
-/// Note: This type is mapped from Components.Schemas.QuestionnaireContent via typeOverrides in openapi-generator-config.yaml
-struct QuestionnaireContent: Hashable, Codable, Sendable {
-    let questionnaire: String
-}
+import SpeziStudyPlatformAPIServer
 
 
 enum ComponentData: Codable, Sendable, Hashable {

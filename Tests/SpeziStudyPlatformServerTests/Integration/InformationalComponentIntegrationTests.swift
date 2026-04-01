@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SpeziStudyPlatformAPIServer
 @testable import SpeziStudyPlatformServer
 import Testing
 import VaporTesting

@@ -10,6 +10,7 @@ import Foundation
 import Spezi
 import SpeziLocalization
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 
 
 final class ComponentService: Module, @unchecked Sendable {

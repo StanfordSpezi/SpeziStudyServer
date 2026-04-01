@@ -8,6 +8,7 @@
 
 import Foundation
 import OpenAPIRuntime
+import SpeziStudyPlatformAPIServer
 
 
 extension Controller {

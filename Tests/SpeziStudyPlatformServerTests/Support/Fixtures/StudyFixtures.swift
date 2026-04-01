@@ -9,6 +9,7 @@
 import Fluent
 import Foundation
 import SpeziLocalization
+import SpeziStudyPlatformAPIServer
 @testable import SpeziStudyPlatformServer
 
 

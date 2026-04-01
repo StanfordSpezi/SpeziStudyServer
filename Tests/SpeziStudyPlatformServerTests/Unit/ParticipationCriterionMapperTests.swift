@@ -8,6 +8,7 @@
 
 import Foundation
 import SpeziStudyDefinition
+import SpeziStudyPlatformAPIServer
 @testable import SpeziStudyPlatformServer
 import Testing
 

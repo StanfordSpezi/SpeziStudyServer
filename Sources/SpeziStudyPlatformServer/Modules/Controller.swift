@@ -8,6 +8,7 @@
 
 import OpenAPIRuntime
 import OpenAPIVapor
+import SpeziStudyPlatformAPIServer
 import SpeziVapor
 import Vapor
 
